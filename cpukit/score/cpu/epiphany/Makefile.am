@@ -21,6 +21,8 @@ noinst_LIBRARIES = libscorecpu.a
 
 libscorecpu_a_SOURCES =
 libscorecpu_a_SOURCES += cpu.c
+libscorecpu_a_SOURCES += epiphany-context-switch.S
+libscorecpu_a_SOURCES += epiphany-context-initialize.c
 
 libscorecpu_a_CPPFLAGS = $(AM_CPPFLAGS)
 
