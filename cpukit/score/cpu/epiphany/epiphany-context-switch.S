@@ -12,7 +12,7 @@
 
 #include <rtems/asm.h>
 
-.text
+.section .text,"a";
 .align 4
 
 PUBLIC(_CPU_Context_switch)
@@ -53,7 +53,7 @@ SYM(restore):
 
  SYM(_CPU_Context_restore):
   mov     r1, r0
-  b       restore
+  b       _restore
   nop
 
  SYM(_CPU_Context_restore_fp):
