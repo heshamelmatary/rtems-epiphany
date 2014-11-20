@@ -32,6 +32,7 @@
 #include <rtems/stringto.h>
 #include "internal.h"
 
+#define PATH_MAX 4096
 static void rtems_shell_joel_usage(void)
 {
   printf(

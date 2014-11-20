@@ -38,7 +38,7 @@ void _CPU_Context_Initialize(
   memset(context, 0, sizeof(*context));
 
   context->r[13] = stack_high;
-  context->[11] = stack_high;
+  context->r[11] = stack_high;
   context->r[14] = (uint32_t) entry_point;
   context->status = sr;
 }

@@ -71,6 +71,8 @@
 
 #include <inttypes.h> /* PRI* */
 
+#define PATH_MAX 255
+
 #if SIZEOF_MODE_T == 8
 #define PRIomode_t PRIo64
 #elif SIZEOF_MODE_T == 4

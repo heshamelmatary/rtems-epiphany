@@ -26,6 +26,8 @@
 #include <rtems/score/objectimpl.h>
 #include <rtems/score/wkspace.h>
 
+#define _POSIX_PATH_MAX 256 
+
 RBTREE_DEFINE_EMPTY( _POSIX_Keys_Key_value_lookup_tree );
 
 /**

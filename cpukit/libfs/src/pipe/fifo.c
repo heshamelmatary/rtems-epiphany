@@ -29,7 +29,7 @@
 
 #include "pipe.h"
 
-
+#define PIPE_BUF 4096
 #define MIN(a, b) ((a) < (b)? (a): (b))
 
 #define LIBIO_ACCMODE(_iop) ((_iop)->flags & LIBIO_FLAGS_READ_WRITE)

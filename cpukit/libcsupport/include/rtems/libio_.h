@@ -43,6 +43,8 @@ extern "C" {
 /**@{**/
 
 #define RTEMS_FILESYSTEM_SYMLOOP_MAX 32
+#define IOV_MAX 1024
+#define SSIZE_MAX 32767
 
 /*
  * Not defined in newlib so provide here. Users should use dup2 and

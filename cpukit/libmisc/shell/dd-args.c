@@ -57,6 +57,7 @@ __FBSDID("$FreeBSD: src/bin/dd/args.c,v 1.40 2004/08/15 19:10:05 rwatson Exp $")
 
 #define strtouq strtoul
 #define strtoq strtol
+#define SSIZE_MAX  LONG_MAX
 
 static int	c_arg(const void *, const void *);
 static int	c_conv(const void *, const void *);

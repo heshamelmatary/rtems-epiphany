@@ -20,6 +20,8 @@
 
 #include "imfs.h"
 
+#define LINK_MAX 127
+
 int IMFS_link(
   const rtems_filesystem_location_info_t *parentloc,
   const rtems_filesystem_location_info_t *targetloc,
