@@ -13,6 +13,8 @@
 
 #define CONFIGURE_INIT
 #include "system.h"
+#include <sys/param.h>
+#include <crypt.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -212,8 +214,6 @@ fstab_t fs_table[] = {
     0
   }
 };
-
-#define MIN(a,b) (((a) > (b)) ? (b) : (a))
 
 #define USE_SHELL
 
@@ -633,18 +633,25 @@ static void fileio_start_shell(void)
     printf( "mkdir /etc: %s:\n", strerror(errno) );
   }
 
+  sc = mkdir("/chroot", 0777);
+  if ( sc ) {
+    printf( "mkdir /chroot: %s:\n", strerror(errno) );
+  }
+
   printf(
     "Creating /etc/passwd and group with three useable accounts\n"
-    "root/pwd , test/pwd, rtems/NO PASSWORD"
+    "root/pwd , test/pwd, rtems/NO PASSWORD, chroot/NO PASSWORD"
   );
 
   writeFile(
     "/etc/passwd",
     0644,
-    "root:7QR4o148UPtb.:0:0:root::/:/bin/sh\n"
-    "rtems:*:1:1:RTEMS Application::/:/bin/sh\n"
-    "test:8Yy.AaxynxbLI:2:2:test account::/:/bin/sh\n"
-    "tty:!:3:3:tty owner::/:/bin/false\n"
+    "root:$6$$FuPOhnllx6lhW2qqlnmWvZQLJ8Thr/09I7ESTdb9VbnTOn5.65"
+      "/Vh2Mqa6FoKXwT0nHS/O7F0KfrDc6Svb/sH.:0:0:root::/:/bin/sh\n"
+    "rtems::1:1:RTEMS Application::/:/bin/sh\n"
+    "test:$1$$oPu1Xt2Pw0ngIc7LyDHqu1:2:2:test account::/:/bin/sh\n"
+    "tty:*:3:3:tty owner::/:/bin/false\n"
+    "chroot::4:2:chroot account::/chroot:/bin/sh\n"
   );
   writeFile(
     "/etc/group",
@@ -1224,6 +1231,9 @@ Init (rtems_task_argument ignored)
   rtems_status_code status;
 
   TEST_BEGIN();
+
+  crypt_add_format(&crypt_md5_format);
+  crypt_add_format(&crypt_sha512_format);
 
   status = rtems_shell_wait_for_input(
     STDIN_FILENO,

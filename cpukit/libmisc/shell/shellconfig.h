@@ -24,6 +24,9 @@
 extern rtems_shell_cmd_t rtems_shell_HELP_Command;
 extern rtems_shell_cmd_t rtems_shell_ALIAS_Command;
 extern rtems_shell_cmd_t rtems_shell_TIME_Command;
+extern rtems_shell_cmd_t rtems_shell_CMDLS_Command;
+extern rtems_shell_cmd_t rtems_shell_CMDCHOWN_Command;
+extern rtems_shell_cmd_t rtems_shell_CMDCHMOD_Command;
 extern rtems_shell_cmd_t rtems_shell_LOGOFF_Command;
 extern rtems_shell_cmd_t rtems_shell_SETENV_Command;
 extern rtems_shell_cmd_t rtems_shell_GETENV_Command;
@@ -76,7 +79,7 @@ extern rtems_shell_cmd_t rtems_shell_MD5_Command;
 
 extern rtems_shell_cmd_t rtems_shell_RTC_Command;
 
-extern rtems_shell_cmd_t rtems_shell_HALT_Command;
+extern rtems_shell_cmd_t rtems_shell_SHUTDOWN_Command;
 extern rtems_shell_cmd_t rtems_shell_CPUUSE_Command;
 extern rtems_shell_cmd_t rtems_shell_TOP_Command;
 extern rtems_shell_cmd_t rtems_shell_STACKUSE_Command;
@@ -90,7 +93,7 @@ extern rtems_shell_cmd_t rtems_shell_MALLOC_INFO_Command;
   extern rtems_shell_cmd_t rtems_shell_PING_Command;
 #endif
 
-extern rtems_shell_cmd_t *rtems_shell_Initial_commands[];
+extern rtems_shell_cmd_t * const rtems_shell_Initial_commands[];
 
 /*
  *  Extern for alias commands
@@ -99,7 +102,7 @@ extern rtems_shell_alias_t rtems_shell_DIR_Alias;
 extern rtems_shell_alias_t rtems_shell_CD_Alias;
 extern rtems_shell_alias_t rtems_shell_EXIT_Alias;
 
-extern rtems_shell_alias_t *rtems_shell_Initial_aliases[];
+extern rtems_shell_alias_t * const rtems_shell_Initial_aliases[];
 
 /*
  *  If we are configured to alias a command, then make sure the underlying
@@ -124,7 +127,7 @@ extern rtems_shell_alias_t *rtems_shell_Initial_aliases[];
 #endif
 
 #if defined(CONFIGURE_SHELL_COMMANDS_INIT)
-  rtems_shell_alias_t *rtems_shell_Initial_aliases[] = {
+  rtems_shell_alias_t * const rtems_shell_Initial_aliases[] = {
     #if (defined(CONFIGURE_SHELL_COMMANDS_ALL) && \
          !defined(CONFIGURE_SHELL_NO_COMMAND_DIR)) || \
         defined(CONFIGURE_SHELL_COMMAND_DIR)
@@ -150,7 +153,7 @@ extern rtems_shell_alias_t *rtems_shell_Initial_aliases[];
     NULL
   };
 
-  rtems_shell_cmd_t *rtems_shell_Initial_commands[] = {
+  rtems_shell_cmd_t * const rtems_shell_Initial_commands[] = {
     /*
      *  General comamnds that should be present
      */
@@ -161,6 +164,21 @@ extern rtems_shell_alias_t *rtems_shell_Initial_aliases[];
     /*
      *  Common commands that can be optional
      */
+    #if (defined(CONFIGURE_SHELL_COMMANDS_ALL) && \
+         !defined(CONFIGURE_SHELL_NO_COMMAND_CMDLS)) || \
+        defined(CONFIGURE_SHELL_COMMAND_CMDLS)
+      &rtems_shell_CMDLS_Command,
+    #endif
+    #if (defined(CONFIGURE_SHELL_COMMANDS_ALL) && \
+         !defined(CONFIGURE_SHELL_NO_COMMAND_CMDCHOWN)) || \
+        defined(CONFIGURE_SHELL_COMMAND_CMDCHOWN)
+      &rtems_shell_CMDCHOWN_Command,
+    #endif
+    #if (defined(CONFIGURE_SHELL_COMMANDS_ALL) && \
+         !defined(CONFIGURE_SHELL_NO_COMMAND_CMDCHMOD)) || \
+        defined(CONFIGURE_SHELL_COMMAND_CMDCHMOD)
+      &rtems_shell_CMDCHMOD_Command,
+    #endif
     #if (defined(CONFIGURE_SHELL_COMMANDS_ALL) && \
          !defined(CONFIGURE_SHELL_NO_COMMAND_JOEL)) || \
         defined(CONFIGURE_SHELL_COMMAND_JOEL)
@@ -400,9 +418,9 @@ extern rtems_shell_alias_t *rtems_shell_Initial_aliases[];
      *  RTEMS Related commands
      */
     #if (defined(CONFIGURE_SHELL_COMMANDS_ALL) && \
-         !defined(CONFIGURE_SHELL_NO_COMMAND_HALT)) || \
-        defined(CONFIGURE_SHELL_COMMAND_HALT)
-      &rtems_shell_HALT_Command,
+         !defined(CONFIGURE_SHELL_NO_COMMAND_SHUTDOWN)) || \
+        defined(CONFIGURE_SHELL_COMMAND_SHUTDOWN)
+      &rtems_shell_SHUTDOWN_Command,
     #endif
     #if (defined(CONFIGURE_SHELL_COMMANDS_ALL) && \
          !defined(CONFIGURE_SHELL_NO_COMMAND_CPUUSE)) || \

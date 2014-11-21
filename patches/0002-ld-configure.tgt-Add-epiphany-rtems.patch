@@ -1,0 +1,29 @@
+From 7d6a7d0f5776f1b56beac9996ebcf734451a556b Mon Sep 17 00:00:00 2001
+From: Joel Sherrill <joel.sherrill@oarcorp.com>
+Date: Thu, 13 Nov 2014 10:27:47 -0600
+Subject: [PATCH 2/2] ld/configure.tgt: Add epiphany-*-rtems*
+
+2014-11-13  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+        * configure.tgt: Add epiphany-*-rtems* target
+---
+ ld/configure.tgt | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/ld/configure.tgt b/ld/configure.tgt
+index 9adace1..a211534 100644
+--- a/ld/configure.tgt
++++ b/ld/configure.tgt
+@@ -157,7 +157,8 @@ d30v-*-*)		targ_emul=d30velf; targ_extra_emuls="d30v_e d30v_o"
+ 			;;
+ dlx-*-elf*)		targ_emul=elf32_dlx
+ 			;;
+-epiphany-*-elf)		targ_emul=elf32epiphany
++epiphany-*-elf | epiphany-*-rtems*)
++			targ_emul=elf32epiphany
+ 			targ_extra_emuls="elf32epiphany_4x4"
+ 			;;
+ fido*-*-elf*)		targ_emul=m68kelf ;;
+-- 
+1.9.3
+

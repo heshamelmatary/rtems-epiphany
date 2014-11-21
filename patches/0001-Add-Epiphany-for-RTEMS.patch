@@ -1,0 +1,105 @@
+From a84f577f95465e15cc35e65a59518aefbd2900a2 Mon Sep 17 00:00:00 2001
+From: Hesham ALMatary <heshamelmatary@gmail.com>
+Date: Fri, 21 Nov 2014 19:57:13 +0000
+Subject: [PATCH] Add Epiphany for RTEMS
+
+---
+ gcc/config.gcc                 |  7 ++++++-
+ gcc/config/epiphany/epiphany.h |  2 +-
+ gcc/config/epiphany/rtems.h    | 33 +++++++++++++++++++++++++++++++++
+ libgcc/config.host             |  2 +-
+ 4 files changed, 41 insertions(+), 3 deletions(-)
+ create mode 100644 gcc/config/epiphany/rtems.h
+
+diff --git a/gcc/config.gcc b/gcc/config.gcc
+index 88309b6..4c48d84 100644
+--- a/gcc/config.gcc
++++ b/gcc/config.gcc
+@@ -1138,13 +1138,18 @@ crisv32-*-linux* | cris-*-linux*)
+ 		;;
+ 	esac
+ 	;;
+-epiphany-*-elf )
++epiphany-*-elf | epiphany-*-rtems* )
+ 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+ 	tmake_file="epiphany/t-epiphany"
+ 	extra_options="${extra_options} fused-madd.opt"
+ 	extra_objs="$extra_objs mode-switch-use.o resolve-sw-modes.o"
+ 	tm_defines="${tm_defines} EPIPHANY_STACK_OFFSET=${with_stack_offset:-8}"
+ 	extra_headers="epiphany_intrinsics.h"
++	case ${target} in
++	epiphany-*-rtems* )
++		tm_file="${tm_file} epiphany/rtems.h rtems.h"
++		;;
++	esac
+ 	;;
+ fr30-*-elf)
+ 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+diff --git a/gcc/config/epiphany/epiphany.h b/gcc/config/epiphany/epiphany.h
+index f64652e..a234fd7 100644
+--- a/gcc/config/epiphany/epiphany.h
++++ b/gcc/config/epiphany/epiphany.h
+@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
+    libgloss might use errno/__errno, which might not have been needed when we
+    saw libc the first time, so link with libc a second time.  */
+ #undef LIB_SPEC
+-#define LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} -lepiphany %{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"
++#define LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} %{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"
+ 
+ #define LINK_SPEC "%{v}"
+ 
+diff --git a/gcc/config/epiphany/rtems.h b/gcc/config/epiphany/rtems.h
+new file mode 100644
+index 0000000..c2cb4bd
+--- /dev/null
++++ b/gcc/config/epiphany/rtems.h
+@@ -0,0 +1,33 @@
++/* Definitions for rtems targeting a RTEMS using ELF.
++   Copyright (C) 2014 Free Software Foundation, Inc.
++   Contributed by Joel Sherrill (joel@OARcorp.com).
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 3, or (at your option)
++any later version.
++
++GCC is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING3.  If not see
++<http://www.gnu.org/licenses/>.  */
++
++/* Target OS builtins.  */
++#undef TARGET_OS_CPP_BUILTINS
++#define TARGET_OS_CPP_BUILTINS()		\
++  do						\
++    {						\
++	builtin_define ("__rtems__");		\
++	builtin_define ("__USE_INIT_FINI__");	\
++	builtin_assert ("system=rtems");	\
++    }						\
++  while (0)
++
++/* Use the default */
++#undef LINK_GCC_C_SEQUENCE_SPEC
+diff --git a/libgcc/config.host b/libgcc/config.host
+index 9903d15..8bb7888 100644
+--- a/libgcc/config.host
++++ b/libgcc/config.host
+@@ -452,7 +452,7 @@ cris-*-elf)
+ cris-*-linux* | crisv32-*-linux*)
+ 	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-linux"
+ 	;;
+-epiphany-*-elf*)
++epiphany-*-elf* | epiphany-*-rtems*)
+ 	tmake_file="epiphany/t-epiphany t-fdpbit epiphany/t-custom-eqsf"
+ 	extra_parts="$extra_parts crti.o crtint.o crtrunc.o crtm1reg-r43.o crtm1reg-r63.o crtn.o"
+ 	;;
+-- 
+2.1.0
+

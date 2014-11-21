@@ -4,7 +4,7 @@
  * @ingroup L2C-310_cache
  *
  * @brief Cache definitions and functions.
- * 
+ *
  * This file implements handling for the ARM L2C-310 cache controller
  */
 
@@ -58,6 +58,7 @@
 
 #include <assert.h>
 #include <bsp.h>
+#include <bsp/fatal.h>
 #include <libcpu/arm-cp15.h>
 #include <rtems/rtems/intr.h>
 #include <bsp/arm-release-id.h>
@@ -75,29 +76,29 @@ extern "C" {
   ARM_CACHE_L1_CPU_SUPPORT_PROVIDES_RANGE_FUNCTIONS
 #define CPU_CACHE_SUPPORT_PROVIDES_CACHE_SIZE_FUNCTIONS
 
-#define CACHE_L2C_310_DATA_LINE_MASK ( CPU_DATA_CACHE_ALIGNMENT - 1 )
-#define CACHE_L2C_310_INSTRUCTION_LINE_MASK \
+#define L2C_310_DATA_LINE_MASK ( CPU_DATA_CACHE_ALIGNMENT - 1 )
+#define L2C_310_INSTRUCTION_LINE_MASK \
   ( CPU_INSTRUCTION_CACHE_ALIGNMENT \
     - 1 )
-#define CACHE_l2C_310_NUM_WAYS 8
-#define CACHE_l2C_310_WAY_MASK ( ( 1 << CACHE_l2C_310_NUM_WAYS ) - 1 )
+#define L2C_310_NUM_WAYS 8
+#define L2C_310_WAY_MASK ( ( 1 << L2C_310_NUM_WAYS ) - 1 )
 
-#define CACHE_MIN( a, b ) \
+#define L2C_310_MIN( a, b ) \
   ((a < b) ? (a) : (b))
 
-#define CACHE_MAX_LOCKING_BYTES (4 * 1024)
+#define L2C_310_MAX_LOCKING_BYTES (4 * 1024)
 
 
 /* RTL release number as can be read from cache_id register */
-typedef enum {
-  CACHE_L2C_310_RTL_RELEASE_R0_P0 = 0x0,
-  CACHE_L2C_310_RTL_RELEASE_R1_P0 = 0x2,
-  CACHE_L2C_310_RTL_RELEASE_R2_P0 = 0x4,
-  CACHE_L2C_310_RTL_RELEASE_R3_P0 = 0x5,
-  CACHE_L2C_310_RTL_RELEASE_R3_P1 = 0x6,
-  CACHE_L2C_310_RTL_RELEASE_R3_P2 = 0x8,
-  CACHE_L2C_310_RTL_RELEASE_R3_P3 = 0x9
-} cache_l2c_310_rtl_release;
+#define L2C_310_RTL_RELEASE_R0_P0 0x0
+#define L2C_310_RTL_RELEASE_R1_P0 0x2
+#define L2C_310_RTL_RELEASE_R2_P0 0x4
+#define L2C_310_RTL_RELEASE_R3_P0 0x5
+#define L2C_310_RTL_RELEASE_R3_P1 0x6
+#define L2C_310_RTL_RELEASE_R3_P2 0x8
+#define L2C_310_RTL_RELEASE_R3_P3 0x9
+
+#define BSP_ARM_L2C_310_RTL_RELEASE (BSP_ARM_L2C_310_ID & L2C_310_ID_RTL_MASK)
 
 /**
  * @defgroup L2C-310_cache Cache Support
@@ -113,155 +114,158 @@ typedef enum {
 typedef struct {
   /** @brief Cache ID */
   uint32_t cache_id;
-#define CACHE_L2C_310_L2CC_ID_RTL_MASK 0x3f
-#define CACHE_L2C_310_L2CC_ID_PART_MASK ( 0xf << 6 )
-#define CACHE_L2C_310_L2CC_ID_PART_L210 ( 1 << 6 )
-#define CACHE_L2C_310_L2CC_ID_PART_L310 ( 3 << 6 )
+#define L2C_310_ID_RTL_MASK 0x3f
+#define L2C_310_ID_PART_MASK ( 0xf << 6 )
+#define L2C_310_ID_PART_L210 ( 1 << 6 )
+#define L2C_310_ID_PART_L310 ( 3 << 6 )
+#define L2C_310_ID_IMPL_MASK ( 0xff << 24 )
   /** @brief Cache type */
   uint32_t cache_type;
 /** @brief 1 if data banking implemented, 0 if not */
-#define CACHE_L2C_310_L2CC_TYPE_DATA_BANKING_MASK 0x80000000
+#define L2C_310_TYPE_DATA_BANKING_MASK 0x80000000
 /** @brief 11xy, where: x=1 if pl310_LOCKDOWN_BY_MASTER is defined, otherwise 0 */
-#define CACHE_L2C_310_L2CC_TYPE_CTYPE_MASK 0x1E000000
+#define L2C_310_TYPE_CTYPE_MASK 0x1E000000
 /** @brief y=1 if pl310_LOCKDOWN_BY_LINE is defined, otherwise 0. */
-#define CACHE_L2C_310_L2CC_TYPE_CTYPE_SHIFT 25
+#define L2C_310_TYPE_CTYPE_SHIFT 25
 /** @brief 1 for Harvard architecture, 0 for unified architecture */
-#define CACHE_L2C_310_L2CC_TYPE_HARVARD_MASK 0x01000000
+#define L2C_310_TYPE_HARVARD_MASK 0x01000000
 /** @brief Data cache way size = 2 Exp(value + 2) KB */
-#define CACHE_L2C_310_L2CC_TYPE_SIZE_D_WAYS_MASK 0x00700000
-#define CACHE_L2C_310_L2CC_TYPE_SIZE_D_WAYS_SHIFT 20
+#define L2C_310_TYPE_SIZE_D_WAYS_MASK 0x00700000
+#define L2C_310_TYPE_SIZE_D_WAYS_SHIFT 20
 /** @brief Assoziativity aka number of data ways = (value * 8) + 8 */
-#define CACHE_L2C_310_L2CC_TYPE_NUM_D_WAYS_MASK 0x00040000
-#define CACHE_L2C_310_L2CC_TYPE_NUM_D_WAYS_SHIFT 18
+#define L2C_310_TYPE_NUM_D_WAYS_MASK 0x00040000
+#define L2C_310_TYPE_NUM_D_WAYS_SHIFT 18
 /** @brief Data cache line length 00 - 32 */
-#define CACHE_L2C_310_L2CC_TYPE_LENGTH_D_LINE_MASK 0x00003000
-#define CACHE_L2C_310_L2CC_TYPE_LENGTH_D_LINE_SHIFT 12
-#define CACHE_L2C_310_L2CC_TYPE_LENGTH_D_LINE_VAL_32 0x0
+#define L2C_310_TYPE_LENGTH_D_LINE_MASK 0x00003000
+#define L2C_310_TYPE_LENGTH_D_LINE_SHIFT 12
+#define L2C_310_TYPE_LENGTH_D_LINE_VAL_32 0x0
 /** @brief Instruction cache way size = 2 Exp(value + 2) KB */
-#define CACHE_L2C_310_L2CC_TYPE_SIZE_I_WAYS_MASK 0x00000700
-#define CACHE_L2C_310_L2CC_TYPE_SIZE_I_WAYS_SHIFT 8
+#define L2C_310_TYPE_SIZE_I_WAYS_MASK 0x00000700
+#define L2C_310_TYPE_SIZE_I_WAYS_SHIFT 8
 /** @brief Assoziativity aka number of instruction ways = (value * 8) + 8 */
-#define CACHE_L2C_310_L2CC_TYPE_NUM_I_WAYS_MASK 0x00000040
-#define CACHE_L2C_310_L2CC_TYPE_NUM_I_WAYS_SHIFT 6
+#define L2C_310_TYPE_NUM_I_WAYS_MASK 0x00000040
+#define L2C_310_TYPE_NUM_I_WAYS_SHIFT 6
 /** @brief Instruction cache line length 00 - 32 */
-#define CACHE_L2C_310_L2CC_TYPE_LENGTH_I_LINE_MASK 0x00000003
-#define CACHE_L2C_310_L2CC_TYPE_LENGTH_I_LINE_SHIFT 0
-#define CACHE_L2C_310_L2CC_TYPE_LENGTH_I_LINE_VAL_32 0x0
+#define L2C_310_TYPE_LENGTH_I_LINE_MASK 0x00000003
+#define L2C_310_TYPE_LENGTH_I_LINE_SHIFT 0
+#define L2C_310_TYPE_LENGTH_I_LINE_VAL_32 0x0
 
   uint8_t reserved_8[0x100 - 8];
   uint32_t ctrl; /* Control */
 /** @brief Enables the L2CC */
-#define CACHE_L2C_310_L2CC_ENABLE_MASK 0x00000001
+#define L2C_310_CTRL_ENABLE 0x00000001
+
+#define L2C_310_CTRL_EXCL_CONFIG (1 << 12)
 
   /** @brief Auxiliary control */
   uint32_t aux_ctrl;
 
 /** @brief Early BRESP Enable */
-#define CACHE_L2C_310_L2CC_AUX_EBRESPE_MASK 0x40000000
+#define L2C_310_AUX_EBRESPE_MASK 0x40000000
 
 /** @brief Instruction Prefetch Enable */
-#define CACHE_L2C_310_L2CC_AUX_IPFE_MASK 0x20000000
+#define L2C_310_AUX_IPFE_MASK 0x20000000
 
 /** @brief Data Prefetch Enable */
-#define CACHE_L2C_310_L2CC_AUX_DPFE_MASK 0x10000000
+#define L2C_310_AUX_DPFE_MASK 0x10000000
 
 /** @brief Non-secure interrupt access control */
-#define CACHE_L2C_310_L2CC_AUX_NSIC_MASK 0x08000000
+#define L2C_310_AUX_NSIC_MASK 0x08000000
 
 /** @brief Non-secure lockdown enable */
-#define CACHE_L2C_310_L2CC_AUX_NSLE_MASK 0x04000000
+#define L2C_310_AUX_NSLE_MASK 0x04000000
 
 /** @brief Cache replacement policy */
-#define CACHE_L2C_310_L2CC_AUX_CRP_MASK 0x02000000
+#define L2C_310_AUX_CRP_MASK 0x02000000
 
 /** @brief Force write allocate */
-#define CACHE_L2C_310_L2CC_AUX_FWE_MASK 0x01800000
+#define L2C_310_AUX_FWE_MASK 0x01800000
 
 /** @brief Shared attribute override enable */
-#define CACHE_L2C_310_L2CC_AUX_SAOE_MASK 0x00400000
+#define L2C_310_AUX_SAOE_MASK 0x00400000
 
 /** @brief Parity enable */
-#define CACHE_L2C_310_L2CC_AUX_PE_MASK 0x00200000
+#define L2C_310_AUX_PE_MASK 0x00200000
 
 /** @brief Event monitor bus enable */
-#define CACHE_L2C_310_L2CC_AUX_EMBE_MASK 0x00100000
+#define L2C_310_AUX_EMBE_MASK 0x00100000
 
 /** @brief Way-size */
-#define CACHE_L2C_310_L2CC_AUX_WAY_SIZE_MASK 0x000E0000
-#define CACHE_L2C_310_L2CC_AUX_WAY_SIZE_SHIFT 17
+#define L2C_310_AUX_WAY_SIZE_MASK 0x000E0000
+#define L2C_310_AUX_WAY_SIZE_SHIFT 17
 
 /** @brief Way-size */
-#define CACHE_L2C_310_L2CC_AUX_ASSOC_MASK 0x00010000
+#define L2C_310_AUX_ASSOC_MASK 0x00010000
 
 /** @brief Shared attribute invalidate enable */
-#define CACHE_L2C_310_L2CC_AUX_SAIE_MASK 0x00002000
+#define L2C_310_AUX_SAIE_MASK 0x00002000
 
 /** @brief Exclusive cache configuration */
-#define CACHE_L2C_310_L2CC_AUX_EXCL_CACHE_MASK 0x00001000
+#define L2C_310_AUX_EXCL_CACHE_MASK 0x00001000
 
 /** @brief Store buffer device limitation Enable */
-#define CACHE_L2C_310_L2CC_AUX_SBDLE_MASK 0x00000800
+#define L2C_310_AUX_SBDLE_MASK 0x00000800
 
 /** @brief High Priority for SO and Dev Reads Enable */
-#define CACHE_L2C_310_L2CC_AUX_HPSODRE_MASK 0x00000400
+#define L2C_310_AUX_HPSODRE_MASK 0x00000400
 
 /** @brief Full line of zero enable */
-#define CACHE_L2C_310_L2CC_AUX_FLZE_MASK 0x00000001
+#define L2C_310_AUX_FLZE_MASK 0x00000001
 
 /** @brief Enable all prefetching, */
-#define CACHE_L2C_310_L2CC_AUX_REG_DEFAULT_MASK \
-  ( CACHE_L2C_310_L2CC_AUX_WAY_SIZE_MASK & ( 0x3 << CACHE_L2C_310_L2CC_AUX_WAY_SIZE_SHIFT ) ) \
-  | CACHE_L2C_310_L2CC_AUX_PE_MASK      /* Prefetch enable */ \
-  | CACHE_L2C_310_L2CC_AUX_SAOE_MASK    /* Shared attribute override enable */ \
-  | CACHE_L2C_310_L2CC_AUX_CRP_MASK     /* Cache replacement policy */ \
-  | CACHE_L2C_310_L2CC_AUX_DPFE_MASK    /* Data prefetch enable */ \
-  | CACHE_L2C_310_L2CC_AUX_IPFE_MASK    /* Instruction prefetch enable */ \
-  | CACHE_L2C_310_L2CC_AUX_EBRESPE_MASK /* Early BRESP enable */
+#define L2C_310_AUX_REG_DEFAULT_MASK \
+  ( L2C_310_AUX_WAY_SIZE_MASK & ( 0x3 << L2C_310_AUX_WAY_SIZE_SHIFT ) ) \
+  | L2C_310_AUX_PE_MASK      /* Prefetch enable */ \
+  | L2C_310_AUX_SAOE_MASK    /* Shared attribute override enable */ \
+  | L2C_310_AUX_CRP_MASK     /* Cache replacement policy */ \
+  | L2C_310_AUX_DPFE_MASK    /* Data prefetch enable */ \
+  | L2C_310_AUX_IPFE_MASK    /* Instruction prefetch enable */ \
+  | L2C_310_AUX_EBRESPE_MASK /* Early BRESP enable */
 
-#define CACHE_L2C_310_L2CC_AUX_REG_ZERO_MASK 0xFFF1FFFF
+#define L2C_310_AUX_REG_ZERO_MASK 0xFFF1FFFF
 
 /** @brief 1 cycle of latency, there is no additional latency fot tag RAM */
-#define CACHE_L2C_310_L2CC_RAM_1_CYCLE_LAT_VAL 0x00000000
+#define L2C_310_RAM_1_CYCLE_LAT_VAL 0x00000000
 /** @brief 2 cycles of latency for tag RAM */
-#define CACHE_L2C_310_L2CC_RAM_2_CYCLE_LAT_VAL 0x00000001
+#define L2C_310_RAM_2_CYCLE_LAT_VAL 0x00000001
 /** @brief 3 cycles of latency for tag RAM */
-#define CACHE_L2C_310_L2CC_RAM_3_CYCLE_LAT_VAL 0x00000002
+#define L2C_310_RAM_3_CYCLE_LAT_VAL 0x00000002
 /** @brief 4 cycles of latency for tag RAM */
-#define CACHE_L2C_310_L2CC_RAM_4_CYCLE_LAT_VAL 0x00000003
+#define L2C_310_RAM_4_CYCLE_LAT_VAL 0x00000003
 /** @brief 5 cycles of latency for tag RAM */
-#define CACHE_L2C_310_L2CC_RAM_5_CYCLE_LAT_VAL 0x00000004
+#define L2C_310_RAM_5_CYCLE_LAT_VAL 0x00000004
 /** @brief 6 cycles of latency for tag RAM */
-#define CACHE_L2C_310_L2CC_RAM_6_CYCLE_LAT_VAL 0x00000005
+#define L2C_310_RAM_6_CYCLE_LAT_VAL 0x00000005
 /** @brief 7 cycles of latency for tag RAM */
-#define CACHE_L2C_310_L2CC_RAM_7_CYCLE_LAT_VAL 0x00000006
+#define L2C_310_RAM_7_CYCLE_LAT_VAL 0x00000006
 /** @brief 8 cycles of latency for tag RAM */
-#define CACHE_L2C_310_L2CC_RAM_8_CYCLE_LAT_VAL 0x00000007
+#define L2C_310_RAM_8_CYCLE_LAT_VAL 0x00000007
 /** @brief Shift left setup latency values by this value */
-#define CACHE_L2C_310_L2CC_RAM_SETUP_SHIFT 0x00000000
+#define L2C_310_RAM_SETUP_SHIFT 0x00000000
 /** @brief Shift left read latency values by this value */
-#define CACHE_L2C_310_L2CC_RAM_READ_SHIFT 0x00000004
+#define L2C_310_RAM_READ_SHIFT 0x00000004
 /** @brief Shift left write latency values by this value */
-#define CACHE_L2C_310_L2CC_RAM_WRITE_SHIFT 0x00000008
+#define L2C_310_RAM_WRITE_SHIFT 0x00000008
 /** @brief Mask for RAM setup latency */
-#define CACHE_L2C_310_L2CC_RAM_SETUP_LAT_MASK 0x00000007
+#define L2C_310_RAM_SETUP_LAT_MASK 0x00000007
 /** @brief Mask for RAM read latency */
-#define CACHE_L2C_310_L2CC_RAM_READ_LAT_MASK 0x00000070
+#define L2C_310_RAM_READ_LAT_MASK 0x00000070
 /** @brief Mask for RAM read latency */
-#define CACHE_L2C_310_L2CC_RAM_WRITE_LAT_MASK 0x00000700
+#define L2C_310_RAM_WRITE_LAT_MASK 0x00000700
   /** @brief Latency for tag RAM */
   uint32_t tag_ram_ctrl;
 /* @brief Latency for tag RAM */
-#define CACHE_L2C_310_L2CC_TAG_RAM_DEFAULT_LAT \
-  ( ( CACHE_L2C_310_L2CC_RAM_2_CYCLE_LAT_VAL << CACHE_L2C_310_L2CC_RAM_SETUP_SHIFT ) \
-    | ( CACHE_L2C_310_L2CC_RAM_2_CYCLE_LAT_VAL << CACHE_L2C_310_L2CC_RAM_READ_SHIFT ) \
-    | ( CACHE_L2C_310_L2CC_RAM_2_CYCLE_LAT_VAL << CACHE_L2C_310_L2CC_RAM_WRITE_SHIFT ) )
+#define L2C_310_TAG_RAM_DEFAULT_LAT \
+  ( ( L2C_310_RAM_2_CYCLE_LAT_VAL << L2C_310_RAM_SETUP_SHIFT ) \
+    | ( L2C_310_RAM_2_CYCLE_LAT_VAL << L2C_310_RAM_READ_SHIFT ) \
+    | ( L2C_310_RAM_2_CYCLE_LAT_VAL << L2C_310_RAM_WRITE_SHIFT ) )
   /** @brief Latency for data RAM */
   uint32_t data_ram_ctrl;
 /** @brief Latency for data RAM */
-#define CACHE_L2C_310_L2CC_DATA_RAM_DEFAULT_MASK \
-  ( ( CACHE_L2C_310_L2CC_RAM_2_CYCLE_LAT_VAL << CACHE_L2C_310_L2CC_RAM_SETUP_SHIFT ) \
-    | ( CACHE_L2C_310_L2CC_RAM_3_CYCLE_LAT_VAL << CACHE_L2C_310_L2CC_RAM_READ_SHIFT ) \
-    | ( CACHE_L2C_310_L2CC_RAM_2_CYCLE_LAT_VAL << CACHE_L2C_310_L2CC_RAM_WRITE_SHIFT ) )
+#define L2C_310_DATA_RAM_DEFAULT_MASK \
+  ( ( L2C_310_RAM_2_CYCLE_LAT_VAL << L2C_310_RAM_SETUP_SHIFT ) \
+    | ( L2C_310_RAM_3_CYCLE_LAT_VAL << L2C_310_RAM_READ_SHIFT ) \
+    | ( L2C_310_RAM_2_CYCLE_LAT_VAL << L2C_310_RAM_WRITE_SHIFT ) )
 
   uint8_t reserved_110[0x200 - 0x110];
 
@@ -299,31 +303,31 @@ typedef struct {
  */
 
 /** @brief DECERR from L3 */
-#define CACHE_L2C_310_L2CC_INT_DECERR_MASK 0x00000100
+#define L2C_310_INT_DECERR_MASK 0x00000100
 
 /** @brief SLVERR from L3 */
-#define CACHE_L2C_310_L2CC_INT_SLVERR_MASK 0x00000080
+#define L2C_310_INT_SLVERR_MASK 0x00000080
 
 /** @brief Error on L2 data RAM (Read) */
-#define CACHE_L2C_310_L2CC_INT_ERRRD_MASK 0x00000040
+#define L2C_310_INT_ERRRD_MASK 0x00000040
 
 /** @brief Error on L2 tag RAM (Read) */
-#define CACHE_L2C_310_L2CC_INT_ERRRT_MASK 0x00000020
+#define L2C_310_INT_ERRRT_MASK 0x00000020
 
 /** @brief Error on L2 data RAM (Write) */
-#define CACHE_L2C_310_L2CC_INT_ERRWD_MASK 0x00000010
+#define L2C_310_INT_ERRWD_MASK 0x00000010
 
 /** @brief Error on L2 tag RAM (Write) */
-#define CACHE_L2C_310_L2CC_INT_ERRWT_MASK 0x00000008
+#define L2C_310_INT_ERRWT_MASK 0x00000008
 
 /** @brief Parity Error on L2 data RAM (Read) */
-#define CACHE_L2C_310_L2CC_INT_PARRD_MASK 0x00000004
+#define L2C_310_INT_PARRD_MASK 0x00000004
 
 /** @brief Parity Error on L2 tag RAM (Read) */
-#define CACHE_L2C_310_L2CC_INT_PARRT_MASK 0x00000002
+#define L2C_310_INT_PARRT_MASK 0x00000002
 
 /** @brief Event Counter1/0 Overflow Increment */
-#define CACHE_L2C_310_L2CC_INT_ECNTR_MASK 0x00000001
+#define L2C_310_INT_ECNTR_MASK 0x00000001
 
 /** @} */
 
@@ -430,10 +434,10 @@ typedef struct {
   uint32_t addr_filtering_end;
 
 /** @brief Address filtering valid bits*/
-#define CACHE_L2C_310_L2CC_ADDR_FILTER_VALID_MASK 0xFFF00000
+#define L2C_310_ADDR_FILTER_VALID_MASK 0xFFF00000
 
 /** @brief Address filtering enable bit*/
-#define CACHE_L2C_310_L2CC_ADDR_FILTER_ENABLE_MASK 0x00000001
+#define L2C_310_ADDR_FILTER_ENABLE_MASK 0x00000001
 
   uint8_t reserved_c08[0xf40 - 0xc08];
 
@@ -441,28 +445,28 @@ typedef struct {
   uint32_t debug_ctrl;
 
 /** @brief Debug SPIDEN bit */
-#define CACHE_L2C_310_L2CC_DEBUG_SPIDEN_MASK 0x00000004
+#define L2C_310_DEBUG_SPIDEN_MASK 0x00000004
 
 /** @brief Debug DWB bit, forces write through */
-#define CACHE_L2C_310_L2CC_DEBUG_DWB_MASK 0x00000002
+#define L2C_310_DEBUG_DWB_MASK 0x00000002
 
 /** @brief Debug DCL bit, disables cache line fill */
-#define CACHE_L2C_310_L2CC_DEBUG_DCL_MASK 0x00000002
+#define L2C_310_DEBUG_DCL_MASK 0x00000002
 
   uint8_t reserved_f44[0xf60 - 0xf44];
 
   /** @brief Purpose prefetch enables */
   uint32_t prefetch_ctrl;
 /** @brief Prefetch offset */
-#define CACHE_L2C_310_L2CC_PREFETCH_OFFSET_MASK 0x0000001F
+#define L2C_310_PREFETCH_OFFSET_MASK 0x0000001F
   uint8_t reserved_f64[0xf80 - 0xf64];
 
   /** @brief Purpose power controls */
   uint32_t power_ctrl;
 } L2CC;
 
-rtems_interrupt_lock l2c_310_cache_lock = RTEMS_INTERRUPT_LOCK_INITIALIZER(
-  "cache"
+rtems_interrupt_lock l2c_310_lock = RTEMS_INTERRUPT_LOCK_INITIALIZER(
+  "L2-310 cache controller"
 );
 
 /* Errata table for the LC2 310 Level 2 cache from ARM.
@@ -474,523 +478,358 @@ rtems_interrupt_lock l2c_310_cache_lock = RTEMS_INTERRUPT_LOCK_INITIALIZER(
 * - Software Developer Errata Notice
 * - ARM CoreLink Level 2 Cache Controller (L2C-310 or PL310),
 *   r3 releases Software Developers Errata Notice"
-* The corresponding link is:
-* http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0360f/BABJFIBA.html
 * Please see this document for more information on these erratas */
-static bool l2c_310_cache_errata_is_applicable_753970(
-  void
+#if BSP_ARM_L2C_310_RTL_RELEASE == L2C_310_RTL_RELEASE_R3_P0
+#define L2C_310_ERRATA_IS_APPLICABLE_753970
+#endif
+
+static bool l2c_310_errata_is_applicable_727913(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          =
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   =
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R3_P2:
+    case L2C_310_RTL_RELEASE_R3_P1:
+    case L2C_310_RTL_RELEASE_R2_P0:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
+      break;
+    case L2C_310_RTL_RELEASE_R3_P0:
       is_applicable = true;
-    break;
+      break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
+      assert( 0 );
       break;
   }
 
   return is_applicable;
 }
 
-static bool l2c_310_cache_errata_is_applicable_727913(
-  void
+static bool l2c_310_errata_is_applicable_727914(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R3_P2:
+    case L2C_310_RTL_RELEASE_R3_P1:
+    case L2C_310_RTL_RELEASE_R2_P0:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
+      break;
+    case L2C_310_RTL_RELEASE_R3_P0:
       is_applicable = true;
-    break;
+      break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
+      assert( 0 );
+      break;
   }
-  
+
   return is_applicable;
 }
 
-static bool l2c_310_cache_errata_is_applicable_727914(
-  void
+static bool l2c_310_errata_is_applicable_727915(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R3_P2:
+    case L2C_310_RTL_RELEASE_R3_P1:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
+      break;
+    case L2C_310_RTL_RELEASE_R3_P0:
+    case L2C_310_RTL_RELEASE_R2_P0:
       is_applicable = true;
-    break;
+      break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
+      assert( 0 );
+      break;
   }
-  
+
   return is_applicable;
 }
 
-static bool l2c_310_cache_errata_is_applicable_727915(
-  void
+static bool l2c_310_errata_is_applicable_729806(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R3_P2:
+    case L2C_310_RTL_RELEASE_R2_P0:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
+      break;
+    case L2C_310_RTL_RELEASE_R3_P1:
+    case L2C_310_RTL_RELEASE_R3_P0:
       is_applicable = true;
-    break;
+      break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
+      assert( 0 );
+      break;
   }
-  
+
   return is_applicable;
 }
 
-static bool l2c_310_cache_errata_is_applicable_729806(
-  void
+static bool l2c_310_errata_is_applicable_729815(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
+      break;
+    case L2C_310_RTL_RELEASE_R3_P2:
+    case L2C_310_RTL_RELEASE_R3_P1:
+    case L2C_310_RTL_RELEASE_R3_P0:
+    case L2C_310_RTL_RELEASE_R2_P0:
       is_applicable = true;
-    break;
+      break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
+      assert( 0 );
+      break;
   }
-  
+
   return is_applicable;
 }
 
-static bool l2c_310_cache_errata_is_applicable_729815(
-  void
+static bool l2c_310_errata_is_applicable_742884(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R3_P2:
+    case L2C_310_RTL_RELEASE_R3_P0:
+    case L2C_310_RTL_RELEASE_R2_P0:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
+      break;
+    case L2C_310_RTL_RELEASE_R3_P1:
       is_applicable = true;
-    break;
+      break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
+      assert( 0 );
+      break;
   }
-  
+
   return is_applicable;
 }
 
-static bool l2c_310_cache_errata_is_applicable_742884(
-  void
+static bool l2c_310_errata_is_applicable_752271(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R3_P2:
+    case L2C_310_RTL_RELEASE_R2_P0:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
+      break;
+    case L2C_310_RTL_RELEASE_R3_P1:
+    case L2C_310_RTL_RELEASE_R3_P0:
       is_applicable = true;
-    break;
+      break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
+      assert( 0 );
+      break;
   }
-  
+
   return is_applicable;
 }
 
-static bool l2c_310_cache_errata_is_applicable_752271(
-  void
+static bool l2c_310_errata_is_applicable_765569(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
-      is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R3_P2:
+    case L2C_310_RTL_RELEASE_R3_P1:
+    case L2C_310_RTL_RELEASE_R3_P0:
+    case L2C_310_RTL_RELEASE_R2_P0:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = true;
-    break;
+      break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
+      assert( 0 );
+      break;
   }
-  
+
   return is_applicable;
 }
 
-static bool l2c_310_cache_errata_is_applicable_765569(
-  void
+static bool l2c_310_errata_is_applicable_769419(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R3_P2:
+      is_applicable = false;
+      break;
+    case L2C_310_RTL_RELEASE_R3_P1:
+    case L2C_310_RTL_RELEASE_R3_P0:
+    case L2C_310_RTL_RELEASE_R2_P0:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = true;
-    break;
+      break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
+      assert( 0 );
+      break;
   }
-  
+
   return is_applicable;
 }
 
-static bool l2c_310_cache_errata_is_applicable_769419(
-  void
-)
-{
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-      is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
-      is_applicable = true;
-    break;
-    default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
-  }
-  
-  return is_applicable;
-}
-
-static bool l2c_310_cache_errata_is_applicable_588369(
-  void
-)
-{
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-      is_applicable = false;
-    break;
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
-      is_applicable = true;
-    break;
-    default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
-  }
-  
-  return is_applicable;
-}
+#if BSP_ARM_L2C_310_RTL_RELEASE == L2C_310_RTL_RELEASE_R0_P0 \
+   || BSP_ARM_L2C_310_RTL_RELEASE == L2C_310_RTL_RELEASE_R1_P0
+#define L2C_310_ERRATA_IS_APPLICABLE_588369
+#endif
 
 #ifdef CACHE_ERRATA_CHECKS_FOR_IMPLEMENTED_ERRATAS
-static bool l2c_310_cache_errata_is_applicable_754670(
-  void
+static bool l2c_310_errata_is_applicable_754670(
+  uint32_t rtl_release
 )
 {
-  volatile L2CC                  *l2cc          = 
-    (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  const cache_l2c_310_rtl_release RTL_RELEASE   = 
-    l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-  bool                            is_applicable = false;
-  
-  switch( RTL_RELEASE ) {
-    case CACHE_L2C_310_RTL_RELEASE_R3_P3:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P2:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P1:
-    case CACHE_L2C_310_RTL_RELEASE_R3_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R2_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R1_P0:
-    case CACHE_L2C_310_RTL_RELEASE_R0_P0:
+  bool is_applicable = false;
+
+  switch ( rtl_release ) {
+    case L2C_310_RTL_RELEASE_R3_P3:
+    case L2C_310_RTL_RELEASE_R3_P2:
+    case L2C_310_RTL_RELEASE_R3_P1:
+    case L2C_310_RTL_RELEASE_R3_P0:
+    case L2C_310_RTL_RELEASE_R2_P0:
+    case L2C_310_RTL_RELEASE_R1_P0:
+    case L2C_310_RTL_RELEASE_R0_P0:
       is_applicable = true;
     break;
     default:
-       assert(   RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-              || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-     break;
+      assert( 0 );
+      break;
   }
-  
+
   return is_applicable;
 }
 #endif /* CACHE_ERRATA_CHECKS_FOR_IMPLEMENTED_ERRATAS */
 
-/* The common workaround for this erratum would be to add a 
+/* The common workaround for this erratum would be to add a
  * data synchronization barrier to the beginning of the abort handler.
- * But for RTEMS a call of the abort handler means a fatal condition anyway. 
+ * But for RTEMS a call of the abort handler means a fatal condition anyway.
  * So there is no need to handle this erratum */
 #define CACHE_ARM_ERRATA_775420_HANDLER()                   \
   if( arm_errata_is_applicable_processor_errata_775420 ) {  \
   }                                                         \
 
-static void l2c_310_cache_check_errata( void )
+static void l2c_310_check_errata( uint32_t rtl_release )
 {
   /* This erratum gets handled within the sources */
-  /* Unhandled erratum present: 588369 Errata 588369 says that clean + inv may 
+  /* Unhandled erratum present: 588369 Errata 588369 says that clean + inv may
    * keep the cache line if it was clean. See ARMs documentation on the erratum
    * for a workaround */
-  /* assert( ! l2c_310_cache_errata_is_applicable_588369() ); */
+  /* assert( ! l2c_310_errata_is_applicable_588369( rtl_release ) ); */
 
-  /* Unhandled erratum present: 727913 Prefetch dropping feature can cause 
-   * incorrect behavior when PL310 handles reads that cross cache line 
+  /* Unhandled erratum present: 727913 Prefetch dropping feature can cause
+   * incorrect behavior when PL310 handles reads that cross cache line
    * boundary */
-  assert( ! l2c_310_cache_errata_is_applicable_727913() );
+  assert( ! l2c_310_errata_is_applicable_727913( rtl_release ) );
 
-  /* Unhandled erratum present: 727914 Double linefill feature can cause 
+  /* Unhandled erratum present: 727914 Double linefill feature can cause
    * deadlock */
-  assert( ! l2c_310_cache_errata_is_applicable_727914() );
-  
-  /* Unhandled erratum present: 727915 Background Clean and Invalidate by Way 
+  assert( ! l2c_310_errata_is_applicable_727914( rtl_release ) );
+
+  /* Unhandled erratum present: 727915 Background Clean and Invalidate by Way
    * operation can cause data corruption */
-  assert( ! l2c_310_cache_errata_is_applicable_727915() );
+  assert( ! l2c_310_errata_is_applicable_727915( rtl_release ) );
 
-  /* Unhandled erratum present: 729806 Speculative reads from the Cortex-A9 
+  /* Unhandled erratum present: 729806 Speculative reads from the Cortex-A9
    * MPCore processor can cause deadlock */
-  assert( ! l2c_310_cache_errata_is_applicable_729806() );
+  assert( ! l2c_310_errata_is_applicable_729806( rtl_release ) );
 
-  if( l2c_310_cache_errata_is_applicable_729815() )
+  if( l2c_310_errata_is_applicable_729815( rtl_release ) )
   {
-    volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
+    volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
 
-    assert( 0 == ( l2cc->aux_ctrl & CACHE_L2C_310_L2CC_AUX_HPSODRE_MASK ) );
+    assert( 0 == ( l2cc->aux_ctrl & L2C_310_AUX_HPSODRE_MASK ) );
 
-    /* Erratum: 729815 The “High Priority for SO and Dev reads” feature can 
+    /* Erratum: 729815 The “High Priority for SO and Dev reads” feature can
      * cause Quality of Service issues to cacheable read transactions*/
 
     /* Conditions
        This problem occurs when the following conditions are met:
-       1. Bit[10] “High Priority for SO and Dev reads enable” of the PL310 
+       1. Bit[10] “High Priority for SO and Dev reads enable” of the PL310
           Auxiliary Control Register is set to 1.
        2. PL310 receives a cacheable read that misses in the L2 cache.
-       3. PL310 receives a continuous flow of Strongly Ordered or Device 
+       3. PL310 receives a continuous flow of Strongly Ordered or Device
           reads that take all address slots in the master interface.
        Workaround
-       A workaround is only necessary in systems that are able to issue a 
-       continuous flow of Strongly Ordered or Device reads. In such a case, 
-       the workaround is to disable the “High Priority for SO and Dev reads” 
+       A workaround is only necessary in systems that are able to issue a
+       continuous flow of Strongly Ordered or Device reads. In such a case,
+       the workaround is to disable the “High Priority for SO and Dev reads”
        feature. This is the default behavior.*/
   }
-  
-  /* Unhandled erratum present: 742884 Double linefill feature might introduce 
+
+  /* Unhandled erratum present: 742884 Double linefill feature might introduce
    * circular dependency and deadlock */
-  assert( ! l2c_310_cache_errata_is_applicable_742884() );
+  assert( ! l2c_310_errata_is_applicable_742884( rtl_release ) );
 
-  /* Unhandled erratum present: 752271 Double linefill feature can cause data 
+  /* Unhandled erratum present: 752271 Double linefill feature can cause data
    * corruption */
-  assert( ! l2c_310_cache_errata_is_applicable_752271() );
+  assert( ! l2c_310_errata_is_applicable_752271( rtl_release ) );
 
-  /* This erratum can not be worked around: 754670 A continuous write flow can 
+  /* This erratum can not be worked around: 754670 A continuous write flow can
    * stall a read targeting the same memory area
    * But this erratum does not lead to any data corruption */
-  /* assert( ! l2c_310_cache_errata_is_applicable_754670() ); */
+  /* assert( ! l2c_310_errata_is_applicable_754670() ); */
 
-  if( l2c_310_cache_errata_is_applicable_765569() )
+  if( l2c_310_errata_is_applicable_765569( rtl_release ) )
   {
-    volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
+    volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
 
-    assert( !( ( l2cc->aux_ctrl & CACHE_L2C_310_L2CC_AUX_IPFE_MASK
-                 || l2cc->aux_ctrl & CACHE_L2C_310_L2CC_AUX_DPFE_MASK )
-               && ( ( l2cc->prefetch_ctrl & CACHE_L2C_310_L2CC_PREFETCH_OFFSET_MASK )
+    assert( !( ( l2cc->aux_ctrl & L2C_310_AUX_IPFE_MASK
+                 || l2cc->aux_ctrl & L2C_310_AUX_DPFE_MASK )
+               && ( ( l2cc->prefetch_ctrl & L2C_310_PREFETCH_OFFSET_MASK )
                     == 23 ) ) );
 
-    /* Unhandled erratum present: 765569 Prefetcher can cross 4KB boundary if 
+    /* Unhandled erratum present: 765569 Prefetcher can cross 4KB boundary if
      * offset is programmed with value 23 */
 
     /* Conditions
        This problem occurs when the following conditions are met:
-       1. One of the Prefetch Enable bits (bits [29:28] of the Auxiliary or 
+       1. One of the Prefetch Enable bits (bits [29:28] of the Auxiliary or
           Prefetch Control Register) is set HIGH.
        2. The prefetch offset bits are programmed with value 23 (5'b10111).
        Workaround
@@ -998,198 +837,204 @@ static void l2c_310_cache_check_errata( void )
        value except 23.*/
   }
 
-  /* Unhandled erratum present: 769419 No automatic Store Buffer drain, 
+  /* Unhandled erratum present: 769419 No automatic Store Buffer drain,
    * visibility of written data requires an explicit Cache */
-  assert( ! l2c_310_cache_errata_is_applicable_769419() );
+  assert( ! l2c_310_errata_is_applicable_769419( rtl_release ) );
 }
 
 static inline void
-cache_l2c_310_sync( void )
+l2c_310_sync( volatile L2CC *l2cc )
 {
-  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
-
-  if( l2c_310_cache_errata_is_applicable_753970() ) {
-    l2cc->dummy_cache_sync_reg = 0;
-  } else {
-    l2cc->cache_sync           = 0;
-  }
+#ifdef L2C_310_ERRATA_IS_APPLICABLE_753970
+  l2cc->dummy_cache_sync_reg = 0;
+#else
+  l2cc->cache_sync = 0;
+#endif
 }
 
 static inline void
-cache_l2c_310_flush_1_line(
-  const void *d_addr,
-  const bool  is_errata_588369applicable
-)
+l2c_310_flush_1_line( volatile L2CC *l2cc, uint32_t d_addr )
 {
-  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
-
-  if( is_errata_588369applicable ) {
-    /*
-    * Errata 588369 says that clean + inv may keep the
-    * cache line if it was clean, the recommended
-    * workaround is to clean then invalidate the cache
-    * line, with write-back and cache linefill disabled.
-    */
-    l2cc->clean_pa     = (uint32_t) d_addr;
-    cache_l2c_310_sync();
-    l2cc->inv_pa       = (uint32_t) d_addr;
-  } else {
-    l2cc->clean_inv_pa = (uint32_t) d_addr;
-  }
+#ifdef L2C_310_ERRATA_IS_APPLICABLE_588369
+  /*
+  * Errata 588369 says that clean + inv may keep the
+  * cache line if it was clean, the recommended
+  * workaround is to clean then invalidate the cache
+  * line, with write-back and cache linefill disabled.
+  */
+  l2cc->clean_pa     = d_addr;
+  l2c_310_sync( l2cc );
+  l2cc->inv_pa       = d_addr;
+#else
+  l2cc->clean_inv_pa = d_addr;
+#endif
 }
 
 static inline void
-cache_l2c_310_flush_range( const void* d_addr, const size_t n_bytes )
+l2c_310_flush_range( const void* d_addr, const size_t n_bytes )
 {
-  rtems_interrupt_lock_context lock_context;
   /* Back starting address up to start of a line and invalidate until ADDR_LAST */
   uint32_t       adx               = (uint32_t)d_addr
-    & ~CACHE_L2C_310_DATA_LINE_MASK;
+    & ~L2C_310_DATA_LINE_MASK;
   const uint32_t ADDR_LAST         =
     (uint32_t)( (size_t)d_addr + n_bytes - 1 );
   uint32_t       block_end         =
-    CACHE_MIN( ADDR_LAST, adx + CACHE_MAX_LOCKING_BYTES );
-  bool is_errata_588369_applicable =
-    l2c_310_cache_errata_is_applicable_588369();
-
-  rtems_interrupt_lock_acquire( &l2c_310_cache_lock, &lock_context );
+    L2C_310_MIN( ADDR_LAST, adx + L2C_310_MAX_LOCKING_BYTES );
+  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
 
   for (;
        adx      <= ADDR_LAST;
        adx       = block_end + 1,
-       block_end = CACHE_MIN( ADDR_LAST, adx + CACHE_MAX_LOCKING_BYTES )) {
+       block_end = L2C_310_MIN( ADDR_LAST, adx + L2C_310_MAX_LOCKING_BYTES )) {
+    rtems_interrupt_lock_context lock_context;
+
+    rtems_interrupt_lock_acquire( &l2c_310_lock, &lock_context );
+
     for (; adx <= block_end; adx += CPU_DATA_CACHE_ALIGNMENT ) {
-      cache_l2c_310_flush_1_line( (void*)adx, is_errata_588369_applicable );
+      l2c_310_flush_1_line( l2cc, adx );
     }
-    if( block_end < ADDR_LAST ) {
-      rtems_interrupt_lock_release( &l2c_310_cache_lock, &lock_context );
-      rtems_interrupt_lock_acquire( &l2c_310_cache_lock, &lock_context );
-    }
+
+    l2c_310_sync( l2cc );
+
+    rtems_interrupt_lock_release( &l2c_310_lock, &lock_context );
   }
-  cache_l2c_310_sync();
-  rtems_interrupt_lock_release( &l2c_310_cache_lock, &lock_context );
 }
 
 static inline void
-cache_l2c_310_flush_entire( void )
+l2c_310_flush_entire( void )
 {
-  volatile L2CC               *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
+  volatile L2CC               *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
   rtems_interrupt_lock_context lock_context;
 
   /* Only flush if level 2 cache is active */
-  if( ( l2cc->ctrl & CACHE_L2C_310_L2CC_ENABLE_MASK ) != 0 ) {
+  if( ( l2cc->ctrl & L2C_310_CTRL_ENABLE ) != 0 ) {
 
     /* ensure ordering with previous memory accesses */
     _ARM_Data_memory_barrier();
 
-    rtems_interrupt_lock_acquire( &l2c_310_cache_lock, &lock_context );
-    l2cc->clean_inv_way = CACHE_l2C_310_WAY_MASK;
+    rtems_interrupt_lock_acquire( &l2c_310_lock, &lock_context );
+    l2cc->clean_inv_way = L2C_310_WAY_MASK;
 
-    while ( l2cc->clean_inv_way & CACHE_l2C_310_WAY_MASK ) {};
+    while ( l2cc->clean_inv_way & L2C_310_WAY_MASK ) {};
 
     /* Wait for the flush to complete */
-    cache_l2c_310_sync();
+    l2c_310_sync( l2cc );
 
-    rtems_interrupt_lock_release( &l2c_310_cache_lock, &lock_context );
+    rtems_interrupt_lock_release( &l2c_310_lock, &lock_context );
   }
 }
 
 static inline void
-cache_l2c_310_invalidate_1_line( const void *d_addr )
+l2c_310_invalidate_1_line( const void *d_addr )
 {
-  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
+  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
 
 
   l2cc->inv_pa = (uint32_t) d_addr;
-  cache_l2c_310_sync();
+  l2c_310_sync( l2cc );
 }
 
 static inline void
-cache_l2c_310_invalidate_range( uint32_t adx, const uint32_t ADDR_LAST )
+l2c_310_invalidate_range( const void* d_addr, const size_t n_bytes )
 {
-  volatile L2CC               *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  rtems_interrupt_lock_context lock_context;
+  /* Back starting address up to start of a line and invalidate until ADDR_LAST */
+  uint32_t       adx               = (uint32_t)d_addr
+    & ~L2C_310_DATA_LINE_MASK;
+  const uint32_t ADDR_LAST         =
+    (uint32_t)( (size_t)d_addr + n_bytes - 1 );
+  uint32_t       block_end         =
+    L2C_310_MIN( ADDR_LAST, adx + L2C_310_MAX_LOCKING_BYTES );
+  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
 
-  rtems_interrupt_lock_acquire( &l2c_310_cache_lock, &lock_context );
   for (;
-       adx <= ADDR_LAST;
-       adx += CPU_INSTRUCTION_CACHE_ALIGNMENT ) {
-    /* Invalidate L2 cache line */
-    l2cc->inv_pa = adx;
+       adx      <= ADDR_LAST;
+       adx       = block_end + 1,
+       block_end = L2C_310_MIN( ADDR_LAST, adx + L2C_310_MAX_LOCKING_BYTES )) {
+    rtems_interrupt_lock_context lock_context;
+
+    rtems_interrupt_lock_acquire( &l2c_310_lock, &lock_context );
+
+    for (; adx <= block_end; adx += CPU_DATA_CACHE_ALIGNMENT ) {
+      /* Invalidate L2 cache line */
+      l2cc->inv_pa = adx;
+    }
+
+    l2c_310_sync( l2cc );
+
+    rtems_interrupt_lock_release( &l2c_310_lock, &lock_context );
   }
-  cache_l2c_310_sync();
-  rtems_interrupt_lock_release( &l2c_310_cache_lock, &lock_context );
 }
 
+
 static inline void
-cache_l2c_310_invalidate_entire( void )
+l2c_310_invalidate_entire( void )
 {
-  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
+  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
 
   /* Invalidate the caches */
 
   /* ensure ordering with previous memory accesses */
   _ARM_Data_memory_barrier();
 
-  l2cc->inv_way = CACHE_l2C_310_WAY_MASK;
+  l2cc->inv_way = L2C_310_WAY_MASK;
 
-  while ( l2cc->inv_way & CACHE_l2C_310_WAY_MASK ) ;
+  while ( l2cc->inv_way & L2C_310_WAY_MASK ) ;
 
   /* Wait for the invalidate to complete */
-  cache_l2c_310_sync();
+  l2c_310_sync( l2cc );
 }
 
 static inline void
-cache_l2c_310_clean_and_invalidate_entire( void )
+l2c_310_clean_and_invalidate_entire( void )
 {
-  volatile L2CC               *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
+  volatile L2CC               *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
   rtems_interrupt_lock_context lock_context;
 
-  if( ( l2cc->ctrl & CACHE_L2C_310_L2CC_ENABLE_MASK ) != 0 ) {
+  if( ( l2cc->ctrl & L2C_310_CTRL_ENABLE ) != 0 ) {
     /* Invalidate the caches */
 
     /* ensure ordering with previous memory accesses */
     _ARM_Data_memory_barrier();
 
-    rtems_interrupt_lock_acquire( &l2c_310_cache_lock, &lock_context );
-    l2cc->clean_inv_way = CACHE_l2C_310_WAY_MASK;
+    rtems_interrupt_lock_acquire( &l2c_310_lock, &lock_context );
+    l2cc->clean_inv_way = L2C_310_WAY_MASK;
 
-    while ( l2cc->clean_inv_way & CACHE_l2C_310_WAY_MASK ) ;
+    while ( l2cc->clean_inv_way & L2C_310_WAY_MASK ) ;
 
     /* Wait for the invalidate to complete */
-    cache_l2c_310_sync();
+    l2c_310_sync( l2cc );
 
-    rtems_interrupt_lock_release( &l2c_310_cache_lock, &lock_context );
+    rtems_interrupt_lock_release( &l2c_310_lock, &lock_context );
   }
 }
 
 static inline void
-cache_l2c_310_freeze( void )
+l2c_310_freeze( void )
 {
   /* To be implemented as needed, if supported
    by hardware at all */
 }
 
 static inline void
-cache_l2c_310_unfreeze( void )
+l2c_310_unfreeze( void )
 {
   /* To be implemented as needed, if supported
    by hardware at all */
 }
 
 static inline size_t
-cache_l2c_310_get_cache_size( void )
+l2c_310_get_cache_size( void )
 {
   size_t         size       = 0;
-  volatile L2CC *l2cc       = (volatile L2CC *) BSP_ARM_L2CC_BASE;
+  volatile L2CC *l2cc       = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
   uint32_t       cache_type = l2cc->cache_type;
   uint32_t       way_size;
   uint32_t       num_ways;
-  
-  way_size = (cache_type & CACHE_L2C_310_L2CC_TYPE_SIZE_D_WAYS_MASK)
-    >> CACHE_L2C_310_L2CC_TYPE_SIZE_D_WAYS_SHIFT;
-  num_ways = (cache_type & CACHE_L2C_310_L2CC_TYPE_NUM_D_WAYS_MASK)
-    >> CACHE_L2C_310_L2CC_TYPE_NUM_D_WAYS_SHIFT;
+
+  way_size = (cache_type & L2C_310_TYPE_SIZE_D_WAYS_MASK)
+    >> L2C_310_TYPE_SIZE_D_WAYS_SHIFT;
+  num_ways = (cache_type & L2C_310_TYPE_NUM_D_WAYS_MASK)
+    >> L2C_310_TYPE_NUM_D_WAYS_SHIFT;
 
   assert( way_size <= 0x07 );
   assert( num_ways <= 0x01 );
@@ -1217,11 +1062,8 @@ cache_l2c_310_get_cache_size( void )
   return size;
 }
 
-static void cache_l2c_310_unlock( void )
+static void l2c_310_unlock( volatile L2CC *l2cc )
 {
-  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
-
-
   l2cc->d_lockdown_0 = 0;
   l2cc->i_lockdown_0 = 0;
   l2cc->d_lockdown_1 = 0;
@@ -1240,281 +1082,239 @@ static void cache_l2c_310_unlock( void )
   l2cc->i_lockdown_7 = 0;
 }
 
-static inline void
-cache_l2c_310_enable( void )
+static void l2c_310_wait_for_background_ops( volatile L2CC *l2cc )
 {
-  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
-  
+  while ( l2cc->inv_way & L2C_310_WAY_MASK ) ;
+
+  while ( l2cc->clean_way & L2C_310_WAY_MASK ) ;
+
+  while ( l2cc->clean_inv_way & L2C_310_WAY_MASK ) ;
+}
+
+/* We support only the L2C-310 revisions r3p2 and r3p3 cache controller */
+
+#if (BSP_ARM_L2C_310_ID & L2C_310_ID_PART_MASK) \
+  != L2C_310_ID_PART_L310
+#error "invalid L2-310 cache controller part number"
+#endif
+
+#if (BSP_ARM_L2C_310_RTL_RELEASE != L2C_310_RTL_RELEASE_R3_P2) \
+  && (BSP_ARM_L2C_310_RTL_RELEASE != L2C_310_RTL_RELEASE_R3_P3)
+#error "invalid L2-310 cache controller RTL revision"
+#endif
+
+static inline void
+l2c_310_enable( void )
+{
+  volatile L2CC *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
+  uint32_t cache_id = l2cc->cache_id;
+  uint32_t rtl_release = cache_id & L2C_310_ID_RTL_MASK;
+  uint32_t id_mask = L2C_310_ID_IMPL_MASK | L2C_310_ID_PART_MASK;
+  uint32_t ctrl;
+
+  /*
+   * Do we actually have an L2C-310 cache controller?  Has BSP_ARM_L2C_310_BASE
+   * been configured correctly?
+   */
+  if (
+    (BSP_ARM_L2C_310_ID & id_mask) != (cache_id & id_mask)
+      || rtl_release < BSP_ARM_L2C_310_RTL_RELEASE
+  ) {
+    bsp_fatal( ARM_FATAL_L2C_310_UNEXPECTED_ID );
+  }
+
+  l2c_310_check_errata( rtl_release );
+
+  ctrl = l2cc->ctrl;
+
+  if ( ( ctrl & L2C_310_CTRL_EXCL_CONFIG ) != 0 ) {
+    bsp_fatal( ARM_FATAL_L2C_310_EXCLUSIVE_CONFIG );
+  }
+
   /* Only enable if L2CC is currently disabled */
-  if( ( l2cc->ctrl & CACHE_L2C_310_L2CC_ENABLE_MASK ) == 0 ) {
-    uint32_t                     cache_id =
-      l2cc->cache_id & CACHE_L2C_310_L2CC_ID_PART_MASK;
-    int                          ways     = 0;
+  if( ( ctrl & L2C_310_CTRL_ENABLE ) == 0 ) {
+    uint32_t aux_ctrl;
+    int ways;
 
-    /* Do we actually have an L2C-310 cache controller?
-    * Has BSP_ARM_L2CC_BASE been configured correctly? */
-    switch ( cache_id ) {
-      case CACHE_L2C_310_L2CC_ID_PART_L310:
-      {
-        const cache_l2c_310_rtl_release RTL_RELEASE =
-          l2cc->cache_id & CACHE_L2C_310_L2CC_ID_RTL_MASK;
-        /* If this assertion fails, you have a release of the
-        * L2C-310 cache for which the l2c_310_cache_errata_is_applicable_ ...
-        * methods are not yet implemented. This means you will get incorrect
-        * errata handling */
-        assert(    RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P3
-                || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P2
-                || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P1
-                || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R3_P0
-                || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R2_P0
-                || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R1_P0
-                || RTL_RELEASE == CACHE_L2C_310_RTL_RELEASE_R0_P0 );
-        if ( l2cc->aux_ctrl & ( 1 << 16 ) ) {
-          ways = 16;
-        } else {
-          ways = 8;
-        }
+    /* Make sure that I&D is not locked down when starting */
+    l2c_310_unlock( l2cc );
 
-        assert( ways == CACHE_l2C_310_NUM_WAYS );
-      }
-      break;
-      case CACHE_L2C_310_L2CC_ID_PART_L210:
+    l2c_310_wait_for_background_ops( l2cc );
 
-        /* Invalid case */
+    aux_ctrl = l2cc->aux_ctrl;
 
-        /* Support for this type is not implemented in this driver.
-        * Either support needs to get added or a seperate driver needs to get
-        * implemented */
-        assert( cache_id != CACHE_L2C_310_L2CC_ID_PART_L210 );
-        break;
-      default:
-
-        /* Unknown case */
-        assert( cache_id == CACHE_L2C_310_L2CC_ID_PART_L310 );
-        break;
+    if ( (aux_ctrl & ( 1 << 16 )) != 0 ) {
+      ways = 16;
+    } else {
+      ways = 8;
     }
 
-    if ( ways > 0 ) {
-      uint32_t              aux;
-
-      /* Set up the way size */
-      aux  = l2cc->aux_ctrl;
-      aux &= CACHE_L2C_310_L2CC_AUX_REG_ZERO_MASK; /* Set way_size to 0 */
-      aux |= CACHE_L2C_310_L2CC_AUX_REG_DEFAULT_MASK;
-
-      /* Make sure that I&D is not locked down when starting */
-      cache_l2c_310_unlock();
-
-      /* Level 2 configuration and control registers must not get written while
-      * background operations are pending */
-      while ( l2cc->inv_way & CACHE_l2C_310_WAY_MASK ) ;
-
-      while ( l2cc->clean_way & CACHE_l2C_310_WAY_MASK ) ;
-
-      while ( l2cc->clean_inv_way & CACHE_l2C_310_WAY_MASK ) ;
-
-      l2cc->aux_ctrl = aux;
-
-      /* Set up the latencies */
-      l2cc->tag_ram_ctrl  = CACHE_L2C_310_L2CC_TAG_RAM_DEFAULT_LAT;
-      l2cc->data_ram_ctrl = CACHE_L2C_310_L2CC_DATA_RAM_DEFAULT_MASK;
-
-      cache_l2c_310_invalidate_entire();
-
-      /* Clear the pending interrupts */
-      l2cc->int_clr = l2cc->int_raw_status;
-
-      l2c_310_cache_check_errata();
-
-      /* Enable the L2CC */
-      l2cc->ctrl |= CACHE_L2C_310_L2CC_ENABLE_MASK;
+    if ( ways != L2C_310_NUM_WAYS ) {
+      bsp_fatal( ARM_FATAL_L2C_310_UNEXPECTED_NUM_WAYS );
     }
+
+    /* Set up the way size */
+    aux_ctrl &= L2C_310_AUX_REG_ZERO_MASK; /* Set way_size to 0 */
+    aux_ctrl |= L2C_310_AUX_REG_DEFAULT_MASK;
+
+    l2cc->aux_ctrl = aux_ctrl;
+
+    /* Set up the latencies */
+    l2cc->tag_ram_ctrl  = L2C_310_TAG_RAM_DEFAULT_LAT;
+    l2cc->data_ram_ctrl = L2C_310_DATA_RAM_DEFAULT_MASK;
+
+    l2c_310_invalidate_entire();
+
+    /* Clear the pending interrupts */
+    l2cc->int_clr = l2cc->int_raw_status;
+
+    /* Enable the L2CC */
+    l2cc->ctrl = ctrl | L2C_310_CTRL_ENABLE;
   }
 }
 
-static inline void 
-cache_l2c_310_disable( void )
+static inline void
+l2c_310_disable( void )
 {
-  volatile L2CC               *l2cc = (volatile L2CC *) BSP_ARM_L2CC_BASE;
+  volatile L2CC               *l2cc = (volatile L2CC *) BSP_ARM_L2C_310_BASE;
   rtems_interrupt_lock_context lock_context;
 
-  if ( l2cc->ctrl & CACHE_L2C_310_L2CC_ENABLE_MASK ) {
+  if ( l2cc->ctrl & L2C_310_CTRL_ENABLE ) {
     /* Clean and Invalidate L2 Cache */
-    cache_l2c_310_flush_entire();
-    rtems_interrupt_lock_acquire( &l2c_310_cache_lock, &lock_context );
+    l2c_310_flush_entire();
+    rtems_interrupt_lock_acquire( &l2c_310_lock, &lock_context );
 
-    /* Level 2 configuration and control registers must not get written while
-     * background operations are pending */
-    while ( l2cc->inv_way & CACHE_l2C_310_WAY_MASK ) ;
-
-    while ( l2cc->clean_way & CACHE_l2C_310_WAY_MASK ) ;
-
-    while ( l2cc->clean_inv_way & CACHE_l2C_310_WAY_MASK ) ;
+    l2c_310_wait_for_background_ops( l2cc );
 
     /* Disable the L2 cache */
-    l2cc->ctrl &= ~CACHE_L2C_310_L2CC_ENABLE_MASK;
-    rtems_interrupt_lock_release( &l2c_310_cache_lock, &lock_context );
+    l2cc->ctrl &= ~L2C_310_CTRL_ENABLE;
+    rtems_interrupt_lock_release( &l2c_310_lock, &lock_context );
   }
 }
 
-static inline void 
+static inline void
 _CPU_cache_enable_data( void )
 {
-  cache_l2c_310_enable();
+  l2c_310_enable();
 }
 
-static inline void 
+static inline void
 _CPU_cache_disable_data( void )
 {
   arm_cache_l1_disable_data();
-  cache_l2c_310_disable();
+  l2c_310_disable();
 }
 
-static inline void 
+static inline void
 _CPU_cache_enable_instruction( void )
 {
-  cache_l2c_310_enable();
+  l2c_310_enable();
 }
 
-static inline void 
+static inline void
 _CPU_cache_disable_instruction( void )
 {
   arm_cache_l1_disable_instruction();
-  cache_l2c_310_disable();
+  l2c_310_disable();
 }
 
-static inline void 
+static inline void
 _CPU_cache_flush_data_range(
   const void *d_addr,
   size_t      n_bytes
 )
 {
-  if ( n_bytes != 0 ) {
-    arm_cache_l1_flush_data_range( 
-      d_addr,
-      n_bytes
-    );
-    cache_l2c_310_flush_range(
-      d_addr,
-      n_bytes
-    );
-  }
+  arm_cache_l1_flush_data_range(
+    d_addr,
+    n_bytes
+  );
+  l2c_310_flush_range(
+    d_addr,
+    n_bytes
+  );
 }
 
-static inline void 
+static inline void
 _CPU_cache_flush_entire_data( void )
 {
   arm_cache_l1_flush_entire_data();
-  cache_l2c_310_flush_entire();
+  l2c_310_flush_entire();
 }
 
-static inline void 
-_CPU_cache_invalidate_data_range( 
+static inline void
+_CPU_cache_invalidate_data_range(
   const void *addr_first,
-  size_t     n_bytes 
+  size_t     n_bytes
 )
 {
-  if ( n_bytes > 0 ) {
-    /* Back starting address up to start of a line and invalidate until ADDR_LAST */
-    uint32_t       adx       = (uint32_t) addr_first
-      & ~CACHE_L2C_310_DATA_LINE_MASK;
-    const uint32_t ADDR_LAST =
-      (uint32_t)( (size_t)addr_first + n_bytes - 1 );
-    uint32_t       block_end =
-      CACHE_MIN( ADDR_LAST, adx + CACHE_MAX_LOCKING_BYTES );
-    
-    /* We have to apply a lock. Thus we will operate only CACHE_MAX_LOCKING_BYTES
-     * at a time */
-    for (;
-         adx      <= ADDR_LAST;
-         adx       = block_end + 1,
-         block_end = CACHE_MIN( ADDR_LAST, adx + CACHE_MAX_LOCKING_BYTES )) {
-      cache_l2c_310_invalidate_range(
-        adx,
-        block_end
-      );
-    }
-    arm_cache_l1_invalidate_data_range(
-      addr_first,
-      n_bytes
-    );
-
-    adx       = (uint32_t)addr_first & ~CACHE_L2C_310_DATA_LINE_MASK;
-    block_end = CACHE_MIN( ADDR_LAST, adx + CACHE_MAX_LOCKING_BYTES );
-    for (;
-         adx      <= ADDR_LAST;
-         adx       = block_end + 1,
-         block_end = CACHE_MIN( ADDR_LAST, adx + CACHE_MAX_LOCKING_BYTES )) {
-      cache_l2c_310_invalidate_range(
-        adx,
-        block_end
-      );
-    }
-    arm_cache_l1_invalidate_data_range(
-      addr_first,
-      n_bytes
-    );
-  }
+  l2c_310_invalidate_range(
+    addr_first,
+    n_bytes
+  );
+  arm_cache_l1_invalidate_data_range(
+    addr_first,
+    n_bytes
+  );
 }
 
-static inline void 
+static inline void
 _CPU_cache_invalidate_entire_data( void )
 {
   /* This is broadcast within the cluster */
   arm_cache_l1_flush_entire_data();
 
   /* forces the address out past level 2 */
-  cache_l2c_310_clean_and_invalidate_entire();
+  l2c_310_clean_and_invalidate_entire();
 
   /*This is broadcast within the cluster */
   arm_cache_l1_clean_and_invalidate_entire_data();
 }
 
-static inline void 
+static inline void
 _CPU_cache_freeze_data( void )
 {
   arm_cache_l1_freeze_data();
-  cache_l2c_310_freeze();
+  l2c_310_freeze();
 }
 
-static inline void 
+static inline void
 _CPU_cache_unfreeze_data( void )
 {
   arm_cache_l1_unfreeze_data();
-  cache_l2c_310_unfreeze();
+  l2c_310_unfreeze();
 }
 
-static inline void 
+static inline void
 _CPU_cache_invalidate_instruction_range( const void *i_addr, size_t n_bytes)
 {
   arm_cache_l1_invalidate_instruction_range( i_addr, n_bytes );
 }
 
-static inline void 
+static inline void
 _CPU_cache_invalidate_entire_instruction( void )
 {
   arm_cache_l1_invalidate_entire_instruction();
 }
 
-static inline void 
+static inline void
 _CPU_cache_freeze_instruction( void )
 {
   arm_cache_l1_freeze_instruction();
-  cache_l2c_310_freeze();
+  l2c_310_freeze();
 }
 
-static inline void 
+static inline void
 _CPU_cache_unfreeze_instruction( void )
 {
   arm_cache_l1_unfreeze_instruction();
-  cache_l2c_310_unfreeze();
+  l2c_310_unfreeze();
 }
 
 static inline size_t
 _CPU_cache_get_data_cache_size( const uint32_t level )
 {
   size_t size = 0;
-  
+
   switch( level )
   {
     case 1:
@@ -1522,7 +1322,7 @@ _CPU_cache_get_data_cache_size( const uint32_t level )
     break;
     case 0:
     case 2:
-      size = cache_l2c_310_get_cache_size();
+      size = l2c_310_get_cache_size();
     break;
     default:
       size = 0;
@@ -1535,7 +1335,7 @@ static inline size_t
 _CPU_cache_get_instruction_cache_size( const uint32_t level )
 {
   size_t size = 0;
-  
+
   switch( level )
   {
     case 1:
@@ -1543,7 +1343,7 @@ _CPU_cache_get_instruction_cache_size( const uint32_t level )
       break;
     case 0:
     case 2:
-      size = cache_l2c_310_get_cache_size();
+      size = l2c_310_get_cache_size();
       break;
     default:
       size = 0;

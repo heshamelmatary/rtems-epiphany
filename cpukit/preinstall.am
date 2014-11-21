@@ -51,17 +51,17 @@ $(PROJECT_INCLUDE)/sys/$(dirstamp):
 	@: > $(PROJECT_INCLUDE)/sys/$(dirstamp)
 PREINSTALL_DIRS += $(PROJECT_INCLUDE)/sys/$(dirstamp)
 
+$(PROJECT_INCLUDE)/crypt.h: include/crypt.h $(PROJECT_INCLUDE)/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/crypt.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/crypt.h
+
 $(PROJECT_INCLUDE)/memory.h: include/memory.h $(PROJECT_INCLUDE)/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/memory.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/memory.h
 
-$(PROJECT_INCLUDE)/md4.h: libmd/md4.h $(PROJECT_INCLUDE)/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/md4.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/md4.h
-
-$(PROJECT_INCLUDE)/md5.h: libmd/md5.h $(PROJECT_INCLUDE)/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/md5.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/md5.h
+$(PROJECT_INCLUDE)/sys/mman.h: posix/include/sys/mman.h $(PROJECT_INCLUDE)/sys/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/sys/mman.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/sys/mman.h
 
 $(PROJECT_INCLUDE)/sys/ioccom.h: libcsupport/include/sys/ioccom.h $(PROJECT_INCLUDE)/sys/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/sys/ioccom.h
@@ -102,6 +102,10 @@ PREINSTALL_FILES += $(PROJECT_INCLUDE)/sys/termios.h
 $(PROJECT_INCLUDE)/sys/utsname.h: libcsupport/include/sys/utsname.h $(PROJECT_INCLUDE)/sys/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/sys/utsname.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/sys/utsname.h
+
+$(PROJECT_INCLUDE)/sys/endian.h: include/sys/endian.h $(PROJECT_INCLUDE)/sys/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/sys/endian.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/sys/endian.h
 
 $(PROJECT_INCLUDE)/sys/uio.h: include/sys/uio.h $(PROJECT_INCLUDE)/sys/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/sys/uio.h

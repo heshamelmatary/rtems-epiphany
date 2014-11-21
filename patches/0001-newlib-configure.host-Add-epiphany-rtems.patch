@@ -1,0 +1,37 @@
+From 4d4f66a896f593eecbb0f2d965af04d65cba2eb6 Mon Sep 17 00:00:00 2001
+From: Joel Sherrill <joel.sherrill@oarcorp.com>
+Date: Mon, 17 Nov 2014 09:17:15 -0600
+Subject: [PATCH] configure.host: Add epiphany-*-rtems*
+
+2013-11-17  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* configure.host: Add epiphany-*-rtems*
+---
+ newlib/configure.host | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/newlib/configure.host b/newlib/configure.host
+index 447f1c1..4ad9b3b 100644
+--- a/newlib/configure.host
++++ b/newlib/configure.host
+@@ -414,7 +414,7 @@ case "${host}" in
+   d30v*)
+ 	sys_dir=
+ 	;;
+-  epiphany-*-*)
++  epiphany-*-elf*)
+ 	sys_dir=epiphany
+ 	# crt0 is provided by libgloss.
+ 	have_crt0="no"
+@@ -647,7 +647,7 @@ case "${host}" in
+ 	newlib_cflags="${newlib_cflags} -DABORT_MESSAGE -DSMALL_MEMORY -DMISSING_SYSCALL_NAMES"
+ 	syscall_dir=
+ 	;;
+-  epiphany*)
++  epiphany*-*-elf* | epiphany-*-rtems*)
+ 	syscall_dir=syscalls
+ 	newlib_cflags="${newlib_cflags} -DSIGNAL_PROVIDED"
+ 	;;
+-- 
+1.9.3
+

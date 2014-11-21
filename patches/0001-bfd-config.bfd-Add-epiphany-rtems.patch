@@ -1,0 +1,28 @@
+From 91a1ad23ab58623198297f80f91c005f007b61b7 Mon Sep 17 00:00:00 2001
+From: Joel Sherrill <joel.sherrill@oarcorp.com>
+Date: Thu, 13 Nov 2014 10:26:23 -0600
+Subject: [PATCH 1/2] bfd/config.bfd: Add epiphany-*-rtems*
+
+2014-11-13  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config.bfd: Add epiphany-*-rtems* target
+---
+ bfd/config.bfd | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/bfd/config.bfd b/bfd/config.bfd
+index 10820e2..e268570 100644
+--- a/bfd/config.bfd
++++ b/bfd/config.bfd
+@@ -413,7 +413,7 @@ case "${targ}" in
+     targ_defvec=bfd_elf32_d30v_vec
+     ;;
+ 
+-  epiphany-*-elf)
++  epiphany-*-elf | epiphany-*-rtems*)
+     targ_defvec=bfd_elf32_epiphany_vec
+     ;;
+ 
+-- 
+1.9.3
+

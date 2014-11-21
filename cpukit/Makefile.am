@@ -5,6 +5,8 @@ include $(top_srcdir)/automake/multilib.am
 
 # librtemscpu
 SUBDIRS = . score rtems sapi posix
+SUBDIRS += dev
+SUBDIRS += libcrypt
 SUBDIRS += libcsupport libblock libfs
 SUBDIRS += libnetworking librpc
 SUBDIRS += libi2c
@@ -45,10 +47,10 @@ include_utf8proc_HEADERS = libmisc/utf8proc/utf8proc.h
 include_sysdir = $(includedir)/sys
 include_sys_HEADERS =
 
+include_HEADERS += include/crypt.h
 include_HEADERS += include/memory.h
-include_HEADERS += libmd/md4.h
-include_HEADERS += libmd/md5.h
 
+include_sys_HEADERS += posix/include/sys/mman.h
 include_sys_HEADERS += libcsupport/include/sys/ioccom.h
 include_sys_HEADERS += libcsupport/include/sys/event.h
 include_sys_HEADERS += libcsupport/include/sys/filio.h
@@ -60,6 +62,7 @@ include_sys_HEADERS += libcsupport/include/sys/ttycom.h
 include_sys_HEADERS += libcsupport/include/sys/termios.h
 include_sys_HEADERS += libcsupport/include/sys/utsname.h
 
+include_sys_HEADERS += include/sys/endian.h
 include_sys_HEADERS += include/sys/uio.h
 include_sys_HEADERS += include/sys/_iovec.h
 include_sys_HEADERS += include/sys/priority.h

@@ -43,6 +43,9 @@ include_bsp_HEADERS += ../shared/include/arm-gic-irq.h
 include_bsp_HEADERS += ../shared/include/arm-gic-regs.h
 include_bsp_HEADERS += ../shared/include/arm-gic-tm27.h
 include_bsp_HEADERS += ../shared/include/arm-release-id.h
+include_bsp_HEADERS += include/cadence-i2c.h
+include_bsp_HEADERS += include/cadence-i2c-regs.h
+include_bsp_HEADERS += include/i2c.h
 include_bsp_HEADERS += include/irq.h
 include_bsp_HEADERS += include/zynq-uart.h
 include_bsp_HEADERS += include/zynq-uart-regs.h
@@ -91,6 +94,10 @@ libbsp_a_SOURCES += ../shared/arm-cp15-set-ttb-entries.c
 # Startup
 libbsp_a_SOURCES += startup/bspreset.c
 libbsp_a_SOURCES += startup/bspstart.c
+if HAS_SMP
+libbsp_a_SOURCES += ../shared/arm-a9mpcore-smp.c
+libbsp_a_SOURCES += startup/bspsmp.c
+endif
 
 # IRQ
 libbsp_a_SOURCES += ../../shared/src/irq-default-handler.c
@@ -114,17 +121,17 @@ libbsp_a_SOURCES += console/zynq-uart.c
 libbsp_a_SOURCES += ../../shared/clockdrv_shell.h
 libbsp_a_SOURCES += ../shared/arm-a9mpcore-clock-config.c
 
+# I2C
+libbsp_a_SOURCES += i2c/cadence-i2c.c
+
 # Cache
 libbsp_a_SOURCES += ../../../libcpu/shared/src/cache_manager.c
+libbsp_a_SOURCES += ../shared/include/arm-cache-l1.h
 libbsp_a_SOURCES += ../shared/arm-l2c-310/cache_.h
 libbsp_a_CPPFLAGS += -I$(srcdir)/../shared/arm-l2c-310
 
 # Start hooks
 libbsp_a_SOURCES += startup/bspstarthooks.c startup/bspstartmmu.c
-
-if HAS_SMP
-libbsp_a_SOURCES += ../shared/arm-a9mpcore-smp.c
-endif
 
 ###############################################################################
 #                  Special Rules                                              #

@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2013 embedded brains GmbH.  All rights reserved.
+ * Copyright (c) 2013-2014 embedded brains GmbH.  All rights reserved.
  *
  *  embedded brains GmbH
  *  Dornierstr. 4
@@ -55,7 +55,9 @@ extern "C" {
 
 #define BSP_ARM_GIC_DIST_BASE 0xf8f01000
 
-#define BSP_ARM_L2CC_BASE 0xF8F02000U
+#define BSP_ARM_L2C_310_BASE 0xf8f02000
+
+#define BSP_ARM_L2C_310_ID 0x410000c8
 
 /**
  * @brief Zynq specific set up of the MMU.
@@ -66,6 +68,8 @@ extern "C" {
  * PL rather than just open the whole of the GP[01] address space up.
  */
 BSP_START_TEXT_SECTION void zynq_setup_mmu_and_cache(void);
+
+uint32_t zynq_clock_cpu_1x(void);
 
 /** @} */
 

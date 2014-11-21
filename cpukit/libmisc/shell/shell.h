@@ -17,6 +17,8 @@
 #ifndef __RTEMS_SHELL_H__
 #define __RTEMS_SHELL_H__
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <rtems.h>
 #include <stdio.h>
 #include <termios.h>
@@ -82,6 +84,9 @@ struct rtems_shell_cmd_tt {
   rtems_shell_command_t  command;
   rtems_shell_cmd_t     *alias;
   rtems_shell_cmd_t     *next;
+  mode_t                 mode;
+  uid_t                  uid;
+  gid_t                  gid;
 };
 
 typedef struct {
@@ -199,6 +204,18 @@ typedef struct {
   bool output_append;
   rtems_id wake_on_end;
   rtems_shell_login_check_t login_check;
+
+  /**
+   * @brief The real and effective UID of the shell task in case no login check
+   * is present.
+   */
+  uid_t uid;
+
+  /**
+   * @brief The real and effective GID of the shell task in case no login check
+   * is present.
+   */
+  gid_t gid;
 } rtems_shell_env_t;
 
 bool rtems_shell_main_loop(

@@ -58,6 +58,7 @@ BASE_FS_C_FILES = src/base_fs.c src/mount.c src/unmount.c src/libio.c \
     src/libio_helper_null.c \
     src/libio_exit.c \
     src/open_dev_console.c src/__usrenv.c src/rtems_mkdir.c
+BASE_FS_C_FILES += src/uenvgetgroups.c
 
 TERMIOS_C_FILES = src/cfgetispeed.c src/cfgetospeed.c src/cfsetispeed.c \
     src/cfsetospeed.c src/tcgetattr.c src/tcsetattr.c src/tcdrain.c \
@@ -108,7 +109,10 @@ MALLOC_C_FILES = src/malloc_initialize.c src/calloc.c src/malloc.c \
     src/rtems_heap_extend.c \
     src/rtems_heap_greedy.c
 
-PASSWORD_GROUP_C_FILES = src/getpwent.c
+PASSWORD_GROUP_C_FILES = src/pwdgrp.c
+PASSWORD_GROUP_C_FILES += src/getgrent.c
+PASSWORD_GROUP_C_FILES += src/getgrnam.c
+PASSWORD_GROUP_C_FILES += src/getpwent.c
 
 TERMINAL_IDENTIFICATION_C_FILES = src/ctermid.c
 ## 20 Nov 2008: Now using these from newlib's posix directory

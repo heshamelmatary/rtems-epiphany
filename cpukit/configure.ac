@@ -391,6 +391,7 @@ RTEMS_AMPOLISH3
 AC_CONFIG_FILES([
 Doxyfile
 Makefile
+dev/Makefile
 rtems/Makefile
 sapi/Makefile
 score/Makefile
@@ -420,6 +421,7 @@ libblock/Makefile
 libfs/Makefile
 libfs/src/nfsclient/Makefile
 libgnat/Makefile
+libcrypt/Makefile
 libcsupport/Makefile
 libnetworking/Makefile
 librpc/Makefile

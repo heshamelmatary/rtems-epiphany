@@ -52,6 +52,10 @@ rtems_rtl_alloc_new (rtems_rtl_alloc_tag_t tag, size_t size, bool zero)
   rtems_rtl_data_t* rtl = rtems_rtl_lock ();
   void*             address = NULL;
 
+  /*
+   * Obtain memory from the allocator. The address field is set by the
+   * allocator.
+   */
   if (rtl)
     rtl->allocator.allocator (true, tag, &address, size);
 
@@ -61,7 +65,10 @@ rtems_rtl_alloc_new (rtems_rtl_alloc_tag_t tag, size_t size, bool zero)
     printf ("rtl: alloc: new: %s addr=%p size=%zu\n",
             rtems_rtl_trace_tag_label (tag), address, size);
 
-  if (zero)
+  /*
+   * Only zero the memory if asked to and the allocation was successful.
+   */
+  if (address && zero)
     memset (address, 0, size);
 
   return address;

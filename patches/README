@@ -1,0 +1,2 @@
+Patches in this directory are related to RTEMS tools like gcc, binutils, newlib
+but not to RTEMS source code.

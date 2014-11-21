@@ -25,9 +25,11 @@ extern rtems_shell_topic_t * rtems_shell_first_topic;
 
 rtems_shell_topic_t * rtems_shell_lookup_topic(const char *topic);
 
+bool rtems_shell_can_see_cmd(const rtems_shell_cmd_t *shell_cmd);
+
+int rtems_shell_execute_cmd(const char *cmd, int argc, char *argv[]);
 
 extern void rtems_shell_register_monitor_commands(void);
-extern void rtems_shell_initialize_command_set(void);
 
 extern void rtems_shell_print_heap_info(
   const char       *c,
