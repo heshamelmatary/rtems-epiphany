@@ -64,8 +64,12 @@ libbsp_a_SOURCES += ../../shared/gnatinstallhandler.c
 libbsp_a_SOURCES += ../../shared/sbrk.c
 libbsp_a_SOURCES += ../../shared/src/stackalloc.c
 
+# clock
+libbsp_a_SOURCES += ../../shared/clock_driver_simidle.c
+
 # console
 libbsp_a_SOURCES += ../../shared/console-polled.c
+
 # debugio
 libbsp_a_SOURCES += console/console-io.c
 # ###############################################################################
