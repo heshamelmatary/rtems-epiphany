@@ -38,7 +38,8 @@
   .extern  bsp_vector_table_size
   .extern  bsp_section_stack_begin
   
-	.global _external_start
+  .global .normal_start;
+	.global _external_start;
 	.type   _external_start, %function
 	
 .section .vector, "ax";
@@ -77,9 +78,8 @@ _start:
 
 .size  _start, .-_start
 
-.section .text, "ax";
+.section .start,"ax"     ;;
 
-.global .normal_start;
 .balign 4
 .type   .normal_start, %function
 .normal_start:
@@ -99,16 +99,16 @@ _external_start:
 	mov	fp,sp
 
 	;; Zero the data space
-	mov	r0,%low(bsp_section_bss_begin)
-	movt	r0,%high(bsp_section_bss_begin)
-	mov	r1,%low(bsp_section_bss_end)
-	movt	r1,%high(bsp_section_bss_end)
+	mov	r1,%low(bsp_section_bss_begin)
+	movt	r1,%high(bsp_section_bss_begin)
+	mov	r0,%low(bsp_section_bss_end)
+	movt	r0,%high(bsp_section_bss_end)
 	mov	r2,#0
 	mov	r3,#0
 .L0_init_:
-	strd	r2,[r0],+#1
-	sub	r5,r1,r0
-	bne	.L0_init_
+	;;strd	r2,[r0],+#1
+	;;sub	r5,r1,r0
+	;;bne	.L0_init_
 
   ;; jumo to bootcard
 	mov	r0,#0

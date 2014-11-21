@@ -512,13 +512,13 @@ static inline uint32_t epiphany_interrupt_disable( void )
 
   asm volatile ("movfs %0, config \n" : "=r" (sr):);
   
-  asm volatile("gie \n"); 
+  asm volatile("gid \n"); 
   return sr;
 }
 
 static inline void epiphany_interrupt_enable(uint32_t level)
 {
-  asm volatile("gid \n"); 
+  asm volatile("gie \n"); 
   asm volatile ("movts config, %0 \n" ::"r" (level):);
 }
 

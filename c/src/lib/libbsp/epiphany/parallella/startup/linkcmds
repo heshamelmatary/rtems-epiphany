@@ -6,8 +6,7 @@ ENTRY (_start)
 MEMORY
   {
       VECTOR_RAM     (AIW) : ORIGIN = 0x8E000000       , LENGTH = 0x40
-      RAM   : org = 0x8E000044, LENGTH = 0x1FFFFBB
-      UNEXPECTED_SECTIONS : ORIGIN = 0xffffffff, LENGTH = 0
+      RAM   : ORIGIN = 0x8E000044, LENGTH = 0x8FFFFFBB
   }
 
 REGION_ALIAS ("REGION_START", RAM);
@@ -25,7 +24,7 @@ REGION_ALIAS ("REGION_WORK", RAM);
 REGION_ALIAS ("REGION_STACK", RAM);
 
 bsp_section_vector_begin = 0x8E000000;
-bsp_section_stack_begin = 0x8FFFFFFF;
+bsp_section_stack_begin = 0x8FFFFFBB;
 
 /*
  * Global symbols that may be defined externally
@@ -319,5 +318,5 @@ SECTIONS {
   _RamBase = ORIGIN (REGION_WORK);
   _RamSize = LENGTH (REGION_WORK);
   _WorkAreaBase = bsp_section_work_begin;
-  HeapSize = 0;
+  _HeapSize = 0;
 }
