@@ -30,12 +30,9 @@
 
 #include "pipe.h"
 
-<<<<<<< HEAD
 #define PIPE_BUF 4096
 #define MIN(a, b) ((a) < (b)? (a): (b))
 
-=======
->>>>>>> upstream/master
 #define LIBIO_ACCMODE(_iop) ((_iop)->flags & LIBIO_FLAGS_READ_WRITE)
 #define LIBIO_NODELAY(_iop) ((_iop)->flags & LIBIO_FLAGS_NO_DELAY)
 
