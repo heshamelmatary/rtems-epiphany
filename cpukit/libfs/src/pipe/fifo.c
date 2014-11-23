@@ -215,6 +215,7 @@ static int pipe_new(
   pipe_control_t *pipe;
   int err = 0;
 
+  _Assert( pipep );
   err = pipe_lock();
   if (err)
     return err;
@@ -226,7 +227,7 @@ static int pipe_new(
       goto out;
   }
 
-  if (! PIPE_LOCK(pipe))
+  if (!PIPE_LOCK(pipe))
     err = -EINTR;
 
   if (*pipep == NULL) {
