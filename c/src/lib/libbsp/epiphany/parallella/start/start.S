@@ -88,21 +88,22 @@ _start:
 	jalr r3
 .size  .normal_start, .-.normal_start
 
+.align  4
+.type   _external_start, %function
 _external_start:
 
-	.align  4
-
-	;; Initialise the stack pointer and frame pointer. Hopefully __stack
-	;; is somewhere meaningful.
+	;; Initialise the stack pointer and frame pointer.
+	nop
+	nop 
 	mov	sp,%low(bsp_section_stack_begin)
 	movt	sp,%high(bsp_section_stack_begin)
 	mov	fp,sp
 
 	;; Zero the data space
-	mov	r1,%low(bsp_section_bss_begin)
-	movt	r1,%high(bsp_section_bss_begin)
-	mov	r0,%low(bsp_section_bss_end)
-	movt	r0,%high(bsp_section_bss_end)
+	;;mov	r0,%low(bsp_section_bss_begin)
+	;;movt	r0,%high(bsp_section_bss_begin)
+	;;mov	r1,%low(bsp_section_bss_end)
+	;;movt	r1,%high(bsp_section_bss_end)
 	mov	r2,#0
 	mov	r3,#0
 .L0_init_:
@@ -110,7 +111,7 @@ _external_start:
 	;;sub	r5,r1,r0
 	;;bne	.L0_init_
 
-  ;; jumo to bootcard
+  ;; jump to bootcard
 	mov	r0,#0
 	mov	r1,#0
 	mov	r2,#0
