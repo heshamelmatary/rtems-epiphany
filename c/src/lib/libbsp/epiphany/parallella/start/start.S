@@ -100,16 +100,16 @@ _external_start:
 	mov	fp,sp
 
 	;; Zero the data space
-	;;mov	r0,%low(bsp_section_bss_begin)
-	;;movt	r0,%high(bsp_section_bss_begin)
-	;;mov	r1,%low(bsp_section_bss_end)
-	;;movt	r1,%high(bsp_section_bss_end)
+	mov	r0,%low(bsp_section_bss_begin)
+	movt	r0,%high(bsp_section_bss_begin)
+	mov	r1,%low(bsp_section_bss_end)
+	movt	r1,%high(bsp_section_bss_end)
 	mov	r2,#0
 	mov	r3,#0
 .L0_init_:
-	;;strd	r2,[r0],+#1
-	;;sub	r5,r1,r0
-	;;bne	.L0_init_
+	strd	r2,[r0],+#1
+	sub	r5,r1,r0
+	bne	.L0_init_
 
   ;; jump to bootcard
 	mov	r0,#0

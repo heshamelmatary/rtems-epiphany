@@ -25,7 +25,7 @@ REGION_ALIAS ("REGION_WORK", RAM);
 REGION_ALIAS ("REGION_STACK", RAM);
 
 bsp_section_vector_begin = 0x00000000;
-bsp_section_stack_begin = 0x8FFFFFFF;
+bsp_section_stack_begin = 0x8EFFFFCC;
 
 /*
  * Global symbols that may be defined externally
@@ -313,7 +313,7 @@ SECTIONS {
 
   .stack :   {
     bsp_section_stack_end = .;
-  } > REGION_STACK AT > REGION_STACK
+  } > LOCAL_MEM AT > LOCAL_MEM
   bsp_section_stack_size = bsp_section_stack_begin - bsp_section_stack_end;
 
   _RamBase = ORIGIN (REGION_WORK);
