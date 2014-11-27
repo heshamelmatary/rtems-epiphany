@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef __OR1K_ASM_h
-#define __OR1K_ASM_h
+#ifndef __EPIPHANY_ASM_h
+#define __EPIPHANY_ASM_h
 
 /*
  *  Indicate we are in an assembly file and get the basic CPU definitions.

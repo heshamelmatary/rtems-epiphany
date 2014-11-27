@@ -159,7 +159,7 @@ bool _Thread_Initialize(
   Thread_CPU_budget_algorithms          budget_algorithm,
   Thread_CPU_budget_algorithm_callout   budget_callout,
   uint32_t                              isr_level,
-  Objects_Name                          name
+  Objects_Name                          name __attribute__ ((align(32)))
 );
 
 /**

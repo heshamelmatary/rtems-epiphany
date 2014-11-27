@@ -29,7 +29,6 @@
 #include <bsp/linker-symbols.h>
 
   .extern bsp_start
-  .global boot_card
   .extern bsp_section_bss_begin
   .extern bsp_section_bss_end
 
@@ -40,6 +39,8 @@
   
   .global .normal_start;
 	.global _external_start;
+	.global .sw_exception;
+	
 	.type   _external_start, %function
 	
 .section .vector, "ax";
@@ -50,7 +51,7 @@ _start:
          b .normal_start
 
         .balign 4 ; 0x4
-         b .normal_start
+         b .sw_exception 
 
 		.balign 4 ; 0x8
          b .normal_start
@@ -124,3 +125,8 @@ _external_start:
 	idle
 
 .size   _external_start, .-_external_start
+
+.balign 4
+.type   .sw_exception, %function
+.sw_exception:
+  idle

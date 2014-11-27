@@ -486,7 +486,7 @@ SCORE_EXTERN Context_Control_fp  _CPU_Null_fp_context;
  *
  */
 
-#define CPU_STACK_ALIGNMENT        0
+#define CPU_STACK_ALIGNMENT        8
 
 /* ISR handler macros */
 
@@ -790,8 +790,8 @@ void _CPU_Context_Initialize(
 
 #endif
 
-#define CPU_TIMESTAMP_USE_STRUCT_TIMESPEC FALSE
-#define CPU_TIMESTAMP_USE_INT64 TRUE
+#define CPU_TIMESTAMP_USE_STRUCT_TIMESPEC TRUE
+#define CPU_TIMESTAMP_USE_INT64 FALSE
 #define CPU_TIMESTAMP_USE_INT64_INLINE FALSE
 
 typedef struct {
@@ -799,7 +799,6 @@ typedef struct {
 } CPU_Per_CPU_control;
 #endif /* ASM */
 
-#define CPU_SIZEOF_POINTER 4
 #define CPU_PER_CPU_CONTROL_SIZE 0
 
 #ifndef ASM

@@ -61,7 +61,7 @@ rtems_status_code rtems_semaphore_create(
 )
 {
   Semaphore_Control          *the_semaphore;
-  CORE_mutex_Attributes       the_mutex_attr;
+  CORE_mutex_Attributes       the_mutex_attr __attribute__ ((aligned(8)));
   CORE_semaphore_Attributes   the_semaphore_attr;
   CORE_mutex_Status           mutex_status;
 

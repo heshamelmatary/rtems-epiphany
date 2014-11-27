@@ -7,7 +7,7 @@ MEMORY
   {
       VECTOR_RAM     (AIW) : ORIGIN = 0x00000000, LENGTH = 0x40
       LOCAL_MEM      (AIW) : ORIGIN = 0x00000040, LENGTH = 0x00007FC0
-      RAM   : ORIGIN = 0x8E000000, LENGTH = 0x02000000
+      RAM   : ORIGIN = 0x8E000000, LENGTH = 0x01000000
   }
 
 REGION_ALIAS ("REGION_START", LOCAL_MEM);
@@ -61,6 +61,7 @@ SECTIONS {
 
   .start :  
   {
+    . = ALIGN(8);
     bsp_section_start_begin = .;
     KEEP (*(.bsp_start_text))
     KEEP (*(.bsp_start_data))
@@ -73,6 +74,7 @@ SECTIONS {
   } > REGION_VECTOR AT > REGION_VECTOR
 
 .text :   {
+    . = ALIGN(8);
     bsp_section_text_begin = .;
     *(.text.unlikely .text.*_unlikely)
     *(.text .stub .text.* .gnu.linkonce.t.*)
@@ -87,6 +89,7 @@ SECTIONS {
   .fini :   {
     __fini = .;
     KEEP (*(.fini))
+    . = ALIGN(8);
     bsp_section_text_end = .;
   } > REGION_TEXT AT > REGION_TEXT_LOAD
   bsp_section_text_size = bsp_section_text_end - bsp_section_text_begin;
@@ -98,6 +101,7 @@ SECTIONS {
   } > REGION_RODATA AT > REGION_RODATA
 
 .rodata :   {
+    . = ALIGN(8);
     bsp_section_rodata_begin = .;
     *(.rodata .rodata.* .gnu.linkonce.r.*)
   } > REGION_RODATA AT > REGION_RODATA_LOAD
@@ -265,6 +269,7 @@ SECTIONS {
                *(set_pseudo_*);
 
                KEEP (*(SORT(.rtemsroset.*)))
+               . = ALIGN(8);
                bsp_section_rodata_end = .;
        } > REGION_RODATA AT > REGION_RODATA_LOAD
   bsp_section_rodata_size = bsp_section_rodata_end - bsp_section_rodata_begin;
@@ -272,10 +277,12 @@ SECTIONS {
   bsp_section_rodata_load_end = bsp_section_rodata_load_begin + bsp_section_rodata_size;
 
 .rwbarrier :   {
+    . = ALIGN(8);
     . = ALIGN (bsp_section_rwbarrier_align);
   } > REGION_DATA AT > REGION_DATA
 
 .data :   {
+    . = ALIGN(8);
     bsp_section_data_begin = .;
     *(.data .data.* .gnu.linkonce.d.*)
     SORT(CONSTRUCTORS)
@@ -285,6 +292,7 @@ SECTIONS {
   } > REGION_DATA AT > REGION_DATA_LOAD
   .rtemsrwset :   {
     KEEP (*(SORT(.rtemsrwset.*)))
+    . = ALIGN(8);
     bsp_section_data_end = .;
   } > REGION_DATA AT > REGION_DATA_LOAD
   bsp_section_data_size = bsp_section_data_end - bsp_section_data_begin;
@@ -292,10 +300,12 @@ SECTIONS {
   bsp_section_data_load_end = bsp_section_data_load_begin + bsp_section_data_size;
 
   .bss :   {
+    . = ALIGN(8);
     bsp_section_bss_begin = .;
     *(.dynbss)
     *(.bss .bss.* .gnu.linkonce.b.*)
     *(COMMON)
+    . = ALIGN(8);
     bsp_section_bss_end = .;
   } > REGION_BSS AT > REGION_BSS
   bsp_section_bss_size = bsp_section_bss_end - bsp_section_bss_begin;
@@ -305,15 +315,18 @@ SECTIONS {
      * The work section will occupy the remaining REGION_WORK region and
      * contains the RTEMS work space and heap.
      */
+    . = ALIGN(8);
     bsp_section_work_begin = .;
     . += ORIGIN (REGION_WORK) + LENGTH (REGION_WORK) - ABSOLUTE (.);
+    . = ALIGN(8);
     bsp_section_work_end = .;
   } > REGION_WORK AT > REGION_WORK
   bsp_section_work_size = bsp_section_work_end - bsp_section_work_begin;
 
   .stack :   {
+    . = ALIGN(8);
     bsp_section_stack_end = .;
-  } > LOCAL_MEM AT > LOCAL_MEM
+  } > REGION_STACK AT > REGION_STACK
   bsp_section_stack_size = bsp_section_stack_begin - bsp_section_stack_end;
 
   _RamBase = ORIGIN (REGION_WORK);
