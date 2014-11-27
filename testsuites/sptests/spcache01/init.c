@@ -17,10 +17,12 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <inttypes.h>
 
 #include <rtems.h>
 #include <rtems/counter.h>
+#include <rtems/score/sysstate.h>
 
 #define TESTS_USE_PRINTF
 #include "tmacros.h"
@@ -108,6 +110,10 @@ static void test_data_flush_and_invalidate(void)
         " due to cache line size of zero\n"
     );
   }
+
+  /* Make sure these are nops */
+  rtems_cache_flush_multiple_data_lines(NULL, 0);
+  rtems_cache_invalidate_multiple_data_lines(NULL, 0);
 }
 
 static uint64_t do_some_work(void)
@@ -375,12 +381,88 @@ static void test_timing(void)
   rtems_interrupt_lock_destroy(&lock);
 }
 
+static void test_cache_aligned_alloc(void)
+{
+  void *p0;
+  void *p1;
+  size_t cls;
+
+  printf("test rtems_cache_aligned_malloc()\n");
+
+  p0 = rtems_cache_aligned_malloc(1);
+  p1 = rtems_cache_aligned_malloc(1);
+
+  rtems_test_assert(p0 != NULL);
+  rtems_test_assert(p1 != NULL);
+
+  cls = rtems_cache_get_data_line_size();
+  if (cls > 0) {
+    size_t m = cls - 1;
+    uintptr_t a0 = (uintptr_t) p0;
+    uintptr_t a1 = (uintptr_t) p1;
+
+    rtems_test_assert(a1 - a0 > cls);
+    rtems_test_assert((a0 & m) == 0);
+    rtems_test_assert((a1 & m) == 0);
+  }
+
+  free(p0);
+  free(p1);
+}
+
+#define AREA_SIZE 256
+
+static char cache_coherent_area_0[AREA_SIZE];
+
+static char cache_coherent_area_1[AREA_SIZE];
+
+static char cache_coherent_area_2[AREA_SIZE];
+
+static void add_area(void *begin)
+{
+  rtems_cache_coherent_add_area(NULL, 0);
+  rtems_cache_coherent_add_area(begin, AREA_SIZE);
+}
+
+static void test_cache_coherent_alloc(void)
+{
+  void *p0;
+  void *p1;
+  System_state_Codes previous_state;
+
+  printf("test cache coherent allocation\n");
+
+  p0 = rtems_cache_coherent_allocate(1, 0, 0);
+  rtems_test_assert(p0 != NULL);
+
+  rtems_cache_coherent_free(p0);
+
+  p0 = rtems_cache_coherent_allocate(1, 0, 0);
+  rtems_test_assert(p0 != NULL);
+
+  add_area(&cache_coherent_area_0[0]);
+  add_area(&cache_coherent_area_1[0]);
+
+  previous_state = _System_state_Get();
+  _System_state_Set(previous_state + 1);
+  add_area(&cache_coherent_area_2[0]);
+  _System_state_Set(previous_state);
+
+  p1 = rtems_cache_coherent_allocate(1, 0, 0);
+  rtems_test_assert(p1 != NULL);
+
+  rtems_cache_coherent_free(p0);
+  rtems_cache_coherent_free(p1);
+}
+
 static void Init(rtems_task_argument arg)
 {
   TEST_BEGIN();
 
   test_data_flush_and_invalidate();
   test_timing();
+  test_cache_aligned_alloc();
+  test_cache_coherent_alloc();
 
   TEST_END();
 

@@ -15,7 +15,7 @@
   All rights reserved Objective Design Systems Pty Ltd, 2002
   Chris Johns (ccj@acm.org)
 
-  COPYRIGHT (c) 1989-1998.
+  COPYRIGHT (c) 1989-2014
   On-Line Applications Research Corporation (OAR).
 
   The license and distribution terms for this file may be
@@ -141,7 +141,8 @@ typedef struct rtems_capture_control_s
  * Task flags.
  */
 #define RTEMS_CAPTURE_TRACED      (1U << 0)
-#define RTEMS_CAPTURE_RECORD_TASK (1U << 1)
+#define RTEMS_CAPTURE_INIT_TASK   (1U << 1)
+#define RTEMS_CAPTURE_RECORD_TASK (1U << 2)
 
 /*
  * @brief Capture record.
@@ -244,8 +245,8 @@ typedef void (*rtems_capture_timestamp)(rtems_capture_time_t* time);
  * initialisation.
  *
  * @param[in] size The number of capture records to define.
- * @param[in] timestamp The timestamp callout handler to use. If the 
- *            the handler is NULL a default  nano-second timestamp 
+ * @param[in] timestamp The timestamp callout handler to use. If the
+ *            the handler is NULL a default  nano-second timestamp
  *            will be used.
  *
  * @retval This method returns RTEMS_SUCCESSFUL if there was not an
@@ -389,7 +390,7 @@ rtems_capture_watch_global (bool enable);
  *
  * This function returns the global watch state.
  *
- * @retval This method returns true  if the global watch 
+ * @retval This method returns true  if the global watch
  *         is on.  Otherwise, it returns false.
  */
 bool
@@ -418,7 +419,7 @@ rtems_capture_watch_ceiling (rtems_task_priority ceiling);
  *
  * This function gets the watch ceiling.
  *
- * @retval The priority level immediately above that at which events 
+ * @retval The priority level immediately above that at which events
  *         from tasks are not captured.
  */
 rtems_task_priority
@@ -519,9 +520,6 @@ rtems_capture_clear_trigger (rtems_name                   from_name,
  * @brief Capture read records from capture buffer
  *
  * This function reads a number of records from the capture buffer.
- * The user can optionally block and wait until the buffer as a
- * specific number of records available or a specific time has
- * elasped.
  *
  * The function returns the number of record that is has that are
  * in a continous block of memory. If the number of available records
@@ -534,17 +532,7 @@ rtems_capture_clear_trigger (rtems_name                   from_name,
  * rtems_capture_release. Calls this function without a release will
  * result in at least the same number of records being released.
  *
- * The 'threshold' parameter is the number of records that must be
- * captured before returning. If a timeout period is specified (non-0)
- * any captured records will be returned. These parameters stop
- * thrashing occuring for a small number of records, yet allows
- * a user configured latiency to be applied for single events.
- *
- * The @a timeout parameter is in microseconds. A value of 0 will
- * disable the timeout.
- *
- * @param[in] threshold The number of records that must be captured 
- * @param[in] timeout The micro-second timeout period
+ * @param[in]  cpu The cpu number that the records were recorded on
  * @param[out] read will contain the number of records read
  * @param[out] recs The capture records that are read.
  *
@@ -553,8 +541,7 @@ rtems_capture_clear_trigger (rtems_name                   from_name,
  *         source of the error.
  */
 rtems_status_code
-rtems_capture_read (uint32_t                 threshold,
-                    uint32_t                 timeout,
+rtems_capture_read (uint32_t                 cpu,
                     uint32_t*                read,
                     rtems_capture_record_t** recs);
 
@@ -565,13 +552,13 @@ rtems_capture_read (uint32_t                 threshold,
  * to the capture engine. The count must match the number read.
  *
  * @param[in] count The number of record slots to release
- * 
+ *
  * @retval This method returns RTEMS_SUCCESSFUL if there was not an
  *         error. Otherwise, a status code is returned indicating the
  *         source of the error.
  */
 rtems_status_code
-rtems_capture_release (uint32_t count);
+rtems_capture_release (uint32_t cpu, uint32_t count);
 
 /*
  * @brief Capture nano-second time period.
@@ -598,8 +585,17 @@ const char*
 rtems_capture_event_text (int event);
 
 /**
+ * @brief Capture initialize task
+ *
+ * This function initializes capture control in the tcb.
+ *
+ * @param[in] tcb is the task control block for the task
+ */
+void rtems_capture_initialize_task( rtems_tcb* tcb );
+
+/**
  * @brief Capture record task.
- * 
+ *
  * This function records a new capture task record.
  *
  * @param[in] tcb is the task control block for the task
@@ -619,12 +615,24 @@ static inline bool rtems_capture_task_recorded( rtems_tcb* tcb ) {
 }
 
 /**
+ * @brief Capture task initialized
+ *
+ * This function returns true if this task information has been
+ * initialized.
+ *
+ * @param[in] tcb is the task control block for the task
+ */
+static inline bool rtems_capture_task_initialized( rtems_tcb* tcb ) {
+  return ( (tcb->Capture.flags & RTEMS_CAPTURE_INIT_TASK) != 0 );
+}
+
+/**
  * @brief Capture get task id.
- * 
+ *
  * This function returns the task id.
  *
  * @param[in] task The capture task.
- * 
+ *
  * @retval This function returns the task id.
  */
 static inline rtems_id
@@ -635,11 +643,11 @@ rtems_capture_task_id (rtems_tcb* tcb)
 
 /**
  * @brief Capture get task state.
- * 
+ *
  * This function returns the task state.
  *
  * @param[in] task The capture task.
- * 
+ *
  * @retval This function returns the task state.
  */
 static inline States_Control
@@ -652,11 +660,11 @@ rtems_capture_task_state (rtems_tcb* tcb)
 
 /**
  * @brief Capture get task name.
- * 
+ *
  * This function returns the task name.
  *
  * @param[in] task The capture task.
- * 
+ *
  * @retval This function returns the task name.
  */
 static inline rtems_name
@@ -669,11 +677,11 @@ rtems_capture_task_name (rtems_tcb* tcb)
 
 /**
  * @brief Capture get task flags.
- * 
+ *
  * This function returns the task flags.
  *
  * @param[in] task The capture task.
- * 
+ *
  * @retval This function returns the task flags.
  */
 static inline uint32_t
@@ -684,11 +692,11 @@ rtems_capture_task_flags (rtems_tcb* tcb)
 
 /**
  * @brief Capture get task control
- * 
+ *
  * This function returns the task control if present.
  *
  * @param[in] task The capture task.
- * 
+ *
  * @retval This function returns the task control if present.
  */
 static inline rtems_capture_control_t*
@@ -699,11 +707,11 @@ rtems_capture_task_control (rtems_tcb* tcb)
 
 /**
  * @brief Capture get task control flags.
- * 
+ *
  * This function returns the task control flags if a control is present.
  *
  * @param[in] task The capture task.
- * 
+ *
  * @retval This function returns the task control flags if a control is present.
  */
 static inline uint32_t
@@ -717,12 +725,12 @@ rtems_capture_task_control_flags (rtems_tcb* tcb)
 
 /**
  * @brief Capture get task start priority.
- * 
+ *
  * This function returns the tasks start priority. The tracer needs this
  * to track where the task's priority goes.
  *
  * @param[in] task The capture task.
- * 
+ *
  * @retval This function returns the tasks start priority. The tracer needs this
  * to track where the task's priority goes.
  */
@@ -736,11 +744,11 @@ rtems_capture_task_start_priority (rtems_tcb* tcb)
 
 /**
  * @brief Capture get task real priority.
- * 
+ *
  * This function returns the tasks real priority.
  *
  * @param[in] task The capture task.
- * 
+ *
  * @retval This function returns the tasks real priority.
  */
 static inline rtems_task_priority
@@ -751,11 +759,11 @@ rtems_capture_task_real_priority (rtems_tcb* tcb)
 
 /**
  * @brief Capture get task current priority.
- * 
+ *
  * This function returns the tasks current priority.
  *
  * @param[in] task The capture task.
- * 
+ *
  * @retval This function returns the tasks current priority.
  */
 static inline rtems_task_priority
@@ -778,12 +786,12 @@ rtems_capture_get_control_list (void);
 
 /**
  * @brief Capture get next capture control.
- * 
+ *
  * This function returns the pointer to the next control in the list. The
  * pointer NULL terminates the list.
  *
  * @param[in] control the current capture control.
- * 
+ *
  * @retval This function returns the pointer to the next control in the list. The
  * pointer NULL terminates the list.
  */
@@ -795,11 +803,11 @@ rtems_capture_next_control (rtems_capture_control_t* control)
 
 /**
  * @brief Capture get capture control id.
- * 
+ *
  * This function returns the control id.
  *
  * @param[in] control the capture control.
- * 
+ *
  * @retval This function returns the control id.
  */
 static inline rtems_id
@@ -921,7 +929,7 @@ rtems_capture_control_by_name (rtems_capture_control_t* control, int by)
  * @brief Capture get capture control by task id.
  *
  * This function returns the control @a by task id
- * 
+ *
  * @retval This function returns the control @a by task id.
  */
 static inline rtems_id

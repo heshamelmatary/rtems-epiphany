@@ -46,6 +46,7 @@
 #endif
 
 #ifdef __rtems__
+#include <assert.h>
 #include <rtems.h>
 #include <rtems/shell.h>
 #endif
@@ -815,6 +816,11 @@ static int getachar(void)
 #if KEY_HISTORY
   if (key_history_in < sizeof(key_history)) {
       key_history[key_history_in++] = ch;
+#if defined(__rtems__)
+  } if (key_history_in > sizeof(key_history)) {
+    /* eliminate possibility of using index above array bounds */
+   assert( key_history_in > sizeof(key_history));
+#endif
   } else {
     memmove(&key_history[0], &key_history[1], sizeof(key_history) - sizeof(key_history[0]));
     key_history[key_history_in - 1] = ch;
@@ -2147,7 +2153,15 @@ static void edit(struct editor *ed) {
         case ctrl('s'): save_editor(ed); break;
         case ctrl('p'): pipe_command(ed); break;
 #endif
+#if defined(__rtems__)
+        /*
+         * Coverity spotted this as using ed after free() so changing 
+         * the order of the statements.
+         */
+        case ctrl('w'): ed = ed->env->current; close_editor(ed); break;
+#else
         case ctrl('w'): close_editor(ed); ed = ed->env->current; break;
+#endif
       }
     }
   }
@@ -2205,7 +2219,7 @@ static int rtems_shell_main_edit(int argc, char *argv[])
   setvbuf(stdout, NULL, 0, 8192);
 
 #if defined(__linux__) || defined(__rtems__)
-  tcgetattr(0, &orig_tio);
+  (void) tcgetattr(0, &orig_tio);
 #if !defined(__rtems__)
   cfmakeraw(&tio);
   tcsetattr(0, TCSANOW, &tio);

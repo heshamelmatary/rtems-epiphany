@@ -1,7 +1,7 @@
 /**
  * @file rtems/captureimpl.h
  *
- * @brief Capture Implementation file 
+ * @brief Capture Implementation file
  *
  * This file contains an interface between the capture engine and
  * capture user extension methods.
@@ -43,20 +43,25 @@ extern "C" {
 /*
  * Global capture flags.
  */
-#define RTEMS_CAPTURE_ON             (1U << 0)
-#define RTEMS_CAPTURE_NO_MEMORY      (1U << 1)
-#define RTEMS_CAPTURE_OVERFLOW       (1U << 2)
+#define RTEMS_CAPTURE_INIT           (1u << 0)
+#define RTEMS_CAPTURE_ON             (1U << 1)
+#define RTEMS_CAPTURE_NO_MEMORY      (1U << 2)
 #define RTEMS_CAPTURE_TRIGGERED      (1U << 3)
-#define RTEMS_CAPTURE_READER_ACTIVE  (1U << 4)
-#define RTEMS_CAPTURE_READER_WAITING (1U << 5)
-#define RTEMS_CAPTURE_GLOBAL_WATCH   (1U << 6)
-#define RTEMS_CAPTURE_ONLY_MONITOR   (1U << 7)
+#define RTEMS_CAPTURE_GLOBAL_WATCH   (1U << 4)
+#define RTEMS_CAPTURE_ONLY_MONITOR   (1U << 5)
+
+/*
+ * Per-CPU capture flags.
+ */
+#define RTEMS_CAPTURE_OVERFLOW       (1U << 0)
+#define RTEMS_CAPTURE_READER_ACTIVE  (1U << 1)
+#define RTEMS_CAPTURE_READER_WAITING (1U << 2)
 
 /**
  * @brief Capture set extension index.
  *
  * This function is used to set the extension index
- * for the capture engine.  
+ * for the capture engine.
  *
  * @param[in] index specifies the extension index to be
  * used for capture engine data.
@@ -81,7 +86,7 @@ int  rtems_capture_get_extension_index(void);
  *
  * @retval This method returns the global capture
  * flags.
- * 
+ *
  */
 uint32_t rtems_capture_get_flags(void);
 
@@ -133,7 +138,7 @@ bool rtems_capture_trigger (rtems_tcb* ft,
                             uint32_t   events);
 
 /**
- * @brief Capture append to record 
+ * @brief Capture append to record
  *
  * This function Capture appends data to a capture record.  It should
  * be called between rtems_capture_begin_add_record and
@@ -145,10 +150,10 @@ bool rtems_capture_trigger (rtems_tcb* ft,
  *
  * @retval This method returns a pointer which is used as a marker
  * for the next location in the capture record. it should only be
- * used as input into rtems_capture_append_to_record or 
+ * used as input into rtems_capture_append_to_record or
  * rtems_capture_end_add_record.
  */
-static void *rtems_capture_append_to_record(void*  rec, 
+static void *rtems_capture_append_to_record(void*  rec,
                                      void*  data,
                                      size_t size );
 
@@ -162,7 +167,7 @@ static void *rtems_capture_append_to_record(void*  rec,
  * @param[in] events specifies the events
  *
  * @retval This method returns true if this data should be
- * filtered from the log.  It returns false if this data 
+ * filtered from the log.  It returns false if this data
  * should be logged.
  */
 bool rtems_capture_filter( rtems_tcb*            task,
@@ -188,13 +193,13 @@ bool rtems_capture_filter( rtems_tcb*            task,
  *
  * This function appends data of a specifed size into a capture record.
  *
- * @param[in] rec specifies the next write point in the capture record 
+ * @param[in] rec specifies the next write point in the capture record
  * @param[in] data specifies the data to write
  * @param[in] size specifies the size of the data
  *
  * @retval This method returns the next write point in the capture record.
  */
-static inline void *rtems_capture_append_to_record(void*  rec, 
+static inline void *rtems_capture_append_to_record(void*  rec,
                                                    void*  data,
                                                    size_t size )
 {
@@ -230,9 +235,9 @@ void rtems_capture_get_time (rtems_capture_time_t* time);
 /**
  * @brief Capture record open.
  *
- * This function allocates a record and fills in the 
+ * This function allocates a record and fills in the
  * header information.  It does a lock acquire
- * which will remain in effect until 
+ * which will remain in effect until
  * rtems_capture_record_close is called.  This method
  * should only be used by rtems_capture_begin_add_record.
  *
@@ -251,7 +256,7 @@ void* rtems_capture_record_open (rtems_tcb*                    task,
 /**
  * @brief Capture record close.
  *
- * This function closes writing to capure record and 
+ * This function closes writing to capure record and
  * releases the lock that was held on the record. This
  * method should only be used by rtems_capture_end_add_record.
  *
@@ -260,6 +265,65 @@ void* rtems_capture_record_open (rtems_tcb*                    task,
  */
 void rtems_capture_record_close( void *rec, rtems_interrupt_lock_context* lock_context);
 
+
+/**
+ * @brief Capture print trace records.
+ *
+ * This function reads, prints and releases up to
+ * total trace records in either a csv format or an
+ * ascii table format.
+ *
+ * @param[in] total specifies the number of records to print
+ * @param[in] csv specifies a comma seperated value format
+ */
+void rtems_capture_print_trace_records ( int total, bool csv );
+
+/**
+ * @brief Capture print timestamp.
+ *
+ * This function prints uptime in a timestamp format.
+ *
+ * @param[in] uptime specifies the timestamp to print
+ */
+void rtems_capture_print_timestamp (uint64_t uptime);
+
+/**
+ * @brief Capture print record task.
+ *
+ * This function  prints a capture record task.  This
+ * record contains information to identify a task.  It
+ * is refrenced in other records by the task id.
+ *
+ * @param[in] cpu specifies the cpu the cpu the record was logged on.
+ * @param[in] rec specifies the task record.
+ */
+void rtems_capture_print_record_task(
+  uint32_t                cpu,
+  rtems_capture_record_t* rec
+);
+
+/**
+ * @brief Capture print capture record.
+ *
+ * This function prints a user extension
+ * capture record.
+ *
+ * @param[in] cpu specifies the cpu the cpu the record was logged on.
+ * @param[in] rec specifies the record.
+ * @param[in] diff specifies the time between this and the last capture record.
+ */
+void rtems_capture_print_record_capture(
+  uint32_t                cpu,
+  rtems_capture_record_t* rec,
+  uint64_t                diff
+);
+
+/**
+ * @brief Capture print watch list
+ *
+ * This function  prints a capture watch list
+ */
+void rtems_capture_print_watch_list( void );
 
 #ifdef __cplusplus
 }

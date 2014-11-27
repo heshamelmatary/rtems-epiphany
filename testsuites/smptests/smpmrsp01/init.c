@@ -54,6 +54,9 @@ typedef struct {
 typedef struct {
   rtems_id main_task_id;
   rtems_id migration_task_id;
+  rtems_id low_task_id[2];
+  rtems_id high_task_id[2];
+  rtems_id timer_id;
   rtems_id counting_sem_id;
   rtems_id mrsp_ids[MRSP_COUNT];
   rtems_id scheduler_ids[CPU_COUNT];
@@ -66,6 +69,8 @@ typedef struct {
   SMP_lock_Control switch_lock;
   size_t switch_index;
   switch_event switch_events[32];
+  volatile bool high_run[2];
+  volatile bool low_run[2];
 } test_context;
 
 static test_context test_instance = {
@@ -73,9 +78,24 @@ static test_context test_instance = {
   .switch_lock = SMP_LOCK_INITIALIZER("test instance switch lock")
 };
 
+static void busy_wait(void)
+{
+  rtems_interval later = rtems_clock_tick_later(2);
+
+  while (rtems_clock_tick_before(later)) {
+    /* Wait */
+  }
+}
+
 static void barrier(test_context *ctx, SMP_barrier_State *bs)
 {
   _SMP_barrier_Wait(&ctx->barrier, bs, 2);
+}
+
+static void barrier_and_delay(test_context *ctx, SMP_barrier_State *bs)
+{
+  barrier(ctx, bs);
+  busy_wait();
 }
 
 static rtems_task_priority get_prio(rtems_id task_id)
@@ -342,19 +362,13 @@ static void test_mrsp_obtain_and_release(test_context *ctx)
   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 
   /* Obtain with timeout (A) */
-  barrier(ctx, &barrier_state);
-
-  sc = rtems_task_wake_after(2);
-  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+  barrier_and_delay(ctx, &barrier_state);
 
   assert_prio(ctx->worker_ids[0], 2);
   assert_executing_worker(ctx);
 
   /* Obtain with priority change and timeout (B) */
-  barrier(ctx, &barrier_state);
-
-  sc = rtems_task_wake_after(2);
-  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+  barrier_and_delay(ctx, &barrier_state);
 
   assert_prio(ctx->worker_ids[0], 2);
   change_prio(ctx->worker_ids[0], 1);
@@ -367,10 +381,7 @@ static void test_mrsp_obtain_and_release(test_context *ctx)
   change_prio(ctx->worker_ids[0], 3);
 
   /* Obtain without timeout (D) */
-  barrier(ctx, &barrier_state);
-
-  sc = rtems_task_wake_after(2);
-  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+  barrier_and_delay(ctx, &barrier_state);
 
   assert_prio(ctx->worker_ids[0], 2);
   assert_executing_worker(ctx);
@@ -714,9 +725,6 @@ static void test_mrsp_multiple_obtain(void)
 
   sc = rtems_semaphore_delete(sem_c_id);
   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-
-  change_prio(RTEMS_SELF, 2);
-  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 }
 
 static void run_task(rtems_task_argument arg)
@@ -726,6 +734,343 @@ static void run_task(rtems_task_argument arg)
   while (true) {
     *run = true;
   }
+}
+
+static void ready_unlock_worker(rtems_task_argument arg)
+{
+  test_context *ctx = &test_instance;
+  rtems_status_code sc;
+  SMP_barrier_State barrier_state = SMP_BARRIER_STATE_INITIALIZER;
+
+  assert_prio(RTEMS_SELF, 4);
+
+  /* Obtain (F) */
+  barrier(ctx, &barrier_state);
+
+  sc = rtems_semaphore_obtain(ctx->mrsp_ids[0], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_semaphore_release(ctx->mrsp_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  assert_prio(RTEMS_SELF, 4);
+
+  /* Done (G) */
+  barrier(ctx, &barrier_state);
+
+  while (true) {
+    /* Do nothing */
+  }
+}
+
+static void unblock_ready_timer(rtems_id timer_id, void *arg)
+{
+  test_context *ctx = arg;
+  rtems_status_code sc;
+
+  sc = rtems_task_start(
+    ctx->high_task_id[0],
+    run_task,
+    (rtems_task_argument) &ctx->high_run[0]
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_suspend(ctx->high_task_id[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_resume(ctx->high_task_id[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  /*
+   * At this point the scheduler node of the main thread is in the
+   * SCHEDULER_SMP_NODE_READY state and a _Scheduler_SMP_Unblock() operation is
+   * performed.
+   */
+  sc = rtems_event_transient_send(ctx->main_task_id);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_suspend(ctx->high_task_id[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+}
+
+static void unblock_ready_owner(test_context *ctx)
+{
+  rtems_status_code sc;
+
+  sc = rtems_semaphore_obtain(ctx->mrsp_ids[0], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  assert_prio(RTEMS_SELF, 3);
+
+  sc = rtems_timer_fire_after(ctx->timer_id, 2, unblock_ready_timer, ctx);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_event_transient_receive(RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  rtems_test_assert(!ctx->high_run[0]);
+}
+
+static void unblock_owner_before_rival_timer(rtems_id timer_id, void *arg)
+{
+  test_context *ctx = arg;
+  rtems_status_code sc;
+
+  sc = rtems_task_suspend(ctx->high_task_id[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_suspend(ctx->high_task_id[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+}
+
+static void unblock_owner_after_rival_timer(rtems_id timer_id, void *arg)
+{
+  test_context *ctx = arg;
+  rtems_status_code sc;
+
+  sc = rtems_task_suspend(ctx->high_task_id[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_suspend(ctx->high_task_id[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+}
+
+static void various_block_unblock(test_context *ctx)
+{
+  rtems_status_code sc;
+  SMP_barrier_State barrier_state = SMP_BARRIER_STATE_INITIALIZER;
+
+  /* Worker obtain (F) */
+  barrier_and_delay(ctx, &barrier_state);
+
+  sc = rtems_task_suspend(ctx->worker_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  busy_wait();
+
+  sc = rtems_task_start(
+    ctx->high_task_id[1],
+    run_task,
+    (rtems_task_argument) &ctx->high_run[1]
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  while (!ctx->high_run[1]) {
+    /* Do noting */
+  }
+
+  sc = rtems_task_resume(ctx->worker_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  /* Try to schedule a blocked active rival */
+
+  sc = rtems_task_suspend(ctx->worker_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_suspend(ctx->high_task_id[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_resume(ctx->high_task_id[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_resume(ctx->worker_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  rtems_test_assert(rtems_get_current_processor() == 0);
+
+  /* Use node of the active rival */
+
+  sc = rtems_task_suspend(ctx->high_task_id[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_resume(ctx->high_task_id[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  rtems_test_assert(rtems_get_current_processor() == 1);
+
+  sc = rtems_task_suspend(ctx->worker_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_resume(ctx->worker_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  /*
+   * Try to schedule an active rival with an already scheduled active owner
+   * user.
+   */
+
+  sc = rtems_timer_fire_after(
+    ctx->timer_id,
+    2,
+    unblock_owner_before_rival_timer,
+    ctx
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  /* This will take the processor away from us, the timer will help later */
+  sc = rtems_task_resume(ctx->high_task_id[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  /*
+   * Try to schedule an active owner with an already scheduled active rival
+   * user.
+   */
+
+  sc = rtems_task_resume(ctx->high_task_id[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_timer_fire_after(
+    ctx->timer_id,
+    2,
+    unblock_owner_after_rival_timer,
+    ctx
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  /* This will take the processor away from us, the timer will help later */
+  sc = rtems_task_resume(ctx->high_task_id[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_semaphore_release(ctx->mrsp_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  rtems_test_assert(rtems_get_current_processor() == 0);
+
+  assert_prio(RTEMS_SELF, 4);
+
+  /* Worker done (G) */
+  barrier(ctx, &barrier_state);
+}
+
+static void start_low_task(test_context *ctx, size_t i)
+{
+  rtems_status_code sc;
+
+  sc = rtems_task_create(
+    rtems_build_name('L', 'O', 'W', '0' + i),
+    5,
+    RTEMS_MINIMUM_STACK_SIZE,
+    RTEMS_DEFAULT_MODES,
+    RTEMS_DEFAULT_ATTRIBUTES,
+    &ctx->low_task_id[i]
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_set_scheduler(ctx->low_task_id[i], ctx->scheduler_ids[i]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_start(
+    ctx->low_task_id[i],
+    run_task,
+    (rtems_task_argument) &ctx->low_run[i]
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+}
+
+static void test_mrsp_various_block_and_unblock(test_context *ctx)
+{
+  rtems_status_code sc;
+
+  puts("test MrsP various block and unblock");
+
+  change_prio(RTEMS_SELF, 4);
+
+  reset_switch_events(ctx);
+
+  ctx->low_run[0] = false;
+  ctx->low_run[1] = false;
+  ctx->high_run[0] = false;
+  ctx->high_run[1] = false;
+
+  sc = rtems_semaphore_create(
+    rtems_build_name(' ', ' ', ' ', 'A'),
+    1,
+    RTEMS_MULTIPROCESSOR_RESOURCE_SHARING
+      | RTEMS_BINARY_SEMAPHORE,
+    3,
+    &ctx->mrsp_ids[0]
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  assert_prio(RTEMS_SELF, 4);
+
+  sc = rtems_task_create(
+    rtems_build_name('H', 'I', 'G', '0'),
+    2,
+    RTEMS_MINIMUM_STACK_SIZE,
+    RTEMS_DEFAULT_MODES,
+    RTEMS_DEFAULT_ATTRIBUTES,
+    &ctx->high_task_id[0]
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_create(
+    rtems_build_name('H', 'I', 'G', '1'),
+    2,
+    RTEMS_MINIMUM_STACK_SIZE,
+    RTEMS_DEFAULT_MODES,
+    RTEMS_DEFAULT_ATTRIBUTES,
+    &ctx->high_task_id[1]
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_set_scheduler(ctx->high_task_id[1], ctx->scheduler_ids[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_create(
+    rtems_build_name('W', 'O', 'R', 'K'),
+    4,
+    RTEMS_MINIMUM_STACK_SIZE,
+    RTEMS_DEFAULT_MODES,
+    RTEMS_DEFAULT_ATTRIBUTES,
+    &ctx->worker_ids[0]
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_set_scheduler(ctx->worker_ids[0], ctx->scheduler_ids[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_start(ctx->worker_ids[0], ready_unlock_worker, 0);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_timer_create(
+    rtems_build_name('T', 'I', 'M', 'R'),
+    &ctx->timer_id
+  );
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  /* In case these tasks run, then we have a MrsP protocol violation */
+  start_low_task(ctx, 0);
+  start_low_task(ctx, 1);
+
+  unblock_ready_owner(ctx);
+  various_block_unblock(ctx);
+
+  rtems_test_assert(!ctx->low_run[0]);
+  rtems_test_assert(!ctx->low_run[1]);
+
+  print_switch_events(ctx);
+
+  sc = rtems_timer_delete(ctx->timer_id);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_delete(ctx->high_task_id[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_delete(ctx->high_task_id[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_delete(ctx->worker_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_delete(ctx->low_task_id[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_task_delete(ctx->low_task_id[1]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+  sc = rtems_semaphore_delete(ctx->mrsp_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 }
 
 static void test_mrsp_obtain_and_sleep_and_release(test_context *ctx)
@@ -1232,6 +1577,7 @@ static void Init(rtems_task_argument arg)
   test_mrsp_unlock_order_error();
   test_mrsp_deadlock_error(ctx);
   test_mrsp_multiple_obtain();
+  test_mrsp_various_block_and_unblock(ctx);
   test_mrsp_obtain_and_sleep_and_release(ctx);
   test_mrsp_obtain_and_release_with_help(ctx);
   test_mrsp_obtain_and_release(ctx);
