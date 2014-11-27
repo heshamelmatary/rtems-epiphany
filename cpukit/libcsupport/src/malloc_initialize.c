@@ -63,9 +63,9 @@ void RTEMS_Malloc_Initialize(
   /*
    *  If configured, initialize the statistics support
    */
-//  if ( rtems_malloc_statistics_helpers != NULL ) {
-//    (*rtems_malloc_statistics_helpers->initialize)();
-//  }
+  if ( rtems_malloc_statistics_helpers != NULL ) {
+    (*rtems_malloc_statistics_helpers->initialize)();
+  }
 
   MSBUMP( space_available, _Protected_heap_Get_size( heap ) );
 }

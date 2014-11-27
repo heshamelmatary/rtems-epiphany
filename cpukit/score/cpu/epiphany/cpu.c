@@ -17,6 +17,15 @@
 #include <bsp/linker-symbols.h>
 #include <rtems/score/cpu.h>
 
+void _init(void)
+{
+
+}
+
+void _fini(void)
+{
+
+}
 /**
  * @brief Performs processor dependent initialization.
  */

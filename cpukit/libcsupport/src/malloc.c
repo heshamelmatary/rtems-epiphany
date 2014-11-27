@@ -78,7 +78,7 @@ void *malloc(
    *  If configured, update the statistics
    */
   if ( rtems_malloc_statistics_helpers )
-    //(*rtems_malloc_statistics_helpers->at_malloc)(return_this);
+    (*rtems_malloc_statistics_helpers->at_malloc)(return_this);
 
   return return_this;
 }
