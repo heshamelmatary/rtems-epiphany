@@ -54,6 +54,11 @@
 static void outbyte_console( char );
 static char inbyte_console( void );
 
+void console_initialize_hardware(void)
+{
+  return;
+}
+
 /* prototypical inline asm */
 static int asm_write (int CHAN, void* ADDR, int LEN)
 {
@@ -90,9 +95,6 @@ static char inbyte_console( void )
 {
   char c = asm_read (STDIN_FILENO, &c, 1);
   return c;
-}
-void console_initialize_hardware(void)
-{
 }
 
 /*

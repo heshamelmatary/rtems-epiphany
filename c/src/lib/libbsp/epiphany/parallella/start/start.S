@@ -40,6 +40,8 @@
   .global .normal_start;
 	.global _external_start;
 	.global .sw_exception;
+	.global __init;
+	.global __fini;
 	
 	.type   _external_start, %function
 	
@@ -130,3 +132,16 @@ _external_start:
 .type   .sw_exception, %function
 .sw_exception:
   idle
+/*  
+ .section .init,"ax"     ;;
+ .balign 4
+.type   __init, %function
+_init:
+  nop
+ 
+ .section .fini,"ax"     ;;
+ .balign 4
+.type   __fini, %function
+__fini:
+  nop
+*/

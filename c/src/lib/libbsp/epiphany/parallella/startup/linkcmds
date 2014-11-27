@@ -7,7 +7,7 @@ MEMORY
   {
       VECTOR_RAM     (AIW) : ORIGIN = 0x00000000, LENGTH = 0x40
       LOCAL_MEM      (AIW) : ORIGIN = 0x00000040, LENGTH = 0x00007FC0
-      RAM   : ORIGIN = 0x8E000000, LENGTH = 0x01000000
+      RAM   : ORIGIN = 0x8E000000, LENGTH = 0x02000000
   }
 
 REGION_ALIAS ("REGION_START", LOCAL_MEM);
@@ -25,7 +25,7 @@ REGION_ALIAS ("REGION_WORK", RAM);
 REGION_ALIAS ("REGION_STACK", RAM);
 
 bsp_section_vector_begin = 0x00000000;
-bsp_section_stack_begin = 0x8EFFFF00;
+bsp_section_stack_begin = 0x8FFFFF00;
 
 /*
  * Global symbols that may be defined externally
@@ -83,11 +83,9 @@ SECTIONS {
     *(.glue_7t) *(.glue_7) *(.vfp11_veneer) *(.v4_bx)
   } > REGION_TEXT AT > REGION_TEXT_LOAD
   .init :   {
-    __init = .;
     KEEP (*(.init))
   } > REGION_TEXT AT > REGION_TEXT_LOAD
   .fini :   {
-    __fini = .;
     KEEP (*(.fini))
     . = ALIGN(8);
     bsp_section_text_end = .;
