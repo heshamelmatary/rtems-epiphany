@@ -105,8 +105,8 @@ _external_start:
 	;; Zero the data space
 	mov	r0,%low(bsp_section_bss_begin)
 	movt	r0,%high(bsp_section_bss_begin)
-	mov	r1,%low(bsp_section_bss_end)
-	movt	r1,%high(bsp_section_bss_end)
+	mov	r1,%low(bsp_section_work_end)
+	movt	r1,%high(bsp_section_work_end)
 	mov	r2,#0
 	mov	r3,#0
 .L0_init_:
