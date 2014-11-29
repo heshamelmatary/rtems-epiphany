@@ -30,6 +30,7 @@ extern "C" {
 
 #include <rtems/score/epiphany.h>            /* pick up machine definitions */
 #include <rtems/score/types.h>
+#include <rtems/score/e_lib.h> 
 #ifndef ASM
 #include <rtems/bspIo.h>
 #include <stdint.h>
@@ -511,13 +512,14 @@ static inline uint32_t epiphany_interrupt_disable( void )
   uint32_t sr;
 
   asm volatile ("movfs %0, config \n" : "=r" (sr):);
-  
+  e_irq_mask(E_TIMER0_INT, true);
   asm volatile("gid \n"); 
   return sr;
 }
 
 static inline void epiphany_interrupt_enable(uint32_t level)
 {
+  e_irq_mask(E_TIMER0_INT, true);
   asm volatile("gie \n"); 
   asm volatile ("movts config, %0 \n" ::"r" (level):);
 }

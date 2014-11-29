@@ -65,7 +65,7 @@ libbsp_a_SOURCES += ../../shared/sbrk.c
 libbsp_a_SOURCES += ../../shared/src/stackalloc.c
 
 # clock
-libbsp_a_SOURCES += ../../shared/clock_driver_simidle.c
+libbsp_a_SOURCES += clock/clockdrv.c ../../../shared/clockdrv_shell.h
 
 # console
 libbsp_a_SOURCES += ../../shared/console-polled.c
