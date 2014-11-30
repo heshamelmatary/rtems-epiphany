@@ -32,7 +32,7 @@ void Clock_isr(void *arg);
 
 static void epiphany_clock_at_tick(void)
 {
-  unsigned int val = 0x0000FFFF; 
+  unsigned int val = 0xFFFFFFFF; 
   unsigned int event_type = E_CTIMER_CLK;
   /* The following e-lib function would not work properly 
      because gcc emits the wrong code with wrong argument
@@ -67,14 +67,14 @@ static void epiphany_clock_at_tick(void)
 static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 {
    old_isr = NULL;
-   e_irq_attach(E_TIMER0_INT, (sighandler_t) new_isr); 
+   /*e_irq_attach(E_TIMER0_INT, (sighandler_t) new_isr);*/ 
 }
 
 static void epiphany_clock_initialize(void)
 {
   unsigned int x = 0xDEADBEEF;
   
-  unsigned int val = 0x0000FFFF; 
+  unsigned int val = 0xFFFFFFFF; 
   unsigned int event_type = E_CTIMER_CLK;
   /* The following e-lib function would not work properly 
      because gcc emits the wrong code with wrong argument
@@ -82,15 +82,9 @@ static void epiphany_clock_initialize(void)
    */
   //x = e_ctimer_set(E_CTIMER_0, 0x00000000u);
   
-   x = e_ctimer_get(E_CTIMER_0);
-   printk("Timer value before set = %du \n", x);
-   
   /* Embed assembly code for setting timer0 */
   asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
-  
-  x = e_ctimer_get(E_CTIMER_0);         
-  printk("Timer value after first set = %du \n", x);
-  
+
   /* The following e-lib function would not work properly 
      because gcc emits the wrong code with wrong argument
      registers ordering.
@@ -108,13 +102,7 @@ static void epiphany_clock_initialize(void)
                 "movts config, r3; \t \n"
                 :: [event_type] "r" (event_type));
   
-  x = e_ctimer_get(E_CTIMER_0);         
-  printk("Timer value after start = %du \n", x);
-  
   cpu_counter_ticks = 0;
-  
-  x = e_ctimer_get(E_CTIMER_0);         
-  printk("Oh yeah = %du \n", x);
 }
 
  static void epiphany_clock_cleanup(void)

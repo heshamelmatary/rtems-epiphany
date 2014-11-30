@@ -40,6 +40,7 @@
   .global .normal_start;
 	.global _external_start;
 	.global .sw_exception;
+	.global .clock_isr;
 	.global __init;
 	.global __fini;
 	
@@ -52,14 +53,14 @@ _start:
 		.balign 4 ;
          b .normal_start
 
-        .balign 4 ; 0x4
+    .balign 4 ; 0x4
          b .sw_exception 
 
 		.balign 4 ; 0x8
          b .normal_start
 
 		.balign 4 ; 0xc
-         b .normal_start
+         b .clock_isr
 
 		.balign 4 ; 0x10
          b .normal_start
@@ -131,6 +132,11 @@ _external_start:
 .balign 4
 .type   .sw_exception, %function
 .sw_exception:
+  idle
+  
+.balign 4
+.type   .clock_isr, %function
+.clock_isr:
   idle
 /*  
  .section .init,"ax"     ;;

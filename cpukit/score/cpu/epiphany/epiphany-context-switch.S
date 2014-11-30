@@ -48,34 +48,34 @@ SYM(_CPU_Context_switch):
 
 SYM(restore):
   
-  ldr r2,[r1,2]
-  ldr r3,[r1,3]
-  ldr r4,[r1,4]
-  ldr r5,[r1,5]
-  ldr r6,[r1,6]
-  ldr r7,[r1,7]
-  ldr r8,[r1,8]
-  ldr r9,[r1,9]
-  ldr r10,[r1,10]
-  ldr fp,[r1,11]
-  ldr r12,[r1,12]
-  ldr sp,[r1,13]
-  ldr lr,[r1,14]
-  ldr r32,[r1,32]
-  ldr r34,[r1,34]
-  ldr r36,[r1,36]
-  ldr r38,[r1,38]
+  ldr r1,[r2,1]
+  ldr r3,[r2,3]
+  ldr r4,[r2,4]
+  ldr r5,[r2,5]
+  ldr r6,[r2,6]
+  ldr r7,[r2,7]
+  ldr r8,[r2,8]
+  ldr r9,[r2,9]
+  ldr r10,[r2,10]
+  ldr fp,[r2,11]
+  ldr r12,[r2,12]
+  ldr sp,[r2,13]
+  ldr lr,[r2,14]
+  ldr r32,[r2,32]
+  ldr r34,[r2,34]
+  ldr r36,[r2,36]
+  ldr r38,[r2,38]
   
-  ldr r0,[r1,64]
-  movts config, r0
+  ldr r0,[r2,64]
+  movts status, r0
   
-  ldr r0,[r1]
-  ldr r1,[r1,1]
+  ldr r0,[r2]
+  ldr r2,[r2,2]
   
   jr lr
 
  SYM(_CPU_Context_restore):
-  mov     r1, r0
+  mov     r2, r0
   b       _restore
   nop
 
