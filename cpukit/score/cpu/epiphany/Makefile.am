@@ -37,6 +37,7 @@ libscorecpu_a_SOURCES =
 libscorecpu_a_SOURCES += cpu.c
 libscorecpu_a_SOURCES += epiphany-context-switch.S
 libscorecpu_a_SOURCES += epiphany-context-initialize.c
+libscorecpu_a_SOURCES += epiphany-exception-handler.S
 
 #e-lib library 
 libscorecpu_a_SOURCES += e-lib/src/e_coreid_config.c

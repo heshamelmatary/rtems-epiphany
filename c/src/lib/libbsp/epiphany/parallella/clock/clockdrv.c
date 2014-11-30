@@ -35,7 +35,7 @@ void Clock_isr(void *arg);
 
 static void epiphany_clock_at_tick(void)
 {
-  unsigned int val = 0xFFFFFFFF; 
+  unsigned int val = 0x0000FFFF; 
   unsigned int event_type = E_CTIMER_CLK;
   /* The following e-lib function would not work properly 
      because gcc emits the wrong code with wrong argument

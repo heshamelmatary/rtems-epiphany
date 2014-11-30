@@ -30,8 +30,8 @@ extern "C" {
 
 #include <rtems/score/epiphany.h>            /* pick up machine definitions */
 #include <rtems/score/types.h>
-#include <rtems/score/e_lib.h> 
 #ifndef ASM
+#include <rtems/score/e_lib.h> 
 #include <rtems/bspIo.h>
 #include <stdint.h>
 #include <stdio.h> /* for printk */

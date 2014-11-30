@@ -31,7 +31,8 @@
   .extern bsp_start
   .extern bsp_section_bss_begin
   .extern bsp_section_bss_end
-
+  .extern _ISR_Handler
+  
   .extern  bsp_start_vector_table_end
   .extern  bsp_start_vector_table_size
   .extern  bsp_vector_table_size
@@ -170,10 +171,10 @@ _jump_to_c:
 .balign 4
 .type   .clock_isr, %function
 .clock_isr:
-  mov r0, #3
-  mov r63, %low(_Clock_isr)
-  mov r63, %high(_Clock_isr)
-  jalr r3
+  mov r62, #3
+  mov r63, %low(_ISR_Handler)
+  movt r63, %high(_ISR_Handler)
+  jr  r63
   
 .balign 4
 .type   _EPIPHANY_Exception_default, %function
