@@ -19,10 +19,13 @@
 #include <rtems.h>
 #include <bsp.h>
 #include <rtems/score/e_lib.h> /* e-lib Epiphany library */
+#include <bsp/linker-symbols.h>
 
 /* The number of clock cycles before generating a tick timer interrupt. */
 #define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x0000FFFF
 #define EPIPHANY_CLOCK_CYCLE_TIME_NANOSECONDS  10
+
+extern char bsp_start_vector_table_begin[];
 
 /* CPU counter */
 static CPU_Counter_ticks cpu_counter_ticks;
@@ -67,6 +70,11 @@ static void epiphany_clock_at_tick(void)
 static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 {
    old_isr = NULL;
+   
+   proc_ptr *table =
+     (proc_ptr *) bsp_start_vector_table_begin;
+     
+   table[E_TIMER0_INT] = new_isr;
    /*e_irq_attach(E_TIMER0_INT, (sighandler_t) new_isr);*/ 
 }
 

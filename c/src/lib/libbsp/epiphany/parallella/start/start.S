@@ -36,7 +36,10 @@
   .extern  bsp_start_vector_table_size
   .extern  bsp_vector_table_size
   .extern  bsp_section_stack_begin
-  
+  .extern _bsp_start_vector_table_begin;
+  .extern _Clock_isr;
+  .global _EPIPHANY_Exception_default;
+  .global _bsp_start_vector_table_begin;
   .global .normal_start;
 	.global _external_start;
 	.global .sw_exception;
@@ -63,7 +66,7 @@ _start:
          b .clock_isr
 
 		.balign 4 ; 0x10
-         b .normal_start
+         b .clock_isr
 
 		.balign 4 ; 0x14 
 		 b .normal_start
@@ -79,6 +82,29 @@ _start:
 
 		.balign 4 ; 0x24
 		 b .normal_start
+
+_bsp_start_vector_table_begin:
+
+  .balign 4 ;
+     .word .normal_start /* Reset */
+  .balign 4 ; 
+     .word _EPIPHANY_Exception_default /* SW exception */
+  .balign 4 ;
+     .word _EPIPHANY_Exception_default /* Data Page Fault */
+  .balign 4 ;
+     .word _EPIPHANY_Exception_default /* Timer 0 */
+  .balign 4 ;
+     .word _EPIPHANY_Exception_default /* Timer 1 */
+  .balign 4 ;
+     .word _EPIPHANY_Exception_default /* Message int */
+  .balign 4 ;
+     .word _EPIPHANY_Exception_default /* DMA0 int */
+  .balign 4 ;
+     .word _EPIPHANY_Exception_default /* DMA1 int */
+  .balign 4 ;
+     .word _EPIPHANY_Exception_default /* WAND */
+  .balign 4 ;
+     .word _EPIPHANY_Exception_default /* User interrupt */
 
 .size  _start, .-_start
 
@@ -115,6 +141,13 @@ _external_start:
 	sub	r5,r1,r0
 	bne	.L0_init_
 
+  /* Clear the reset interrupt flag */
+  mov    r0, %low(_jump_to_c)
+  movt   r0, %high(_jump_to_c)
+  movts  iret, r0
+  rti
+  
+_jump_to_c:
   ;; jump to bootcard
 	mov	r0,#0
 	mov	r1,#0
@@ -137,6 +170,14 @@ _external_start:
 .balign 4
 .type   .clock_isr, %function
 .clock_isr:
+  mov r0, #3
+  mov r63, %low(_Clock_isr)
+  mov r63, %high(_Clock_isr)
+  jalr r3
+  
+.balign 4
+.type   _EPIPHANY_Exception_default, %function
+_EPIPHANY_Exception_default:
   idle
 /*  
  .section .init,"ax"     ;;

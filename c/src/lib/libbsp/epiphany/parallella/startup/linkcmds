@@ -5,8 +5,8 @@ ENTRY (_start)
 
 MEMORY
   {
-      VECTOR_RAM     (AIW) : ORIGIN = 0x00000000, LENGTH = 0x40
-      LOCAL_MEM      (AIW) : ORIGIN = 0x00000040, LENGTH = 0x00007FC0
+      VECTOR_RAM     (AIW) : ORIGIN = 0x00000000, LENGTH = 0xB0
+      LOCAL_MEM      (AIW) : ORIGIN = 0x000000B0, LENGTH = 0x00007FC0
       RAM   : ORIGIN = 0x8E000000, LENGTH = 0x02000000
   }
 
@@ -24,14 +24,13 @@ REGION_ALIAS ("REGION_BSS", RAM);
 REGION_ALIAS ("REGION_WORK", RAM);
 REGION_ALIAS ("REGION_STACK", RAM);
 
+//_bsp_start_vector_table_begin = 0x00000000;
 bsp_section_vector_begin = 0x00000000;
 bsp_section_stack_begin = 0x8FFFFF00;
 
 /*
  * Global symbols that may be defined externally
  */
-
-bsp_start_vector_table_begin = 0x00000000;
 bsp_vector_table_size = DEFINED (bsp_vector_table_size) ? bsp_vector_table_size
 : 64;
 /* 8192 for raw vector table, and 17 * 4 for handlers vector. */
