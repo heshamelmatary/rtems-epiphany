@@ -39,7 +39,12 @@ _ISR_Handler:
   
   str r0,[sp]
   str r1,[sp,1]
+  
   str r2,[sp,2]
+  /* Stop timer */
+  //mov   r2, #0
+  //movts config, r2
+  
   str r3,[sp,3]
   str r4,[sp,4]
   str r5,[sp,5]
@@ -66,10 +71,22 @@ _ISR_Handler:
   str r26,[sp,26]
   str r27,[sp,27]
   
+  str r28,[sp,28]
+  str r29,[sp,29]
+  str r30,[sp,30]
+  str r31,[sp,31]
+  str r32,[sp,32]
+  str r33,[sp,33]
   str r34,[sp,34]
+  str r35,[sp,35]
   str r36,[sp,36]
+  str r37,[sp,37]
   str r38,[sp,38]
-  
+  str r39,[sp,39]
+  str r40,[sp,40]
+  str r41,[sp,41]
+  str r42,[sp,42]
+  str r43,[sp,43]
   str r44,[sp,44]
   str r45,[sp,45]
   str r46,[sp,46]
@@ -93,6 +110,16 @@ _ISR_Handler:
   
   movfs r1,status
   str r1, [sp,64]
+  
+  movfs r1,config
+  str r1, [sp,65]
+  
+  movfs r1,iret
+  str r1, [sp,66]
+  
+  /* Stop timer */
+  mov   r2, #0
+  movts config, r2
   
   /* Save interrupted task stack pointer */
   add r1, sp, #260
@@ -144,7 +171,7 @@ _ISR_Handler:
   */
 jump_to_c_handler:
   /* Red zone ? */
-  add sp, sp, #-64
+  add sp, sp, #-128
   jalr r27
 
 
@@ -189,7 +216,7 @@ jump_to_c_handler:
  SYM(exception_frame_restore):
   
   ldr r1,[sp,1]
-  ldr r2,[sp,2]
+  
   ldr r3,[sp,3]
   ldr r4,[sp,4]
   ldr r5,[sp,5]
@@ -202,7 +229,7 @@ jump_to_c_handler:
   ldr r12,[sp,12]
 
   ldr lr,[sp,14]
-  
+
   ldr r15,[sp,15]
   ldr r16,[sp,16]
   ldr r17,[sp,17]
@@ -217,10 +244,20 @@ jump_to_c_handler:
   ldr r26,[sp,26]
   ldr r27,[sp,27]
   
+  ldr r28,[sp,28]
+  ldr r29,[sp,29]
+  ldr r30,[sp,30]
+  ldr r31,[sp,31]
   ldr r32,[sp,32]
   ldr r34,[sp,34]
   ldr r36,[sp,36]
   ldr r38,[sp,38]
+  
+  ldr r39,[sp,39]
+  ldr r40,[sp,40]
+  ldr r41,[sp,41]
+  ldr r42,[sp,42]
+  ldr r43,[sp,43]
   
   ldr r44,[sp,44]
   ldr r45,[sp,45]
@@ -246,11 +283,25 @@ jump_to_c_handler:
   ldr r0,[sp,64]
   movts status, r0
   
+  ldr r0, [sp,65]
+  movts config, r0
+  
+  ldr   r0, [sp,66]
+  movts iret, r0
+  
   ldr r0,[sp]
+  
+  ldr r2,[sp,2]
   
   /* Unwind exception frame */
   add sp, sp, #260
   
+  ldr r62, [sp, #4]
+  ldr r63, [sp, #8]
+  
+  add sp, sp, #8
+  
   /* Enable interrupts */
   gie
+  
   rti

@@ -29,11 +29,13 @@ void _CPU_Context_Initialize(
 )
 {
   /* Decrement 200 byte to account for red-zone */
-  uint32_t stack = ((uint32_t) stack_area_begin) - 200;
-  uint32_t sr;
+  uint32_t stack = ((uint32_t) stack_area_begin) - 128;
+  uint32_t sr, config, iret;
   uint32_t stack_high = stack + stack_area_size;
 
   asm volatile ("movfs %0, status \n" : "=r" (sr):);
+  asm volatile ("movfs %0, config \n" : "=r" (config):);
+  asm volatile ("movfs %0, iret \n" : "=r" (iret):);
   
   memset(context, 0, sizeof(*context));
 
@@ -41,4 +43,6 @@ void _CPU_Context_Initialize(
   context->r[11] = stack_high;
   context->r[14] = (uint32_t) entry_point;
   context->status = sr;
+  //context->config = config;
+  context->iret = iret;
 }

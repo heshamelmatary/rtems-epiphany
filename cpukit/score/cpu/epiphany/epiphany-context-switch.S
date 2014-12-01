@@ -21,7 +21,7 @@ PUBLIC(_CPU_Context_restore_fp)
 PUBLIC(_CPU_Context_save_fp)
 
 SYM(_CPU_Context_switch):
-  
+  gid
   str r0,[r0]
   str r1,[r0,1]
   str r2,[r0,2]
@@ -79,6 +79,12 @@ SYM(_CPU_Context_switch):
   
   movfs r1,status
   str r1, [r0,64]
+  
+  movfs r1,config
+  str r1, [r0,65]
+  
+  movfs r1,iret
+  str r1, [r0,66]
   
 
 SYM(restore):
@@ -140,8 +146,16 @@ SYM(restore):
   ldr r0,[r2,64]
   movts status, r0
   
+  ldr r0,[r2,65]
+  //movts config, r0
+  
+  ldr r0,[r2,66]
+  movts iret, r0
+  
   ldr r0,[r2]
   ldr r2,[r2,2]
+  
+  gie
   
   jr lr
 
