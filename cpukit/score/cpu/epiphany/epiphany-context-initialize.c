@@ -33,8 +33,8 @@ void _CPU_Context_Initialize(
   uint32_t sr;
   uint32_t stack_high = stack + stack_area_size;
 
-  asm volatile ("movfs %0, config \n" : "=r" (sr):);
-
+  asm volatile ("movfs %0, status \n" : "=r" (sr):);
+  
   memset(context, 0, sizeof(*context));
 
   context->r[13] = stack_high;
