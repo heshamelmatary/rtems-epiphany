@@ -31,6 +31,9 @@ PUBLIC(_ISR_Handler)
 .type    _ISR_Handler,%function
 
 _ISR_Handler:
+  /* Disable interrupts */
+  gid
+  
   /* Reserve space for CPU_Exception_frame */ 
   add sp, sp, #-260
   
@@ -110,8 +113,8 @@ _ISR_Handler:
   str     r5, [r6]
   str     r7, [r8]
   */
-  /* Keep sp (Exception frame address) in r29 */
-  mov   r29, sp
+  /* Keep sp (Exception frame address) in r32 - Callee saved */
+  mov   r32, sp
 
   /* Call the exception handler from vector table */
 
@@ -122,9 +125,9 @@ _ISR_Handler:
   mov    r27, r62
   mov    r2,  sp  ;; /* The compiler expects second arg in r2! */
   lsl    r27, r27, #2
-  mov    r28, %low(_bsp_start_vector_table_begin)
+  mov    r26, %low(_bsp_start_vector_table_begin)
   movt   r15, #0
-  add    r27, r27, r28
+  add    r27, r27, r26
   ldr    r27, [r27]
   
   /* Do not switch stacks if we are in a nested interrupt. At
@@ -140,11 +143,13 @@ _ISR_Handler:
   ldr     sp, [sp]
   */
 jump_to_c_handler:
+  /* Red zone ? */
+  add sp, sp, #-64
   jalr r27
 
 
   /* Switch back to the interrupted task stack */
-  mov  sp, r29
+  mov  sp, r32
 
   /* Decrement nesting level */
   /*mov   r6, %low(#(ISR_NEST_LEVEL))
@@ -245,5 +250,7 @@ jump_to_c_handler:
   
   /* Unwind exception frame */
   add sp, sp, #260
- 
+  
+  /* Enable interrupts */
+  gie
   rti

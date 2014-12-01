@@ -22,8 +22,8 @@
 #include <bsp/linker-symbols.h>
 
 /* The number of clock cycles before generating a tick timer interrupt. */
-#define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x0000FFFF
-#define EPIPHANY_CLOCK_CYCLE_TIME_NANOSECONDS  10
+#define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x00FFFFFF
+#define EPIPHANY_CLOCK_CYCLE_TIME_NANOSECONDS 1
 
 extern char bsp_start_vector_table_begin[];
 
