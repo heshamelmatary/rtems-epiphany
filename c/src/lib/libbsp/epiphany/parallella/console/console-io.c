@@ -62,7 +62,7 @@ void console_initialize_hardware(void)
 /* prototypical inline asm */
 static int asm_write (int CHAN, void* ADDR, int LEN)
 {
-  asm volatile ("gid");
+  /*asm volatile ("gid");
 	register int chan asm("r0") = CHAN;
 	register void* addr asm("r1") = ADDR;
 	register int len asm("r2") = LEN;
@@ -72,7 +72,9 @@ static int asm_write (int CHAN, void* ADDR, int LEN)
 	     "r" (chan), "r" (addr), "r" (len));
 
   asm volatile ("gie");
+  
 	return result;
+	*/
 }
 
 static char asm_read(int CHAN, void *ADDR, int LEN)

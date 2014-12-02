@@ -7,7 +7,7 @@ MEMORY
   {
       VECTOR_RAM     (AIW) : ORIGIN = 0x00000000, LENGTH = 0xB0
       LOCAL_MEM      (AIW) : ORIGIN = 0x000000B0, LENGTH = 0x00007FC0
-      RAM   : ORIGIN = 0x8E000000, LENGTH = 0x02000000
+      RAM   : ORIGIN = 0x8E000000, LENGTH = 0x01000000
   }
 
 REGION_ALIAS ("REGION_START", LOCAL_MEM);
@@ -24,9 +24,11 @@ REGION_ALIAS ("REGION_BSS", RAM);
 REGION_ALIAS ("REGION_WORK", RAM);
 REGION_ALIAS ("REGION_STACK", RAM);
 
+/* The following address is used for text output */
+bsp_section_outbut_buffer = 0x8F800000;
 //_bsp_start_vector_table_begin = 0x00000000;
 bsp_section_vector_begin = 0x00000000;
-bsp_section_stack_begin = 0x8FFFFF00;
+bsp_section_stack_begin = 0x8EFFFF00;
 
 /*
  * Global symbols that may be defined externally

@@ -53,17 +53,15 @@ static void epiphany_clock_at_tick(void)
   //x = e_ctimer_start(E_CTIMER_0, E_CTIMER_CLK);
   
   /* Embed assembly code for setting timer0 qouted from e-lib */
-  asm volatile ("movfs r3, config; \t \n"
-                "mov   r63, %%low(0xffffff0f);\t \n"
-                "mov   r63, %%high(0xffffff0f);\t \n"
-                "lsl   r1, %[event_type], 0x4; \t \n"
-                "and   r3, r3, r63; \t \n"
-                "movts config, r3; \t \n"
-                "orr   r3, r3, r1; \t \n"
-                "movts config, r3; \t \n"
+  asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xffffff0f);\t \n"
+                "movt   r17, %%high(0xffffff0f);\t \n"
+                "lsl   r18, %[event_type], 0x4; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
-  
-  cpu_counter_ticks += TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT;
 }
 
 /* Use timer0 on each eCPU for scheduling purposes */
@@ -100,14 +98,14 @@ static void epiphany_clock_initialize(void)
   //x = e_ctimer_start(E_CTIMER_0, E_CTIMER_CLK);
   
   /* Embed assembly code for setting timer0 qouted from e-lib */
-  asm volatile ("movfs r3, config; \t \n"
-                "mov   r63, %%low(0xffffff0f);\t \n"
-                "mov   r63, %%high(0xffffff0f);\t \n"
-                "lsl   r1, %[event_type], 0x4; \t \n"
-                "and   r3, r3, r63; \t \n"
-                "movts config, r3; \t \n"
-                "orr   r3, r3, r1; \t \n"
-                "movts config, r3; \t \n"
+  asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xffffff0f);\t \n"
+                "movt   r17, %%high(0xffffff0f);\t \n"
+                "lsl   r18, %[event_type], 0x4; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
   
   cpu_counter_ticks = 0;

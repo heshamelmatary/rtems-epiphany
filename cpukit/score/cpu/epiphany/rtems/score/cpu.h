@@ -373,7 +373,9 @@ extern "C" {
 typedef struct {
   uint32_t  r[64];
 
-  uint32_t  status;
+  uint32_t status;
+  uint32_t config;
+  uint32_t iret;
 } Context_Control;
 
 #define _CPU_Context_Get_SP( _context ) \
@@ -510,10 +512,8 @@ SCORE_EXTERN Context_Control_fp  _CPU_Null_fp_context;
 static inline uint32_t epiphany_interrupt_disable( void )
 {
   uint32_t sr;
-
-  asm volatile ("movfs %[sr], status \n" : [sr] "=r" (sr):);
-  
   //e_irq_mask(E_TIMER0_INT, true);
+  asm volatile ("movfs %[sr], status \n" : [sr] "=r" (sr):);
   asm volatile("gid \n"); 
   return sr;
 }
@@ -521,8 +521,8 @@ static inline uint32_t epiphany_interrupt_disable( void )
 static inline void epiphany_interrupt_enable(uint32_t level)
 {
   //e_irq_mask(E_TIMER0_INT, false);
+  asm volatile("gie \n");
   asm volatile ("movts status, %[level] \n" :: [level] "r" (level):);
-  asm volatile("gie \n"); 
 }
 
 #define _CPU_ISR_Disable( _level ) \
@@ -811,6 +811,8 @@ typedef uint16_t Priority_bit_map_Word;
 typedef struct {
   uint32_t r[64];
   uint32_t status;
+  uint32_t config;
+  uint32_t iret;
   
 } CPU_Exception_frame;
 

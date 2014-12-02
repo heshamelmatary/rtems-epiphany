@@ -133,8 +133,8 @@ _external_start:
 	;; Zero the data space
 	mov	r0,%low(bsp_section_bss_begin)
 	movt	r0,%high(bsp_section_bss_begin)
-	mov	r1,%low(bsp_section_work_end)
-	movt	r1,%high(bsp_section_work_end)
+	mov	r1,%low(bsp_section_stack_begin)
+	movt	r1,%high(bsp_section_stack_begin)
 	mov	r2,#0
 	mov	r3,#0
 .L0_init_:
@@ -171,6 +171,11 @@ _jump_to_c:
 .balign 4
 .type   .clock_isr, %function
 .clock_isr:
+  gid
+  add sp, sp, #-8
+  str r62, [sp, #4]
+  str r63, [sp, #8]
+  
   mov r62, #3
   mov r63, %low(_ISR_Handler)
   movt r63, %high(_ISR_Handler)

@@ -21,6 +21,8 @@ extern "C" {
 #define TESTS_USE_PRINTK
 #endif
 
+#define TESTS_USE_PRINTK 1
+
 /*
  *  USE PRINTK TO MINIMIZE SIZE
  */

@@ -19,10 +19,12 @@
 #include "config.h"
 #endif
 
+#include <rtems/score/cpu.h>
 #include <rtems/asm.h>
 #include <rtems/score/percpu.h>
 
 .extern bsp_start_vector_table_begin
+.extern __Thread_Dispatch
 
 .align 4
 .section .text
@@ -30,20 +32,68 @@
 PUBLIC(_ISR_Handler)
 .type    _ISR_Handler,%function
 
+//#define ISR_NEST_LEVEL SYM(_Per_CPU_Information)
+
+  /*
+   *  If this CPU target lets RTEMS allocates the interrupt stack, then
+   *  we need to have places in the per CPU table to hold them.
+   */
+#define CPU_PER_CPU_CONTROL_SIZE 0
+#define CPU_SIZEOF_POINTER 4
+
+  #define PER_CPU_INTERRUPT_STACK_LOW \
+    CPU_PER_CPU_CONTROL_SIZE
+  #define PER_CPU_INTERRUPT_STACK_HIGH \
+    PER_CPU_INTERRUPT_STACK_LOW + CPU_SIZEOF_POINTER
+  #define PER_CPU_END_STACK             \
+    PER_CPU_INTERRUPT_STACK_HIGH + CPU_SIZEOF_POINTER
+
+  #define INTERRUPT_STACK_LOW \
+    (SYM(_Per_CPU_Information) + PER_CPU_INTERRUPT_STACK_LOW)
+  #define INTERRUPT_STACK_HIGH \
+    (SYM(_Per_CPU_Information) + PER_CPU_INTERRUPT_STACK_HIGH)
+
+/*
+ *  These are the offsets of the required elements in the per CPU table.
+ */
+#define PER_CPU_ISR_NEST_LEVEL \
+  PER_CPU_END_STACK
+#define PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL \
+  PER_CPU_ISR_NEST_LEVEL + 4
+#define PER_CPU_OFFSET_EXECUTING \
+  PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL + 4
+#define PER_CPU_OFFSET_HEIR \
+  PER_CPU_OFFSET_EXECUTING + CPU_SIZEOF_POINTER
+#define PER_CPU_DISPATCH_NEEDED \
+  PER_CPU_OFFSET_HEIR + CPU_SIZEOF_POINTER
+
+#define THREAD_DISPATCH_DISABLE_LEVEL \
+  (SYM(_Per_CPU_Information) + PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL)
+#define ISR_NEST_LEVEL \
+  (SYM(_Per_CPU_Information) + PER_CPU_ISR_NEST_LEVEL)
+#define DISPATCH_NEEDED \
+  (SYM(_Per_CPU_Information) + PER_CPU_DISPATCH_NEEDED)
+
 _ISR_Handler:
   /* Disable interrupts */
   gid
   
   /* Reserve space for CPU_Exception_frame */ 
-  add sp, sp, #-260
+  add sp, sp, #-280
   
   str r0,[sp]
   str r1,[sp,1]
   
   str r2,[sp,2]
+  
+  movfs r1,config
+  str r1, [sp,65]
+
+isr_handler_timer0_stopped:
+
   /* Stop timer */
-  //mov   r2, #0
-  //movts config, r2
+  mov   r2, #0
+  movts config, r2
   
   str r3,[sp,3]
   str r4,[sp,4]
@@ -111,27 +161,20 @@ _ISR_Handler:
   movfs r1,status
   str r1, [sp,64]
   
-  movfs r1,config
-  str r1, [sp,65]
-  
   movfs r1,iret
   str r1, [sp,66]
   
-  /* Stop timer */
-  mov   r2, #0
-  movts config, r2
-  
   /* Save interrupted task stack pointer */
-  add r1, sp, #260
+  add r1, sp, #288
   str r1,[sp,13]
   
   /* Increment nesting level */
-  /*mov     r6, %low(#(ISR_NEST_LEVEL))
-  movt    r6, %high(#(ISR_NEST_LEVEL))
-  */
+  //mov     r6, %low(ISR_NEST_LEVEL)
+  //movt    r6, %high(ISR_NEST_LEVEL)
+  
   /* Disable multitasking */
-  /*mov     r8, %low(_Per_CPU_Information + 4)
-  movt    r8, %high(_Per_CPU_Information + 4)
+  //mov     r8, %low(THREAD_DISPATCH_DISABLE_LEVEL)
+  //movt    r8, %high(THREAD_DISPATCH_DISABLE_LEVEL)
   
   ldr     r5, [r6]
   ldr     r7, [r8]
@@ -139,7 +182,7 @@ _ISR_Handler:
   add     r7, r7, #1
   str     r5, [r6]
   str     r7, [r8]
-  */
+  
   /* Keep sp (Exception frame address) in r32 - Callee saved */
   mov   r32, sp
 
@@ -161,12 +204,12 @@ _ISR_Handler:
    * this point r5 should be holding ISR_NEST_LEVEL value.
    */
   
-  /*sub      r12, r5, #1
-  bgteu    jump_to_c_handler
-  */
+  //sub      r12, r5, #1
+  //bgteu    jump_to_c_handler
+  
    /* Switch to RTEMS dedicated interrupt stack */
-  /*mov     sp, %low(#(INTERRUPT_STACK_HIGH))
-  movt    sp, %high(#(INTERRUPT_STACK_HIGH))
+  /*mov     sp, %low(INTERRUPT_STACK_HIGH)
+  movt    sp, %high(INTERRUPT_STACK_HIGH)
   ldr     sp, [sp]
   */
 jump_to_c_handler:
@@ -179,12 +222,12 @@ jump_to_c_handler:
   mov  sp, r32
 
   /* Decrement nesting level */
-  /*mov   r6, %low(#(ISR_NEST_LEVEL))
-  movt  r6, %high(#(ISR_NEST_LEVEL))
+  /*mov   r6, %low(ISR_NEST_LEVEL)
+  movt  r6, %high(ISR_NEST_LEVEL)
   */
   /* Enable multitasking */
-  /*mov   r8, %low(#(THREAD_DISPATCH_DISABLE_LEVEL))
-  movt  r8, %high(#(_THREAD_DISPATCH_DISABLE_LEVEL))
+  /*mov   r8, %low(THREAD_DISPATCH_DISABLE_LEVEL)
+  movt  r8, %high(THREAD_DISPATCH_DISABLE_LEVEL)
   
   ldr   r5, [r6]
   ldr   r7, [r8]
@@ -193,6 +236,7 @@ jump_to_c_handler:
   str   r5, [r6]
   str   r7, [r8]
   */
+  
   /* Check if _ISR_Nest_level > 0 */ 
   //sub      r12, r5, #0
   //bgtu    exception_frame_restore
@@ -202,18 +246,19 @@ jump_to_c_handler:
   //bgtu    exception_frame_restore
 
   /* Check if dispatch needed */
-  //mov     r31, %low(#(DISPATCH_NEEDED))
-  //movt    r31, %high(#(DISPATCH_NEEDED))
-  //ldr     r31, [r31]
-  
+  /*mov     r31, %low(DISPATCH_NEEDED)
+  movt    r31, %high(DISPATCH_NEEDED)
+  ldr     r31, [r31]
+   */
   //sub     r12, r12, #0
   //beq     exception_frame_restore
   
-  //mov     r13, %low(#(Thread_Dispatch))
-  //movt    r13, %high(#(_Thread_Dispatch))
-  //jalr    r13
-
- SYM(exception_frame_restore):
+  /*mov     r13, %low(__Thread_Dispatch)
+  movt    r13, %high(__Thread_Dispatch)
+  jalr    r13
+  */
+  
+exception_frame_restore:
   
   ldr r1,[sp,1]
   
@@ -294,7 +339,7 @@ jump_to_c_handler:
   ldr r2,[sp,2]
   
   /* Unwind exception frame */
-  add sp, sp, #260
+  add sp, sp, #280
   
   ldr r62, [sp, #4]
   ldr r63, [sp, #8]

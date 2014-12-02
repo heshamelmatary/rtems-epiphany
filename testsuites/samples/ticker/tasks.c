@@ -21,6 +21,8 @@
 
 #include "system.h"
 
+static volatile int *pattern_trace = 0x7fc4;
+static volatile int *end = 0x7fc8;
 rtems_task Test_task(
   rtems_task_argument unused
 )
@@ -35,9 +37,11 @@ rtems_task Test_task(
 
   task_index = task_number( tid );
   for ( ; ; ) {
+  (*pattern_trace)++;
     status = rtems_clock_get_tod( &time );
     if ( time.second >= 35 ) {
       TEST_END();
+      (*end)++;
       rtems_test_exit( 0 );
     }
     put_name( Task_name[ task_index ], FALSE );
