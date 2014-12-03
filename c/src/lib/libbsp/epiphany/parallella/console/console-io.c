@@ -51,18 +51,32 @@
 
 /* external prototypes for monitor interface routines */
 
+#define PARALLELLA_CTRL_BASE 0x8F800000
+
+#define PARALLELLA_CONSOLE_REG_CTRL  (PARALLELLA_CTRL_BASE + 0)
+#define PARALLELLA_CONSOLE_REG_DATA  (PARALLELLA_CTRL_BASE + 4)
+
+#define PARALLELLA_CONSOLE_REG_CTRL_BIT_BUSY  0x1
+#define PARALLELLA_CONSOLE_REG_CTRL_BIT_SEND  0x2
+#define PARALLELLA_CONSOLE_REG_CTRL_BIT_RECV  0x4
+
+#define PARALLELLA_REG(reg) (int *) (reg)
+
 static void outbyte_console( char );
 static char inbyte_console( void );
 
 void console_initialize_hardware(void)
 {
-  return;
+  *(PARALLELLA_REG(PARALLELLA_CONSOLE_REG_CTRL)) = 0;
+  *(PARALLELLA_REG(PARALLELLA_CONSOLE_REG_DATA)) = 0;
 }
 
 /* prototypical inline asm */
 static int asm_write (int CHAN, void* ADDR, int LEN)
 {
-  /*asm volatile ("gid");
+  
+  //static volatile *int console_status = 0x8F800000
+  /*
 	register int chan asm("r0") = CHAN;
 	register void* addr asm("r1") = ADDR;
 	register int len asm("r2") = LEN;
@@ -70,11 +84,10 @@ static int asm_write (int CHAN, void* ADDR, int LEN)
 	register int error asm("r3");
 	asm ("trap 0" : "=r" (result), "=r" (error) :
 	     "r" (chan), "r" (addr), "r" (len));
-
-  asm volatile ("gie");
-  
+	       
 	return result;
-	*/
+	*/ 
+	
 }
 
 static char asm_read(int CHAN, void *ADDR, int LEN)
@@ -92,7 +105,21 @@ static char asm_read(int CHAN, void *ADDR, int LEN)
 
 static void outbyte_console(char c)
 {
-  asm_write (STDOUT_FILENO, &c, 1);
+  asm volatile ("gid");
+  //(*(PARALLELLA_REG(PARALLELLA_CONSOLE_REG_DATA)))++;
+  while( *(PARALLELLA_REG(PARALLELLA_CONSOLE_REG_CTRL))
+         & PARALLELLA_CONSOLE_REG_CTRL_BIT_BUSY
+       );
+  
+  /* Send character */
+  *(PARALLELLA_REG(PARALLELLA_CONSOLE_REG_DATA)) = (int) c;
+  
+  (*(PARALLELLA_REG(PARALLELLA_CONSOLE_REG_CTRL))) |= 
+  PARALLELLA_CONSOLE_REG_CTRL_BIT_SEND;
+  /* Signal Zynq that there is available data */
+  
+  asm volatile ("gie");
+  //asm_write (STDOUT_FILENO, &c, 1);
 }
 
 static char inbyte_console( void )
