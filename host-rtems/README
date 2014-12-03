@@ -1,0 +1,3 @@
+This directory contains host programs that should be running on 
+Linux/Zynq chip, and may or may not communicate with RTEMS running 
+on Epiphany chip.
