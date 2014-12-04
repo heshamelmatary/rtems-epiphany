@@ -7,7 +7,6 @@
  */
 
 /*
- * Definitions related to the PC386 BSP.
  * This header file is also used in assembler modules.
  *
  * Copyright (C) 2014  Jan Doležal (dolezj21@fel.cvut.cz)
@@ -22,4 +21,3 @@
 
 #define IDT_SIZE (256)
 #define GDT_SIZE (3 + NUM_APP_DRV_GDT_DESCRIPTORS)
-
