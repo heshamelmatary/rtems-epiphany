@@ -21,8 +21,6 @@
 
 #include "system.h"
 
-static volatile int *pattern_trace = 0x7fc4;
-static volatile int *end = 0x7fc8;
 rtems_task Test_task(
   rtems_task_argument unused
 )
@@ -31,21 +29,28 @@ rtems_task Test_task(
   rtems_time_of_day time;
   uint32_t          task_index;
   rtems_status_code status;
-
   status = rtems_task_ident( RTEMS_SELF, RTEMS_SEARCH_ALL_NODES, &tid );
   directive_failed( status, "task ident" ); 
 
   task_index = task_number( tid );
   for ( ; ; ) {
-  (*pattern_trace)++;
     status = rtems_clock_get_tod( &time );
     if ( time.second >= 35 ) {
       TEST_END();
-      (*end)++;
       rtems_test_exit( 0 );
     }
+   int x = 9;
     put_name( Task_name[ task_index ], FALSE );
-    print_time( " - rtems_clock_get_tod - ", &time, "\n" );
+    //print_time( " - rtems_clock_get_tod - ", &time, "\n" );
+    printk("Time in hours is %d \n", x);
+    //printk(" - rtems_clock_get_tod - %d:%d:%d   %d/%d/%d\n", \ 
+  //     time.hour, time.minute, time.second, \
+    //   time.month, time.day, time.year);
+
+    /*printk(" - rtems_clock_get_tod - " PRIu32 ":%02" PRIu32 ":%02" PRIu32 " %02" PRIu32 "/%02" PRIu32 "/%04" PRIu32 "\n", \ 
+       time.hour, time.minute, time.second, \
+       time.month, time.day, time.year);
+    */
     status = rtems_task_wake_after(
       task_index * 5 * rtems_clock_get_ticks_per_second()
     );
