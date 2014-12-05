@@ -14,6 +14,7 @@ include_rtems_score_HEADERS += rtems/score/cpu.h
 include_rtems_score_HEADERS += rtems/score/cpu_asm.h
 include_rtems_score_HEADERS += rtems/score/types.h
 include_rtems_score_HEADERS += rtems/score/epiphany.h
+include_rtems_score_HEADERS += rtems/score/epiphany-utility.h
 
 #e-lib library 
 include_rtems_score_HEADERS += e-lib/include/e_common.h 

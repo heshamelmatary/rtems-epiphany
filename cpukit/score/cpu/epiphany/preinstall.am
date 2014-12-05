@@ -43,6 +43,10 @@ $(PROJECT_INCLUDE)/rtems/score/epiphany.h: rtems/score/epiphany.h $(PROJECT_INCL
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/epiphany.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/epiphany.h
 
+$(PROJECT_INCLUDE)/rtems/score/epiphany-utility.h: rtems/score/epiphany-utility.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/epiphany-utility.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/epiphany-utility.h
+
 $(PROJECT_INCLUDE)/rtems/score/e_common.h: e-lib/include/e_common.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_common.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_common.h

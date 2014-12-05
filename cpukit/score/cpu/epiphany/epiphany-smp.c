@@ -1,5 +1,5 @@
 /*
- *  This include file contains macros pertaining to the Opencores
+ *  This include file contains macros pertaining to the
  *  Epiphany processor family.
  *
  *  COPYRIGHT (c) 2014 Hesham ALMatary <heshamelmatary@gmail.com>
@@ -14,12 +14,15 @@
 #define _EPIPHANY_SMP_H
 
 #include <assert.h>
+#include <rtems/score/smp.h>
+#include <rtems/score/epiphany-utility.h>
 #include <rtems/score/smpimpl.h>
-#include <bsp/linker-symbols.h>
 
-static void bsp_inter_processor_interrupt(void *arg)
+extern char bsp_processor_count[];
+
+void bsp_inter_processor_interrupt(void *arg)
 {
-  _SMP_Inter_processor_interrupt_handler();
+  //_SMP_Inter_processor_interrupt_handler();
 }
 
 uint32_t _CPU_SMP_Initialize(void)
@@ -43,20 +46,20 @@ void _CPU_SMP_Send_interrupt( uint32_t target_processor_index )
 
 bool _CPU_SMP_Start_processor(uint32_t cpu_index)
 {
-  return _Per_CPU_State_wait_for_non_initial_state(cpu_index, 0);
+  //return _Per_CPU_State_wait_for_non_initial_state(cpu_index, 0);
 }
 
-static inline uint32_t _CPU_SMP_Get_current_processor( void )
+uint32_t _CPU_SMP_Get_current_processor( void )
 {
-
+  return _Epiphany_Get_Current_coreid();
 }
 
-static inline void _CPU_SMP_Processor_event_broadcast( void )
+inline void _CPU_SMP_Processor_event_broadcast( void )
 {
-    __asm__ volatile ( "" : : : "memory" );
+    asm volatile ("" : : : "memory" );
 }
 
-BSP_START_TEXT_SECTION static inline void
+inline void
 epiphany_start_on_secondary_processor(void)
 {
 

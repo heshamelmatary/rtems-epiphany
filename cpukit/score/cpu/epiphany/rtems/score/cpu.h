@@ -1090,7 +1090,7 @@ CPU_Counter_ticks _CPU_Counter_difference(
    * current processor in the system.  The set of processor indices is the
    * range of integers starting with zero up to the processor count minus one.
    */
-  static inline uint32_t _CPU_SMP_Get_current_processor( void );
+   void uint32_t _CPU_SMP_Get_current_processor( void );
 
   /**
    * @brief Sends an inter-processor interrupt to the specified target
@@ -1113,7 +1113,7 @@ CPU_Counter_ticks _CPU_Counter_difference(
    *
    * @see _CPU_SMP_Processor_event_receive().
    */
-  static inline void _CPU_SMP_Processor_event_broadcast( void );
+  void _CPU_SMP_Processor_event_broadcast( void );
 
   /**
    * @brief Receives a processor event.
@@ -1123,7 +1123,7 @@ CPU_Counter_ticks _CPU_Counter_difference(
    *
    * @see _CPU_SMP_Processor_event_broadcast().
    */
-  static inline void _CPU_SMP_Processor_event_receive( void )
+  void _CPU_SMP_Processor_event_receive( void )
   {
     __asm__ volatile ( "" : : : "memory" );
   }
@@ -1133,7 +1133,7 @@ CPU_Counter_ticks _CPU_Counter_difference(
    *
    * @param[in] context The context.
    */
-  static inline bool _CPU_Context_Get_is_executing(
+  bool _CPU_Context_Get_is_executing(
     const Context_Control *context
   )
   {
@@ -1146,7 +1146,7 @@ CPU_Counter_ticks _CPU_Counter_difference(
    * @param[in] context The context.
    * @param[in] is_executing The new value for the is executing indicator.
    */
-  static inline void _CPU_Context_Set_is_executing(
+  void _CPU_Context_Set_is_executing(
     Context_Control *context,
     bool is_executing
   )
