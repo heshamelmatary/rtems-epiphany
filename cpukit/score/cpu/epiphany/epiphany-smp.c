@@ -41,7 +41,7 @@ void _CPU_SMP_Finalize_initialization(uint32_t cpu_count)
 
 void _CPU_SMP_Send_interrupt( uint32_t target_processor_index )
 {
-
+  
 }
 
 bool _CPU_SMP_Start_processor(uint32_t cpu_index)
