@@ -13,7 +13,19 @@
 #ifndef _EPIPHANY_UTILITY_H
 #define _EPIPHANY_UTILITY_H
 
-uint32_t _Epiphany_Get_Current_coreid();
+/* TODO: Move this to irq.h */
+typedef enum
+{
+  START,
+  SW_EXCEPTION,
+  MEM_FAULT,
+  TIMER0,
+  TIMER1,
+  SMP_MESSAGE,
+  DMA0,
+  DMA1,
+  SER,
+} IRQ_PER_CORE_T;
 
 /*  Per-core IO mapped register addresses 
  *  @see Epiphany architecture reference.
@@ -80,6 +92,25 @@ uint32_t _Epiphany_Get_Current_coreid();
 #define EPIPHANY_GET_REG_ABSOLUTE_ADDR(coreid, reg) \
         (EPIPHANY_COREID_TO_MSB_ADDR(coreid) | (reg))
 
+/* FIXME: Some registers are 64-bit while others are 32, for now
+ * just use 32-bit registers 
+ */
+#define EPIPHANY_REG(reg) (uint32_t *) (reg)
+
+static inline uint32_t epiphany_coreid_to_rtems_map(uint32_t coreid);
+
+/* Read register with its absolute address */
+static inline uint32_t read_epiphany_reg(volatile uint32_t reg_addr)
+{
+  return *(EPIPHANY_REG(reg_addr));
+}
+
+/* Write register with its abolute address */
+static inline void write_epiphany_reg(volatile uint32_t reg_addr, uint32_t val)
+{
+  *(EPIPHANY_REG(reg_addr)) = val;
+}
+
 /*  Epiphany uses 12 bits for defining core IDs, while RTEMS uses 
  *  linear IDs. The following function converts RTEMS linear IDs to
  *  Epiphany correspodning ones
@@ -109,11 +140,12 @@ static inline uint32_t rtems_coreid_to_epiphany_map(uint32_t rtems_id)
   
   return 0x1000; /* Error */
 }
+
 /* Epiphany uses 12 bits for defining core IDs, while RTEMS uses 
  * linear IDs. The following function is used to map Epiphany IDs to
  * RTEMS linear IDs.
  */
-static inline uint32_t epiphany_coreid_to_rtems_map(uint32_t epiphany_id)
+inline uint32_t epiphany_coreid_to_rtems_map(uint32_t epiphany_id)
 {
   /* FIXME: move this to BSP as Parallella has another 64 core board 
    * and can be extended in future.
@@ -142,7 +174,7 @@ static inline uint32_t epiphany_coreid_to_rtems_map(uint32_t epiphany_id)
   return 0x1000; /* Error */
 }
 
-inline uint32_t _Epiphany_Get_Current_coreid()
+static inline uint32_t _Epiphany_Get_Current_coreid()
 {
    uint32_t coreid;
    

@@ -28,6 +28,16 @@
 
 #include <bsp/linker-symbols.h>
 
+#define PRE_ISR_HANDLER(interrupt)  \
+  gid;                               \
+  add sp, sp, #-8;                   \
+  str r62, [sp, #4];                 \
+  str r63, [sp, #8];                 \
+  mov r62, #interrupt;               \
+  mov r63, %low(_ISR_Handler);       \
+  movt r63, %high(_ISR_Handler);     \
+  jr  r63 
+  
   .extern bsp_start
   .extern bsp_section_bss_begin
   .extern bsp_section_bss_end
@@ -50,7 +60,7 @@
 	
 	.type   _external_start, %function
 	
-.section .vector, "ax";
+.section .vector, "a";
         .global _start;
         .type   _start, %function;
 _start:
@@ -67,10 +77,10 @@ _start:
          b .clock_isr
 
 		.balign 4 ; 0x10
-         b .clock_isr
+         b .normal_start
 
 		.balign 4 ; 0x14 
-		 b .normal_start
+		    b .msg_int
 
 		.balign 4 ; 0x18
 		 b .normal_start
@@ -129,6 +139,15 @@ _external_start:
 	mov	sp,%low(bsp_section_stack_begin)
 	movt	sp,%high(bsp_section_stack_begin)
 	mov	fp,sp
+	
+  /* Check wether this is the boot processor (index 0)
+   * or not, if it's not, just allocate stack for it idle.
+   * and make it idle
+   */
+   movfs r17, coreid
+   mov   r16, #2056
+   sub   r16, r17, r16
+   bne   secondary_processor_wait
 
 	;; Zero the data space
 	mov	r0,%low(bsp_section_bss_begin)
@@ -171,30 +190,25 @@ _jump_to_c:
 .balign 4
 .type   .clock_isr, %function
 .clock_isr:
-  gid
-  add sp, sp, #-8
-  str r62, [sp, #4]
-  str r63, [sp, #8]
-  
-  mov r62, #3
-  mov r63, %low(_ISR_Handler)
-  movt r63, %high(_ISR_Handler)
-  jr  r63
-  
+  PRE_ISR_HANDLER(3)
+
+.balign 4
+.type   .msg_int, %function
+.msg_int:
+  PRE_ISR_HANDLER(5)
+
 .balign 4
 .type   _EPIPHANY_Exception_default, %function
 _EPIPHANY_Exception_default:
   idle
-/*  
- .section .init,"ax"     ;;
- .balign 4
-.type   __init, %function
-_init:
-  nop
  
- .section .fini,"ax"     ;;
- .balign 4
-.type   __fini, %function
-__fini:
-  nop
-*/
+.balign 4
+.type   secondary_processor_wait, %function
+secondary_processor_wait: 
+ /* Clear the reset interrupt flag */
+  mov    r0, %low(_wait)
+  movt   r0, %high(_wait)
+  movts  iret, r0
+  rti
+ _wait:
+  idle

@@ -236,7 +236,7 @@ extern "C" {
  *
  */
 
-#define CPU_USE_DEFERRED_FP_SWITCH       TRUE
+#define CPU_USE_DEFERRED_FP_SWITCH       FALSE
 
 /*
  *  Does this port provide a CPU dependent IDLE task implementation?
@@ -1034,8 +1034,6 @@ CPU_Counter_ticks _CPU_Counter_difference(
   CPU_Counter_ticks first
 );
 
-#endif /* ASM */
-
 #ifdef RTEMS_SMP
   /**
    * @brief Performs CPU specific SMP initialization in the context of the boot
@@ -1090,7 +1088,7 @@ CPU_Counter_ticks _CPU_Counter_difference(
    * current processor in the system.  The set of processor indices is the
    * range of integers starting with zero up to the processor count minus one.
    */
-   void uint32_t _CPU_SMP_Get_current_processor( void );
+   uint32_t _CPU_SMP_Get_current_processor( void );
 
   /**
    * @brief Sends an inter-processor interrupt to the specified target
@@ -1123,7 +1121,7 @@ CPU_Counter_ticks _CPU_Counter_difference(
    *
    * @see _CPU_SMP_Processor_event_broadcast().
    */
-  void _CPU_SMP_Processor_event_receive( void )
+  static inline void _CPU_SMP_Processor_event_receive( void )
   {
     __asm__ volatile ( "" : : : "memory" );
   }
@@ -1133,7 +1131,7 @@ CPU_Counter_ticks _CPU_Counter_difference(
    *
    * @param[in] context The context.
    */
-  bool _CPU_Context_Get_is_executing(
+  static inline bool _CPU_Context_Get_is_executing(
     const Context_Control *context
   )
   {
@@ -1146,14 +1144,16 @@ CPU_Counter_ticks _CPU_Counter_difference(
    * @param[in] context The context.
    * @param[in] is_executing The new value for the is executing indicator.
    */
-  void _CPU_Context_Set_is_executing(
+  static inline void _CPU_Context_Set_is_executing(
     Context_Control *context,
     bool is_executing
   )
   {
     context->is_executing = is_executing;
   }
-#endif
+#endif /* RTEMS_SMP */
+
+#endif /* ASM */
 
 #ifdef __cplusplus
 }
