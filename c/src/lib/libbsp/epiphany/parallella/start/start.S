@@ -167,6 +167,7 @@ _external_start:
    lsl   r21,r18, PER_CPU_CONTROL_SIZE_LOG2
    
    add  r18, r18, #(PER_CPU_INTERRUPT_STACK_HIGH)
+   ldr  r18, [r18]
 	 mov  sp, r18 /* Set processor's stack pointer */
 	 mov  fp, sp  /* Set processor's frame pointer */
    
