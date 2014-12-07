@@ -164,7 +164,8 @@ _external_start:
 	 movt r18, %high(__Per_CPU_Information)
 	
    /* Set up stack for seconday processor */
-   lsl  r18,r18, PER_CPU_CONTROL_SIZE_LOG2
+   lsl  r17, r17, #(PER_CPU_CONTROL_SIZE_LOG2)
+   add  r18, r18, r17
    
    add  r18, r18, #(PER_CPU_INTERRUPT_STACK_HIGH)
    ldr  r18, [r18]
