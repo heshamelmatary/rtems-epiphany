@@ -27,6 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 #include <bsp/linker-symbols.h>
+#include <rtems/score/percpu.h>
 
 #define PRE_ISR_HANDLER(interrupt)  \
   gid;                               \
@@ -42,7 +43,7 @@
   .extern bsp_section_bss_begin
   .extern bsp_section_bss_end
   .extern _ISR_Handler
-  
+  .extern  bsp_start_on_secondary_processor
   .extern  bsp_start_vector_table_end
   .extern  bsp_start_vector_table_size
   .extern  bsp_vector_table_size
@@ -60,7 +61,7 @@
 	
 	.type   _external_start, %function
 	
-.section .vector, "a";
+.section .vector, "ax";
         .global _start;
         .type   _start, %function;
 _start:
@@ -140,15 +141,34 @@ _external_start:
 	movt	sp,%high(bsp_section_stack_begin)
 	mov	fp,sp
 	
+	mov  r18, %low(__Per_CPU_Information)
+	movt r18, %high(__Per_CPU_Information)
+	
   /* Check wether this is the boot processor (index 0)
    * or not, if it's not, just allocate stack for it idle.
    * and make it idle
    */
    movfs r17, coreid
-   mov   r16, #2056
+   
+   /* Mapping from Epiphany IDs to 0-16 IDs macro */
+   mov   r19, #0x003
+   mov   r20, #0x0F0
+   and   r19, r17, r19
+   and   r20, r17, r20
+   add   r17, r19, r20
+   /* Mapping from Epiphany IDs to 0-16 IDs macro */
+   
+   mov   r16, #0
    sub   r16, r17, r16
-   bne   secondary_processor_wait
+   beq   cpu0
+   
+   /* Set up stack for seconday processor */
+   lsl   r21,r18, PER_CPU_CONTROL_SIZE_LOG2
+   
+   
+   ;;   bsp_start_on_secondary_processor
 
+cpu0:
 	;; Zero the data space
 	mov	r0,%low(bsp_section_bss_begin)
 	movt	r0,%high(bsp_section_bss_begin)
@@ -190,12 +210,26 @@ _jump_to_c:
 .balign 4
 .type   .clock_isr, %function
 .clock_isr:
-  PRE_ISR_HANDLER(3)
+  gid;                               
+  add sp, sp, #-8;                   
+  str r62, [sp, #4];                 
+  str r63, [sp, #8];                 
+  mov r62, 3;               
+  mov r63, %low(_ISR_Handler);       
+  movt r63, %high(_ISR_Handler);     
+  jr  r63
 
 .balign 4
 .type   .msg_int, %function
 .msg_int:
-  PRE_ISR_HANDLER(5)
+  gid;                               
+  add sp, sp, #-8;                   
+  str r62, [sp, #4];                 
+  str r63, [sp, #8];                 
+  mov r62, 5;               
+  mov r63, %low(_ISR_Handler);       
+  movt r63, %high(_ISR_Handler);     
+  jr  r63 
 
 .balign 4
 .type   _EPIPHANY_Exception_default, %function

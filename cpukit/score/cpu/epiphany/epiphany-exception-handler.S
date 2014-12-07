@@ -85,11 +85,6 @@ _ISR_Handler:
   str r1,[sp,1]
   
   str r2,[sp,2]
-  
-  movfs r1,config
-  str r1, [sp,65]
-
-isr_handler_timer0_stopped:
 
   /* Stop timer */
   mov   r2, #0
@@ -161,20 +156,24 @@ isr_handler_timer0_stopped:
   movfs r1,status
   str r1, [sp,64]
   
+  movfs r1,config
+  str r1, [sp,65]
+  
   movfs r1,iret
   str r1, [sp,66]
+  
   
   /* Save interrupted task stack pointer */
   add r1, sp, #288
   str r1,[sp,13]
   
   /* Increment nesting level */
-  //mov     r6, %low(ISR_NEST_LEVEL)
-  //movt    r6, %high(ISR_NEST_LEVEL)
+  mov     r6, %low(ISR_NEST_LEVEL)
+  movt    r6, %high(ISR_NEST_LEVEL)
   
   /* Disable multitasking */
-  //mov     r8, %low(THREAD_DISPATCH_DISABLE_LEVEL)
-  //movt    r8, %high(THREAD_DISPATCH_DISABLE_LEVEL)
+  mov     r8, %low(THREAD_DISPATCH_DISABLE_LEVEL)
+  movt    r8, %high(THREAD_DISPATCH_DISABLE_LEVEL)
   
   ldr     r5, [r6]
   ldr     r7, [r8]
