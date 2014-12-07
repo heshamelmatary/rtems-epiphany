@@ -74,8 +74,6 @@ void _Thread_Start_multitasking( void )
   _CPU_Context_Set_is_executing( &heir->Registers, true );
 #endif
 
-_SMP_Send_message(1, 2);
-
 #if defined(_CPU_Start_multitasking)
   _CPU_Start_multitasking( &heir->Registers );
 #else
