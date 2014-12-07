@@ -26,7 +26,7 @@ void _Thread_Start_multitasking( void )
   Thread_Control  *heir;
 
 #if defined(RTEMS_SMP)
-  //_Per_CPU_State_change( cpu_self, PER_CPU_STATE_UP );
+  _Per_CPU_State_change( cpu_self, PER_CPU_STATE_UP );
 
   /*
    * Threads begin execution in the _Thread_Handler() function.   This
@@ -73,6 +73,8 @@ void _Thread_Start_multitasking( void )
    */
   _CPU_Context_Set_is_executing( &heir->Registers, true );
 #endif
+
+_SMP_Send_message(1, 2);
 
 #if defined(_CPU_Start_multitasking)
   _CPU_Start_multitasking( &heir->Registers );

@@ -164,7 +164,7 @@ static inline void _SMP_Inter_processor_interrupt_handler( void )
     }
 
     if ( ( message & SMP_MESSAGE_CACHE_MANAGER ) != 0 ) {
-      _SMP_Cache_manager_message_handler();
+      //_SMP_Cache_manager_message_handler();
     }
 
   }
