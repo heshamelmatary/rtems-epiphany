@@ -29,6 +29,7 @@
 #include <bsp/linker-symbols.h>
 #include <rtems/score/percpu.h>
 
+#define CPU_SIZEOF_POINTER 4
 #define PRE_ISR_HANDLER(interrupt)  \
   gid;                               \
   add sp, sp, #-8;                   \
@@ -43,7 +44,7 @@
   .extern bsp_section_bss_begin
   .extern bsp_section_bss_end
   .extern _ISR_Handler
-  .extern  bsp_start_on_secondary_processor
+  .extern  _bsp_start_on_secondary_processor
   .extern  bsp_start_vector_table_end
   .extern  bsp_start_vector_table_size
   .extern  bsp_vector_table_size
@@ -141,9 +142,6 @@ _external_start:
 	movt	sp,%high(bsp_section_stack_begin)
 	mov	fp,sp
 	
-	mov  r18, %low(__Per_CPU_Information)
-	movt r18, %high(__Per_CPU_Information)
-	
   /* Check wether this is the boot processor (index 0)
    * or not, if it's not, just allocate stack for it idle.
    * and make it idle
@@ -162,11 +160,26 @@ _external_start:
    sub   r16, r17, r16
    beq   cpu0
    
+   mov  r18, %low(__Per_CPU_Information)
+	 movt r18, %high(__Per_CPU_Information)
+	
    /* Set up stack for seconday processor */
    lsl   r21,r18, PER_CPU_CONTROL_SIZE_LOG2
    
+   add  r18, r18, #(PER_CPU_INTERRUPT_STACK_HIGH)
+	 mov  sp, r18 /* Set processor's stack pointer */
+	 mov  fp, sp  /* Set processor's frame pointer */
    
-   ;;   bsp_start_on_secondary_processor
+   /* Clear the reset interrupt flag */
+  mov    r0, %low(.secondary_processor_start)
+  movt   r0, %high(.secondary_processor_start)
+  movts  iret, r0
+  rti
+  
+.secondary_processor_start:
+  mov  r0, %low(_bsp_start_on_secondary_processor)
+  movt r0, %high(_bsp_start_on_secondary_processor)
+  jr   r0 /* No return */
 
 cpu0:
 	;; Zero the data space
