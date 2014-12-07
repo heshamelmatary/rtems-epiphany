@@ -45,7 +45,7 @@ void bsp_start_on_secondary_processor(void)
    */
   uint32_t cpu_index_self = _CPU_SMP_Get_current_processor();
   uint32_t *abs_core_ivt_addr = 
-            (uint32_t) rtems_coreid_to_epiphany_map(cpu_index_self)
+            ((uint32_t) rtems_coreid_to_epiphany_map(cpu_index_self)) << 20
           | (uint32_t) bsp_start_vector_table_begin;
 
   abs_core_ivt_addr[SMP_MESSAGE] = bsp_inter_processor_interrupt;
