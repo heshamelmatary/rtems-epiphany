@@ -377,7 +377,7 @@ typedef struct {
   uint32_t config;
   uint32_t iret;
   
-  #ifdef RTEMS_SMP
+#ifdef RTEMS_SMP
     /**
      * @brief On SMP configurations the thread context must contain a boolean
      * indicator to signal if this context is executing on a processor.

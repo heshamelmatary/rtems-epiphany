@@ -750,7 +750,7 @@ RTEMS_INLINE_ROUTINE void _Thread_Dispatch_update_heir(
     cpu_for_heir->dispatch_necessary = true;
 
     if ( cpu_for_heir != cpu_self ) {
-      _Per_CPU_Send_interrupt( cpu_for_heir );
+     // _Per_CPU_Send_interrupt( cpu_for_heir );
     }
   }
 }

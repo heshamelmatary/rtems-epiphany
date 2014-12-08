@@ -105,12 +105,7 @@ SYM(_CPU_Context_switch):
    */
   mov r1, #0
   str r1, [r0,67]
-  
-#endif
-  
 
-SYM(restore):
-#ifdef RTEMS_SMP
   /* TODO 
      *   if ( test_and_set( &heir->is_executing ) ) {
      *     do {
@@ -126,7 +121,13 @@ SYM(restore):
      * }
      * @endcode
      */
+  ldr r16, [r2, 67];
+  
 #endif
+  
+
+SYM(restore):
+
   ldr r1,[r2,1]
   ldr r3,[r2,3]
   ldr r4,[r2,4]

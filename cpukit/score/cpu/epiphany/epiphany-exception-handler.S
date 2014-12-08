@@ -38,6 +38,7 @@ PUBLIC(_ISR_Handler)
    *  If this CPU target lets RTEMS allocates the interrupt stack, then
    *  we need to have places in the per CPU table to hold them.
    */
+#define PER_CPU_CONTROL_SIZE_LOG2 0x7
 #define CPU_PER_CPU_CONTROL_SIZE 0
 #define CPU_SIZEOF_POINTER 4
 
@@ -85,7 +86,10 @@ _ISR_Handler:
   str r1,[sp,1]
   
   str r2,[sp,2]
-
+  
+  movfs r1,config
+  str r1, [sp,65]
+  
   /* Stop timer */
   mov   r2, #0
   movts config, r2
@@ -156,9 +160,6 @@ _ISR_Handler:
   movfs r1,status
   str r1, [sp,64]
   
-  movfs r1,config
-  str r1, [sp,65]
-  
   movfs r1,iret
   str r1, [sp,66]
   
@@ -166,25 +167,43 @@ _ISR_Handler:
   /* Save interrupted task stack pointer */
   add r1, sp, #288
   str r1,[sp,13]
+ 
+  mov  r18, %low(__Per_CPU_Information)
+	movt r18, %high(__Per_CPU_Information)
+	
+#ifdef RTEMS_SMP 
+   movfs r17, coreid
+   
+   /* Mapping from Epiphany IDs to 0-16 IDs macro */
+   mov   r19, #0x003
+   mov   r20, #0x0F0
+   and   r19, r17, r19
+   and   r20, r17, r20
+   add   r17, r19, r20
+   /* Mapping from Epiphany IDs to 0-16 IDs macro */
+   
+   lsl  r17, r17, #(PER_CPU_CONTROL_SIZE_LOG2)
+   add  r18, r18, r17
+#endif
+   
+	 
+	 add  r6, r18, #(PER_CPU_ISR_NEST_LEVEL)
+	 add  r8, r18, #(PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL)
   
-  /* Increment nesting level */
-  mov     r6, %low(ISR_NEST_LEVEL)
-  movt    r6, %high(ISR_NEST_LEVEL)
-  
-  /* Disable multitasking */
-  mov     r8, %low(THREAD_DISPATCH_DISABLE_LEVEL)
-  movt    r8, %high(THREAD_DISPATCH_DISABLE_LEVEL)
-  
-  ldr     r5, [r6]
+  /*ldr     r5, [r6]
   ldr     r7, [r8]
   add     r5, r5, #1
   add     r7, r7, #1
   str     r5, [r6]
   str     r7, [r8]
+  */
   
   /* Keep sp (Exception frame address) in r32 - Callee saved */
   mov   r32, sp
-
+  
+  /* Keep __Per_CPU_Information address in r33 - Callee saved */
+  mov   r33, r18
+  
   /* Call the exception handler from vector table */
 
   /* First function arg for C handler is vector number,
@@ -203,14 +222,13 @@ _ISR_Handler:
    * this point r5 should be holding ISR_NEST_LEVEL value.
    */
   
-  //sub      r12, r5, #1
-  //bgteu    jump_to_c_handler
+  //sub    r12, r5, #1
+  //bgtu    jump_to_c_handler
   
    /* Switch to RTEMS dedicated interrupt stack */
-  /*mov     sp, %low(INTERRUPT_STACK_HIGH)
-  movt    sp, %high(INTERRUPT_STACK_HIGH)
-  ldr     sp, [sp]
-  */
+  //add     sp, r18, #(PER_CPU_INTERRUPT_STACK_HIGH)
+  //ldr     sp, [sp]
+  
 jump_to_c_handler:
   /* Red zone ? */
   add sp, sp, #-128
@@ -219,25 +237,24 @@ jump_to_c_handler:
 
   /* Switch back to the interrupted task stack */
   mov  sp, r32
-
+  
+  /* Get the address of __Per_CPU_Information */
+  mov r18, r33
+  
   /* Decrement nesting level */
-  /*mov   r6, %low(ISR_NEST_LEVEL)
-  movt  r6, %high(ISR_NEST_LEVEL)
-  */
   /* Enable multitasking */
-  /*mov   r8, %low(THREAD_DISPATCH_DISABLE_LEVEL)
-  movt  r8, %high(THREAD_DISPATCH_DISABLE_LEVEL)
+  add  r6, r18, #(PER_CPU_ISR_NEST_LEVEL)
+	add  r8, r18, #(PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL)
   
-  ldr   r5, [r6]
-  ldr   r7, [r8]
-  add   r5, r5, #-1
-  add   r7, r7, #-1
-  str   r5, [r6]
-  str   r7, [r8]
+  /*ldr     r5, [r6]
+  ldr     r7, [r8]
+  sub     r5, r5, #1
+  sub     r7, r7, #1
+  str     r5, [r6]
+  str     r7, [r8]
   */
-  
   /* Check if _ISR_Nest_level > 0 */ 
-  //sub      r12, r5, #0
+  //sub     r12, r5, #0
   //bgtu    exception_frame_restore
 
   /* Check if _Thread_Dispatch_disable_level > 0 */
@@ -245,17 +262,15 @@ jump_to_c_handler:
   //bgtu    exception_frame_restore
 
   /* Check if dispatch needed */
-  /*mov     r31, %low(DISPATCH_NEEDED)
-  movt    r31, %high(DISPATCH_NEEDED)
+  /*add     r31, r18, #(PER_CPU_DISPATCH_NEEDED)
   ldr     r31, [r31]
-   */
-  //sub     r12, r12, #0
-  //beq     exception_frame_restore
   
-  /*mov     r13, %low(__Thread_Dispatch)
+  sub     r12, r31, #0
+  beq     exception_frame_restore
+  
+  mov     r13, %low(__Thread_Dispatch)
   movt    r13, %high(__Thread_Dispatch)
-  jalr    r13
-  */
+  jalr    r13*/
   
 exception_frame_restore:
   
