@@ -190,13 +190,13 @@ _ISR_Handler:
 	 add  r6, r18, #(PER_CPU_ISR_NEST_LEVEL)
 	 add  r8, r18, #(PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL)
   
-  /*ldr     r5, [r6]
+  ldr     r5, [r6]
   ldr     r7, [r8]
   add     r5, r5, #1
   add     r7, r7, #1
   str     r5, [r6]
   str     r7, [r8]
-  */
+  
   
   /* Keep sp (Exception frame address) in r32 - Callee saved */
   mov   r32, sp
@@ -222,12 +222,12 @@ _ISR_Handler:
    * this point r5 should be holding ISR_NEST_LEVEL value.
    */
   
-  //sub    r12, r5, #1
-  //bgtu    jump_to_c_handler
+  sub    r37, r5, #1
+  bgtu    jump_to_c_handler
   
    /* Switch to RTEMS dedicated interrupt stack */
-  //add     sp, r18, #(PER_CPU_INTERRUPT_STACK_HIGH)
-  //ldr     sp, [sp]
+  add     sp, r18, #(PER_CPU_INTERRUPT_STACK_HIGH)
+  ldr     sp, [sp]
   
 jump_to_c_handler:
   /* Red zone ? */
@@ -246,23 +246,20 @@ jump_to_c_handler:
   add  r6, r18, #(PER_CPU_ISR_NEST_LEVEL)
 	add  r8, r18, #(PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL)
   
-  
-  /********************** Avoid r12 ------ r 17 ***********************/
-  
-  /*ldr     r5, [r6]
+  ldr     r5, [r6]
   ldr     r7, [r8]
   sub     r5, r5, #1
   sub     r7, r7, #1
   str     r5, [r6]
   str     r7, [r8]
-  */
+  
   /* Check if _ISR_Nest_level > 0 */ 
-  //sub     r12, r5, #0
-  //bgtu    exception_frame_restore
+  sub     r37, r5, #0
+  bgtu    exception_frame_restore
 
   /* Check if _Thread_Dispatch_disable_level > 0 */
-  //sub     r12, r7, #0
-  //bgtu    exception_frame_restore
+  sub     r37, r7, #0
+  bgtu    exception_frame_restore
 
   /* Check if dispatch needed */
   add     r31, r18, #(PER_CPU_DISPATCH_NEEDED)
