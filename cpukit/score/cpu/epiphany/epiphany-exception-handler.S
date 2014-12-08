@@ -246,6 +246,9 @@ jump_to_c_handler:
   add  r6, r18, #(PER_CPU_ISR_NEST_LEVEL)
 	add  r8, r18, #(PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL)
   
+  
+  /********************** Avoid r12 ------ r 17 ***********************/
+  
   /*ldr     r5, [r6]
   ldr     r7, [r8]
   sub     r5, r5, #1
@@ -262,15 +265,15 @@ jump_to_c_handler:
   //bgtu    exception_frame_restore
 
   /* Check if dispatch needed */
-  /*add     r31, r18, #(PER_CPU_DISPATCH_NEEDED)
+  add     r31, r18, #(PER_CPU_DISPATCH_NEEDED)
   ldr     r31, [r31]
   
-  sub     r12, r31, #0
+  sub     r35, r31, #0
   beq     exception_frame_restore
   
-  mov     r13, %low(__Thread_Dispatch)
-  movt    r13, %high(__Thread_Dispatch)
-  jalr    r13*/
+  mov     r35, %low(__Thread_Dispatch)
+  movt    r35, %high(__Thread_Dispatch)
+  jalr    r35
   
 exception_frame_restore:
   
