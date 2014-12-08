@@ -141,7 +141,8 @@ _external_start:
 	mov	sp,%low(bsp_section_stack_begin)
 	movt	sp,%high(bsp_section_stack_begin)
 	mov	fp,sp
-	
+
+#ifdef RTEMS_SMP
   /* Check wether this is the boot processor (index 0)
    * or not, if it's not, just allocate stack for it idle.
    * and make it idle
@@ -182,6 +183,7 @@ _external_start:
   mov  r0, %low(_bsp_start_on_secondary_processor)
   movt r0, %high(_bsp_start_on_secondary_processor)
   jr   r0 /* No return */
+#endif
 
 cpu0:
 	;; Zero the data space

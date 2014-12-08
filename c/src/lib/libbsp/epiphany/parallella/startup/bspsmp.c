@@ -47,8 +47,11 @@ void bsp_start_on_secondary_processor(void)
   uint32_t *abs_core_ivt_addr = 
             ((uint32_t) rtems_coreid_to_epiphany_map(cpu_index_self)) << 20
           | (uint32_t) bsp_start_vector_table_begin;
-
+  Per_CPU_Control *self_cpu = _Per_CPU_Get();
+  
   abs_core_ivt_addr[SMP_MESSAGE] = bsp_inter_processor_interrupt;
+  
+  self_cpu->state = PER_CPU_STATE_INITIAL;
   
   /* Set up message test message handler */
   _SMP_Set_test_message_handler(Epiphany_test_message_handler);
@@ -70,6 +73,14 @@ bool _CPU_SMP_Start_processor( uint32_t rtems_cpu_index )
 void _CPU_SMP_Finalize_initialization( uint32_t cpu_count )
 {
   (void) cpu_count;
+  uint32_t cpu_index_self = _CPU_SMP_Get_current_processor();
+  uint32_t *abs_core_ivt_addr = 
+            ((uint32_t) rtems_coreid_to_epiphany_map(cpu_index_self)) << 20
+          | (uint32_t) bsp_start_vector_table_begin;
 
+  abs_core_ivt_addr[SMP_MESSAGE] = bsp_inter_processor_interrupt;
+  
+  /* Set up message test message handler */
+  _SMP_Set_test_message_handler(Epiphany_test_message_handler);
   /* Nothing to do */
 }
