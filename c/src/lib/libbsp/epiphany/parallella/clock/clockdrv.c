@@ -22,7 +22,7 @@
 #include <bsp/linker-symbols.h>
 
 /* The number of clock cycles before generating a tick timer interrupt. */
-#define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0xFFFFFFFF
+#define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x0000FFFF
 #define EPIPHANY_CLOCK_CYCLE_TIME_NANOSECONDS 1
 
 extern char bsp_start_vector_table_begin[];
@@ -35,7 +35,7 @@ void Clock_isr(void *arg);
 
 static void epiphany_clock_at_tick(void)
 {
-  unsigned int val = 0x0000FFFF; 
+  unsigned int val = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT; 
   unsigned int event_type = E_CTIMER_CLK;
   /* The following e-lib function would not work properly 
      because gcc emits the wrong code with wrong argument
