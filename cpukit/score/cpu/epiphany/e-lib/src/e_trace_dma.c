@@ -29,14 +29,14 @@ int setupDMA2();
  * There will be no signal number attached when invoked
  * @param signum: not used
  */
-void __attribute__((interrupt)) timer1_trace_isr(int signum);
+void timer1_trace_isr(int signum);
 
 /**
  * This routine is installed with the interrupt Attach function
  * There will be no signal number attached when invoked
  * @param signum: not used
  */
-void __attribute__((interrupt)) wand_trace_isr(int signum);
+void wand_trace_isr(int signum);
 
 
 /**
@@ -193,7 +193,7 @@ int setupDMA2()
  * There will be no signal number attached when invoked
  * @param signum: not used
  */
-void __attribute__((interrupt)) timer1_trace_isr(int signum)
+void timer1_trace_isr(int signum)
 {
    (void)signum;
 
@@ -207,7 +207,7 @@ void __attribute__((interrupt)) timer1_trace_isr(int signum)
  * There will be no signal number attached when invoked
  * @param signum: not used
  */
-void __attribute__((interrupt)) wand_trace_isr(int signum)
+void wand_trace_isr(int signum)
 {
 	(void)signum;
 	return;

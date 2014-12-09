@@ -27,12 +27,24 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 #include <bsp/linker-symbols.h>
+#include <rtems/score/percpu.h>
 
+#define CPU_SIZEOF_POINTER 4
+#define PRE_ISR_HANDLER(interrupt)  \
+  gid;                               \
+  add sp, sp, #-8;                   \
+  str r62, [sp, #4];                 \
+  str r63, [sp, #8];                 \
+  mov r62, #interrupt;               \
+  mov r63, %low(_ISR_Handler);       \
+  movt r63, %high(_ISR_Handler);     \
+  jr  r63 
+  
   .extern bsp_start
   .extern bsp_section_bss_begin
   .extern bsp_section_bss_end
   .extern _ISR_Handler
-  
+  .extern  _bsp_start_on_secondary_processor
   .extern  bsp_start_vector_table_end
   .extern  bsp_start_vector_table_size
   .extern  bsp_vector_table_size
@@ -67,10 +79,10 @@ _start:
          b .clock_isr
 
 		.balign 4 ; 0x10
-         b .clock_isr
+         b .normal_start
 
 		.balign 4 ; 0x14 
-		 b .normal_start
+		    b .msg_int
 
 		.balign 4 ; 0x18
 		 b .normal_start
@@ -130,6 +142,50 @@ _external_start:
 	movt	sp,%high(bsp_section_stack_begin)
 	mov	fp,sp
 
+#ifdef RTEMS_SMP
+  /* Check wether this is the boot processor (index 0)
+   * or not, if it's not, just allocate stack for it idle.
+   * and make it idle
+   */
+   movfs r17, coreid
+   
+   /* Mapping from Epiphany IDs to 0-16 IDs macro */
+   mov   r19, #0x003
+   mov   r20, #0x0F0
+   and   r19, r17, r19
+   and   r20, r17, r20
+   add   r17, r19, r20
+   /* Mapping from Epiphany IDs to 0-16 IDs macro */
+   
+   mov   r16, #0
+   sub   r16, r17, r16
+   beq   cpu0
+   
+   mov  r18, %low(__Per_CPU_Information)
+	 movt r18, %high(__Per_CPU_Information)
+	
+   /* Set up stack for seconday processor */
+   lsl  r17, r17, #(PER_CPU_CONTROL_SIZE_LOG2)
+   add  r18, r18, r17
+   
+   add  r18, r18, #(PER_CPU_INTERRUPT_STACK_HIGH)
+   ldr  r18, [r18]
+	 mov  sp, r18 /* Set processor's stack pointer */
+	 mov  fp, sp  /* Set processor's frame pointer */
+   
+   /* Clear the reset interrupt flag */
+  mov    r0, %low(.secondary_processor_start)
+  movt   r0, %high(.secondary_processor_start)
+  movts  iret, r0
+  rti
+  
+.secondary_processor_start:
+  mov  r0, %low(_bsp_start_on_secondary_processor)
+  movt r0, %high(_bsp_start_on_secondary_processor)
+  jr   r0 /* No return */
+#endif
+
+cpu0:
 	;; Zero the data space
 	mov	r0,%low(bsp_section_bss_begin)
 	movt	r0,%high(bsp_section_bss_begin)
@@ -171,30 +227,39 @@ _jump_to_c:
 .balign 4
 .type   .clock_isr, %function
 .clock_isr:
-  gid
-  add sp, sp, #-8
-  str r62, [sp, #4]
-  str r63, [sp, #8]
-  
-  mov r62, #3
-  mov r63, %low(_ISR_Handler)
-  movt r63, %high(_ISR_Handler)
+  gid;                               
+  add sp, sp, #-8;                   
+  str r62, [sp, #4];                 
+  str r63, [sp, #8];                 
+  mov r62, 3;               
+  mov r63, %low(_ISR_Handler);       
+  movt r63, %high(_ISR_Handler);     
   jr  r63
-  
+
+.balign 4
+.type   .msg_int, %function
+.msg_int:
+  gid;                               
+  add sp, sp, #-8;                   
+  str r62, [sp, #4];                 
+  str r63, [sp, #8];                 
+  mov r62, 5;               
+  mov r63, %low(_ISR_Handler);       
+  movt r63, %high(_ISR_Handler);     
+  jr  r63 
+
 .balign 4
 .type   _EPIPHANY_Exception_default, %function
 _EPIPHANY_Exception_default:
   idle
-/*  
- .section .init,"ax"     ;;
- .balign 4
-.type   __init, %function
-_init:
-  nop
  
- .section .fini,"ax"     ;;
- .balign 4
-.type   __fini, %function
-__fini:
-  nop
-*/
+.balign 4
+.type   secondary_processor_wait, %function
+secondary_processor_wait: 
+ /* Clear the reset interrupt flag */
+  mov    r0, %low(_wait)
+  movt   r0, %high(_wait)
+  movts  iret, r0
+  rti
+ _wait:
+  idle

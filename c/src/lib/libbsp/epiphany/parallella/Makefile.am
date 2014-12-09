@@ -70,6 +70,9 @@ libbsp_a_SOURCES += clock/clockdrv.c ../../../shared/clockdrv_shell.h
 # console
 libbsp_a_SOURCES += ../../shared/console-polled.c
 
+# SMP
+libbsp_a_SOURCES += startup/bspsmp.c
+
 # debugio
 libbsp_a_SOURCES += console/console-io.c
 # ###############################################################################

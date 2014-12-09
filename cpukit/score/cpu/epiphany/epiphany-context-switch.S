@@ -98,9 +98,36 @@ SYM(_CPU_Context_switch):
   movfs r1,iret
   str r1, [r0,66]
   
+#ifdef RTEMS_SMP
+  /*
+   *   executing->is_executing = false;
+   *   memory_barrier();
+   */
+  mov r1, #0
+  str r1, [r0,67]
+
+  /* TODO 
+     *   if ( test_and_set( &heir->is_executing ) ) {
+     *     do {
+     *       Per_CPU_Control *cpu_self = _Per_CPU_Get_snapshot();
+     *
+     *       if ( cpu_self->dispatch_necessary ) {
+     *         heir = _Thread_Get_heir_and_make_it_executing( cpu_self );
+     *       }
+     *     } while ( test_and_set( &heir->is_executing ) );
+     *   }
+     *
+     *   restore( heir );
+     * }
+     * @endcode
+     */
+  ldr r16, [r2, 67];
+  
+#endif
+  
 
 SYM(restore):
-  
+
   ldr r1,[r2,1]
   ldr r3,[r2,3]
   ldr r4,[r2,4]

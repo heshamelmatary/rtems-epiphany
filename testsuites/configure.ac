@@ -33,7 +33,7 @@ esac
 
 if test "$enable_tests" = "yes"; then
   # do functionality tests first, then performance tests
-  AC_CONFIG_SUBDIRS(libtests sptests fstests psxtests)
+  AC_CONFIG_SUBDIRS()
   if test "$rtems_cv_RTEMS_MULTIPROCESSING" = "yes"; then
     AC_CONFIG_SUBDIRS(mptests)
   fi
