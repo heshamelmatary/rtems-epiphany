@@ -16,8 +16,6 @@
 
 const char rtems_test_name[] = "CLOCK TICK";
 
-int *outbuf = 0x7fc0; 
-
 /*
  *  Keep the names and IDs in global variables so another task can use them.
  */
@@ -31,8 +29,6 @@ rtems_task Init(
 {
   rtems_status_code status;
   rtems_time_of_day time;
-
-  *outbuf = 0xdeadbeef;
 
   TEST_BEGIN();
 

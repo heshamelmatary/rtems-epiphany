@@ -51,12 +51,6 @@ extern rtems_name Task_name[ 4 ];       /* array of task names */
 
 #define CONFIGURE_INITIAL_EXTENSIONS RTEMS_TEST_INITIAL_EXTENSION
 
-#define TESTS_USE_PRINTK 1
-
-//#define STACK_CHECKER_ON 1
-//#define RTEMS_HEAVY_STACK_DEBUG 1
-//#define RTEMS_HEAVY_MALLOC_DEBUG 1
-
 #include <rtems/confdefs.h>
 
 /*
