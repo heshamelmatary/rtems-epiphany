@@ -89,22 +89,22 @@ SYM(_CPU_Context_switch):
   str r62,[r0,62]
   str r63,[r0,63]
   
-  movfs r1,status
-  str r1, [r0,64]
+  movfs r27,status
+  str r27, [r0,64]
   
-  movfs r1,config
-  str r1, [r0,65]
+  movfs r27,config
+  str r27, [r0,65]
   
-  movfs r1,iret
-  str r1, [r0,66]
+  movfs r27,iret
+  str r27, [r0,66]
   
 #ifdef RTEMS_SMP
   /*
    *   executing->is_executing = false;
    *   memory_barrier();
    */
-  mov r1, #0
-  str r1, [r0,67]
+  mov r27, #0
+  str r27, [r0,67]
 
   /* TODO 
      *   if ( test_and_set( &heir->is_executing ) ) {
@@ -121,93 +121,93 @@ SYM(_CPU_Context_switch):
      * }
      * @endcode
      */
-  ldr r16, [r2, 67];
+  ;;ldr r16, [r2, 67];
   
 #endif
   
 
 SYM(restore):
 
-  ldr r1,[r2,1]
-  ldr r3,[r2,3]
-  ldr r4,[r2,4]
-  ldr r5,[r2,5]
-  ldr r6,[r2,6]
-  ldr r7,[r2,7]
-  ldr r8,[r2,8]
-  ldr r9,[r2,9]
-  ldr r10,[r2,10]
-  ldr fp,[r2,11]
-  ldr r12,[r2,12]
-  ldr sp,[r2,13]
-  ldr lr,[r2,14]
+  ldr r2,[r1,2]
+  ldr r3,[r1,3]
+  ldr r4,[r1,4]
+  ldr r5,[r1,5]
+  ldr r6,[r1,6]
+  ldr r7,[r1,7]
+  ldr r8,[r1,8]
+  ldr r9,[r1,9]
+  ldr r10,[r1,10]
+  ldr fp,[r1,11]
+  ldr r12,[r1,12]
+  ldr sp,[r1,13]
+  ldr lr,[r1,14]
   
-  ldr r15,[r2,15]
-  ldr r16,[r2,16]
-  ldr r17,[r2,17]
-  ldr r18,[r2,18]
-  ldr r19,[r2,19]
-  ldr r20,[r2,20]
-  ldr r21,[r2,21]
-  ldr r22,[r2,22]
-  ldr r23,[r2,23]
-  ldr r24,[r2,24]
-  ldr r25,[r2,25]
-  ldr r26,[r2,26]
-  ldr r27,[r2,27]
+  ldr r15,[r1,15]
+  ldr r16,[r1,16]
+  ldr r17,[r1,17]
+  ldr r18,[r1,18]
+  ldr r19,[r1,19]
+  ldr r20,[r1,20]
+  ldr r21,[r1,21]
+  ldr r22,[r1,22]
+  ldr r23,[r1,23]
+  ldr r24,[r1,24]
+  ldr r25,[r1,25]
+  ldr r26,[r1,26]
+  ldr r27,[r1,27]
   
-  ldr r32,[r2,32]
-  ldr r33,[r2,33]
-  ldr r34,[r2,34]
-  ldr r35,[r2,35]
-  ldr r36,[r2,36]
-  ldr r37,[r2,37]
-  ldr r38,[r2,38]
-  ldr r39,[r2,39]
-  ldr r40,[r2,40]
-  ldr r41,[r2,41]
-  ldr r42,[r2,42]
-  ldr r43,[r2,43]
+  ldr r32,[r1,32]
+  ldr r33,[r1,33]
+  ldr r34,[r1,34]
+  ldr r35,[r1,35]
+  ldr r36,[r1,36]
+  ldr r37,[r1,37]
+  ldr r38,[r1,38]
+  ldr r39,[r1,39]
+  ldr r40,[r1,40]
+  ldr r41,[r1,41]
+  ldr r42,[r1,42]
+  ldr r43,[r1,43]
   
-  ldr r44,[r2,44]
-  ldr r45,[r2,45]
-  ldr r46,[r2,46]
-  ldr r47,[r2,47]
-  ldr r48,[r2,48]
-  ldr r49,[r2,49]
-  ldr r50,[r2,50]
-  ldr r51,[r2,51]
-  ldr r52,[r2,52]
-  ldr r53,[r2,53]
-  ldr r54,[r2,54]
-  ldr r55,[r2,55]
-  ldr r56,[r2,56]
-  ldr r57,[r2,57]
-  ldr r58,[r2,58]
-  ldr r59,[r2,59]
-  ldr r60,[r2,60]
-  ldr r61,[r2,61]
-  ldr r62,[r2,62]
-  ldr r63,[r2,63]
+  ldr r44,[r1,44]
+  ldr r45,[r1,45]
+  ldr r46,[r1,46]
+  ldr r47,[r1,47]
+  ldr r48,[r1,48]
+  ldr r49,[r1,49]
+  ldr r50,[r1,50]
+  ldr r51,[r1,51]
+  ldr r52,[r1,52]
+  ldr r53,[r1,53]
+  ldr r54,[r1,54]
+  ldr r55,[r1,55]
+  ldr r56,[r1,56]
+  ldr r57,[r1,57]
+  ldr r58,[r1,58]
+  ldr r59,[r1,59]
+  ldr r60,[r1,60]
+  ldr r61,[r1,61]
+  ldr r62,[r1,62]
+  ldr r63,[r1,63]
   
-  ldr r0,[r2,64]
+  ldr r0,[r1,64]
   movts status, r0
   
-  ldr r0,[r2,65]
+  ldr r0,[r1,65]
   //movts config, r0
   
-  ldr r0,[r2,66]
+  ldr r0,[r1,66]
   movts iret, r0
   
-  ldr r0,[r2]
-  ldr r2,[r2,2]
+  ldr r0,[r1]
+  ldr r1,[r1,1]
   
   gie
   
   jr lr
 
  SYM(_CPU_Context_restore):
-  mov     r2, r0
+  mov     r1, r0
   b       _restore
   nop
 
