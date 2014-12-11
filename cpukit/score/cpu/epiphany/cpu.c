@@ -73,5 +73,7 @@ void _CPU_Install_interrupt_stack( void )
 
 void _CPU_Thread_Idle_body( void )
 {
-  for(;;);
+  do {
+    asm volatile ("idle");
+  } while (1);
 }
