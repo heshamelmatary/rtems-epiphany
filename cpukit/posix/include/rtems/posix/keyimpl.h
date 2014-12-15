@@ -17,6 +17,7 @@
  */
 
 #include <rtems/posix/key.h>
+#include <rtems/score/chainimpl.h>
 #include <rtems/score/freechain.h>
 #include <rtems/score/objectimpl.h>
 #include <rtems/score/percpu.h>
@@ -169,20 +170,33 @@ RTEMS_INLINE_ROUTINE void _POSIX_Keys_Key_value_pair_free(
 }
 
 RTEMS_INLINE_ROUTINE RBTree_Node *_POSIX_Keys_Find(
-  pthread_key_t              key,
-  Thread_Control            *thread,
-  POSIX_Keys_Key_value_pair *search_node
+  pthread_key_t   key,
+  Thread_Control *thread
 )
 {
-  search_node->key = key;
-  search_node->thread = thread;
+  POSIX_Keys_Key_value_pair search_node;
+
+  search_node.key = key;
+  search_node.thread = thread;
 
   return _RBTree_Find(
     &_POSIX_Keys_Key_value_lookup_tree,
-    &search_node->Key_value_lookup_node,
+    &search_node.Key_value_lookup_node,
     _POSIX_Keys_Key_value_compare,
     true
   );
+}
+
+RTEMS_INLINE_ROUTINE void _POSIX_Keys_Free_key_value_pair(
+  POSIX_Keys_Key_value_pair *key_value_pair
+)
+{
+  _RBTree_Extract(
+    &_POSIX_Keys_Key_value_lookup_tree,
+    &key_value_pair->Key_value_lookup_node
+  );
+  _Chain_Extract_unprotected( &key_value_pair->Key_values_per_thread_node );
+  _POSIX_Keys_Key_value_pair_free( key_value_pair );
 }
 
 /** @} */
