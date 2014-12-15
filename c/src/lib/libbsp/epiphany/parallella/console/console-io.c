@@ -74,19 +74,6 @@ void console_initialize_hardware(void)
 /* prototypical inline asm */
 static int asm_write (int CHAN, void* ADDR, int LEN)
 {
-  
-  //static volatile *int console_status = 0x8F800000
-  /*
-	register int chan asm("r0") = CHAN;
-	register void* addr asm("r1") = ADDR;
-	register int len asm("r2") = LEN;
-	register int result asm("r0");
-	register int error asm("r3");
-	asm ("trap 0" : "=r" (result), "=r" (error) :
-	     "r" (chan), "r" (addr), "r" (len));
-	       
-	return result;
-	*/ 
 	
 }
 
