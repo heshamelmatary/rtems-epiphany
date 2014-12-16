@@ -30,19 +30,7 @@ ssize_t read(
   size_t      count
 )
 {
-  rtems_libio_t *iop;
-
-  rtems_libio_check_fd( fd );
-  iop = rtems_libio_iop( fd );
-  rtems_libio_check_is_open( iop );
-  rtems_libio_check_buffer( buffer );
-  rtems_libio_check_count( count );
-  rtems_libio_check_permissions_with_error( iop, LIBIO_FLAGS_READ, EBADF );
-
-  /*
-   *  Now process the read().
-   */
-  return (*iop->pathinfo.handlers->read_h)( iop, buffer, count );
+  return 0;
 }
 
 #if defined(RTEMS_NEWLIB) && !defined(HAVE__READ_R)

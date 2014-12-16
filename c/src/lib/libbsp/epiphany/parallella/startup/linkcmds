@@ -315,12 +315,12 @@ SECTIONS {
      * contains the RTEMS work space and heap.
      */
     . = ALIGN(8);
-    bsp_section_work_begin = .;
+    _bsp_section_work_begin = .;
     . += ORIGIN (REGION_WORK) + LENGTH (REGION_WORK) - ABSOLUTE (.);
     . = ALIGN(8);
-    bsp_section_work_end = .;
+    _bsp_section_work_end = .;
   } > REGION_WORK AT > REGION_WORK
-  bsp_section_work_size = bsp_section_work_end - bsp_section_work_begin;
+  _bsp_section_work_size = _bsp_section_work_end - _bsp_section_work_begin;
 
   .stack :   {
     . = ALIGN(8);
@@ -330,6 +330,6 @@ SECTIONS {
 
   _RamBase = ORIGIN (REGION_WORK);
   _RamSize = LENGTH (REGION_WORK);
-  _WorkAreaBase = bsp_section_work_begin;
+  _WorkAreaBase = _bsp_section_work_begin;
   _HeapSize = 0;
 }

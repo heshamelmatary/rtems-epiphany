@@ -6,10 +6,13 @@ librtems_a_CPPFLAGS = $(AM_CPPFLAGS)
 
 # include
 
+include_rtemsdir = $(includedir)/rtems
 include_HEADERS = include/rtems.h
 
 # include/rtems/rtems
 include_rtems_rtemsdir = $(includedir)/rtems/rtems
+include_rtems_posixdir = $(includedir)/rtems/posix
+
 include_rtems_rtems_HEADERS =
 
 include_rtems_rtems_HEADERS += include/rtems/rtems/asr.h
@@ -54,6 +57,13 @@ include_rtems_rtems_HEADERS += include/rtems/rtems/timer.h
 include_rtems_rtems_HEADERS += include/rtems/rtems/timerimpl.h
 include_rtems_rtems_HEADERS += include/rtems/rtems/types.h
 include_rtems_rtems_HEADERS += mainpage.h
+
+#dirty Hack to discard libcsupport */
+include_rtems_HEADERS = ../libcsupport/include/rtems/assoc.h
+include_rtems_posix_HEADERS =  ../posix/include/rtems/posix/key.h
+include_rtems_posix_HEADERS += ../posix/include/rtems/posix/keyimpl.h
+include_rtems_posix_HEADERS += ../posix/include/rtems/posix/config.h
+include_rtems_posix_HEADERS += ../posix/include/rtems/posix/posixapi.h
 
 if HAS_MP
 ## We only build multiprocessing related files if HAS_MP was defined

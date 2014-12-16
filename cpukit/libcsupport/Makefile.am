@@ -50,29 +50,17 @@ ASSOCIATION_C_FILES = src/assoclocalbyname.c \
     src/assocnamebylocal.c src/assocnamebyremotebitfield.c \
     src/assocnamebyremote.c src/assocptrbylocal.c src/assocptrbyname.c \
     src/assocptrbyremote.c src/assocremotebylocalbitfield.c \
-    src/assocremotebylocal.c src/assocremotebyname.c
+    src/assocremotebylocal.c src/assocremotebyname.c src/libio_helper_null.c
 
-BASE_FS_C_FILES = src/base_fs.c src/mount.c src/unmount.c src/libio.c \
-    src/mount-mgr.c src/mount-mktgt.c src/libio_init.c \
-    src/privateenv.c \
-    src/libio_helper_null.c \
-    src/libio_exit.c \
-    src/open_dev_console.c src/__usrenv.c src/rtems_mkdir.c
-BASE_FS_C_FILES += src/uenvgetgroups.c
+BASE_FS_C_FILES = 
 
-TERMIOS_C_FILES = src/cfgetispeed.c src/cfgetospeed.c src/cfsetispeed.c \
-    src/cfsetospeed.c src/tcgetattr.c src/tcsetattr.c src/tcdrain.c \
-    src/tcflow.c src/tcflush.c src/tcgetpgrp.c src/tcsendbreak.c \
-    src/tcsetpgrp.c src/termios.c src/termiosinitialize.c \
-    src/termios_baud2index.c src/termios_baud2num.c src/termios_num2baud.c \
-    src/termios_setinitialbaud.c src/termios_baudtable.c src/cfsetspeed.c \
-    src/cfmakeraw.c src/termios_setbestbaud.c
+TERMIOS_C_FILES = 
 
-SYSTEM_CALL_C_FILES = src/open.c src/close.c src/read.c src/write.c \
+SYSTEM_CALL_C_FILES = src/syscall_stubs.c src/write.c \
     src/write_r.c \
-    src/lseek.c src/ioctl.c src/mkdir.c src/mknod.c src/mkfifo.c src/rmdir.c \
+    src/ioctl.c src/mkdir.c src/mknod.c src/mkfifo.c src/rmdir.c \
     src/chdir.c src/chmod.c src/fchdir.c src/fchmod.c src/fchown.c src/chown.c \
-    src/link.c src/unlink.c src/umask.c src/ftruncate.c src/utime.c src/fstat.c \
+    src/link.c src/unlink.c src/umask.c src/ftruncate.c src/utime.c \
     src/fcntl.c src/fpathconf.c src/getdents.c src/fsync.c src/fdatasync.c \
     src/pipe.c src/dup.c src/dup2.c src/symlink.c src/readlink.c \
     src/chroot.c src/sync.c src/_rename_r.c src/statvfs.c src/utimes.c src/lchown.c
@@ -122,7 +110,7 @@ TERMINAL_IDENTIFICATION_C_FILES += src/isatty.c src/isatty_r.c
 TERMINAL_IDENTIFICATION_C_FILES += src/ttyname.c
 
 LIBC_GLUE_C_FILES = src/__getpid.c src/__gettod.c src/__times.c \
-    src/truncate.c src/access.c src/stat.c src/lstat.c src/pathconf.c \
+    src/truncate.c src/access.c src/lstat.c src/pathconf.c \
     src/newlibc_reent.c src/newlibc_init.c src/newlibc_exit.c \
     src/kill_noposix.c src/utsname.c src/realpath.c
 
@@ -130,29 +118,29 @@ BSD_LIBC_C_FILES = src/strlcpy.c src/strlcat.c src/issetugid.c
 
 libcsupport_a_SOURCES = src/gxx_wrappers.c src/getchark.c src/printk.c \
     src/printk_plugin.c src/putk.c src/vprintk.c \
-    src/rtems_putc.c \
-    src/printf_plugin.c \
-    src/sup_fs_location.c \
-    src/sup_fs_eval_path.c \
-    src/sup_fs_eval_path_generic.c \
-    src/sup_fs_check_permissions.c \
-    src/sup_fs_next_token.c \
-    src/sup_fs_exist_in_same_instance.c \
-    src/sup_fs_mount_iterate.c \
-    src/sup_fs_node_type.c \
-    src/sup_fs_deviceio.c \
-    src/clonenode.c \
-    src/freenode.c \
-    src/resource_snapshot.c \
     $(BSD_LIBC_C_FILES) $(BASE_FS_C_FILES) $(MALLOC_C_FILES) \
     $(ERROR_C_FILES) $(ASSOCIATION_C_FILES)
+    #src/sup_fs_location.c \
+    #src/printk_plugin.c src/putk.c src/vprintk.c \
+    #src/rtems_putc.c \
+    #src/printf_plugin.c \
+    #src/sup_fs_eval_path.c \
+    #src/sup_fs_eval_path_generic.c \
+    #src/sup_fs_check_permissions.c \
+    #src/sup_fs_next_token.c \
+    #src/sup_fs_exist_in_same_instance.c \
+    #src/sup_fs_mount_iterate.c \
+    #src/sup_fs_node_type.c \
+    #src/sup_fs_deviceio.c \
+    #src/clonenode.c \
+    #src/freenode.c 
 
 libcsupport_a_SOURCES += $(LIBC_GLUE_C_FILES) $(PASSWORD_GROUP_C_FILES) \
     $(TERMINAL_IDENTIFICATION_C_FILES) $(SYSTEM_CALL_C_FILES) \
     $(DIRECTORY_SCAN_C_FILES) $(ID_C_FILES) src/envlock.c \
-    $(TERMIOS_C_FILES) src/getpagesize.c src/getrusage.c
+    $(TERMIOS_C_FILES) #src/getpagesize.c src/getrusage.c
 
-libcsupport_a_SOURCES += src/flockfile.c src/funlockfile.c src/ftrylockfile.c
+libcsupport_a_SOURCES += #src/flockfile.c src/funlockfile.c src/ftrylockfile.c
 
 EXTRA_DIST = src/TODO src/CASES src/README
 

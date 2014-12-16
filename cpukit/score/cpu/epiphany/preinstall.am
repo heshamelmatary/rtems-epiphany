@@ -47,63 +47,8 @@ $(PROJECT_INCLUDE)/rtems/score/epiphany-utility.h: rtems/score/epiphany-utility.
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/epiphany-utility.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/epiphany-utility.h
 
+if HAS_SMP
 $(PROJECT_INCLUDE)/rtems/score/cpuatomic.h: rtems/score/cpuatomic.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/cpuatomic.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/cpuatomic.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_common.h: e-lib/include/e_common.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_common.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_common.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_ctimers.h: e-lib/include/e_ctimers.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_ctimers.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_ctimers.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_ic.h: e-lib/include/e_ic.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_ic.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_ic.h
-
-$(PROJECT_INCLUDE)/rtems/score/e-lib.h: e-lib/include/e-lib.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e-lib.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e-lib.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_mutex.h: e-lib/include/e_mutex.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_mutex.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_mutex.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_shm.h: e-lib/include/e_shm.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_shm.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_shm.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_types.h: e-lib/include/e_types.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_types.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_types.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_coreid.h: e-lib/include/e_coreid.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_coreid.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_coreid.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_dma.h: e-lib/include/e_dma.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_dma.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_dma.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_lib.h: e-lib/include/e_lib.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_lib.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_lib.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_mem.h: e-lib/include/e_mem.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_mem.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_mem.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_regs.h: e-lib/include/e_regs.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_regs.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_regs.h
-
-$(PROJECT_INCLUDE)/rtems/score/e_trace.h: e-lib/include/e_trace.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/e_trace.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/e_trace.h
-
-$(PROJECT_INCLUDE)/rtems/score/a_trace_shared.h: e-lib/include/a_trace_shared.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/a_trace_shared.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/a_trace_shared.h
-
+endif 

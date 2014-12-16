@@ -18,6 +18,11 @@ $(PROJECT_INCLUDE)/$(dirstamp):
 	@: > $(PROJECT_INCLUDE)/$(dirstamp)
 PREINSTALL_DIRS += $(PROJECT_INCLUDE)/$(dirstamp)
 
+$(PROJECT_INCLUDE)/rtems/$(dirstamp):
+	@$(MKDIR_P) $(PROJECT_INCLUDE)/rtems
+	@: > $(PROJECT_INCLUDE)/rtems/$(dirstamp)
+PREINSTALL_DIRS += $(PROJECT_INCLUDE)/rtems/$(dirstamp)
+
 $(PROJECT_INCLUDE)/rtems.h: include/rtems.h $(PROJECT_INCLUDE)/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems.h
@@ -26,6 +31,11 @@ $(PROJECT_INCLUDE)/rtems/rtems/$(dirstamp):
 	@$(MKDIR_P) $(PROJECT_INCLUDE)/rtems/rtems
 	@: > $(PROJECT_INCLUDE)/rtems/rtems/$(dirstamp)
 PREINSTALL_DIRS += $(PROJECT_INCLUDE)/rtems/rtems/$(dirstamp)
+
+$(PROJECT_INCLUDE)/rtems/posix/$(dirstamp):
+	@$(MKDIR_P) $(PROJECT_INCLUDE)/rtems/posix
+	@: > $(PROJECT_INCLUDE)/rtems/posix/$(dirstamp)
+PREINSTALL_DIRS += $(PROJECT_INCLUDE)/rtems/posix/$(dirstamp)
 
 $(PROJECT_INCLUDE)/rtems/rtems/asr.h: include/rtems/rtems/asr.h $(PROJECT_INCLUDE)/rtems/rtems/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/rtems/asr.h
@@ -194,6 +204,26 @@ PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/rtems/types.h
 $(PROJECT_INCLUDE)/rtems/rtems/mainpage.h: mainpage.h $(PROJECT_INCLUDE)/rtems/rtems/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/rtems/mainpage.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/rtems/mainpage.h
+
+$(PROJECT_INCLUDE)/rtems/assoc.h: ../libcsupport/include/rtems/assoc.h $(PROJECT_INCLUDE)/rtems/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/assoc.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/assoc.h
+
+$(PROJECT_INCLUDE)/rtems/posix/key.h: ../posix/include/rtems/posix/key.h $(PROJECT_INCLUDE)/rtems/posix/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/posix/key.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/posix/key.h
+
+$(PROJECT_INCLUDE)/rtems/posix/keyimpl.h: ../posix/include/rtems/posix/keyimpl.h $(PROJECT_INCLUDE)/rtems/posix/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/posix/keyimpl.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/posix/keyimpl.h
+
+$(PROJECT_INCLUDE)/rtems/posix/config.h: ../posix/include/rtems/posix/config.h $(PROJECT_INCLUDE)/rtems/posix/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/posix/config.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/posix/config.h
+
+$(PROJECT_INCLUDE)/rtems/posix/posixapi.h: ../posix/include/rtems/posix/posixapi.h $(PROJECT_INCLUDE)/rtems/posix/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/posix/posixapi.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/posix/posixapi.h
 
 if HAS_MP
 $(PROJECT_INCLUDE)/rtems/rtems/eventmp.h: include/rtems/rtems/eventmp.h $(PROJECT_INCLUDE)/rtems/rtems/$(dirstamp)

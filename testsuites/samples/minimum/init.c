@@ -19,6 +19,7 @@
 
 #include <bsp.h>
 #include <rtems/score/thread.h>
+#include <rtems/rtems/tasks.h>
 
 /* forward declarations to avoid warnings */
 rtems_task Init(rtems_task_argument argument);
@@ -30,7 +31,7 @@ rtems_task Init(
   /* initialize application */
 
   /* Real application would call idle loop functionality */
-
+  printk("Hello World! \n");
   /* but in this case, just return and fall into a fatal error */
 }
 

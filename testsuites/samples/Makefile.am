@@ -1,6 +1,7 @@
 ACLOCAL_AMFLAGS = -I ../aclocal
 
-_SUBDIRS = hello capture ticker 
+_SUBDIRS =  minimum
+#_SUBDIRS = hello capture ticker 
 
 if MPTESTS
 ## base_mp is a sample multiprocessing test

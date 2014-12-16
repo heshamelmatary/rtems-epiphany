@@ -9,6 +9,8 @@ include $(RTEMS_ROOT)/make/custom/@RTEMS_BSP@.cfg
 include $(top_srcdir)/../automake/compile.am
 include $(top_srcdir)/../automake/leaf.am
 
+MANAGERS = 
+
 
 LINK_OBJS = $(hello_OBJECTS)
 LINK_LIBS = $(hello_LDLIBS)

@@ -8,33 +8,33 @@ project_lib_LIBRARIES = librtemscpu.a
 librtemscpu_a_SOURCES =
 
 TMP_LIBS =
-TMP_LIBS += ../dev/libdev.a
+#TMP_LIBS += ../dev/libdev.a
 TMP_LIBS += ../score/cpu/@RTEMS_CPU@/libscorecpu.a
 TMP_LIBS += ../score/libscore.a
 TMP_LIBS += ../sapi/libsapi.a
 TMP_LIBS += ../rtems/librtems.a
-TMP_LIBS += ../posix/libposix.a
+#TMP_LIBS += ../posix/libposix.a
 
 if LIBGNAT
-TMP_LIBS += ../libgnat/libgnat.a
+#TMP_LIBS += ../libgnat/libgnat.a
 endif
 
-TMP_LIBS += ../libcrypt/libcrypt.a
+#TMP_LIBS += ../libcrypt/libcrypt.a
 TMP_LIBS += ../libcsupport/libcsupport.a
-TMP_LIBS += ../libblock/libblock.a
+#TMP_LIBS += ../libblock/libblock.a
 if LIBDOSFS
-TMP_LIBS += ../libfs/libdosfs.a
+#TMP_LIBS += ../libfs/libdosfs.a
 endif
-TMP_LIBS += ../libfs/libdefaultfs.a
-TMP_LIBS += ../libfs/libdevfs.a
-TMP_LIBS += ../libfs/libimfs.a
-TMP_LIBS += ../libfs/librfs.a
-TMP_LIBS += ../libfs/libjffs2.a
+#TMP_LIBS += ../libfs/libdefaultfs.a
+#TMP_LIBS += ../libfs/libdevfs.a
+#TMP_LIBS += ../libfs/libimfs.a
+#TMP_LIBS += ../libfs/librfs.a
+#TMP_LIBS += ../libfs/libjffs2.a
 
-TMP_LIBS += ../libmisc/libmonitor.a
-TMP_LIBS += ../libmisc/libuntar.a
-TMP_LIBS += ../libmisc/libstackchk.a
-TMP_LIBS += ../libmisc/libcpuuse.a
+#TMP_LIBS += ../libmisc/libmonitor.a
+#TMP_LIBS += ../libmisc/libuntar.a
+#TMP_LIBS += ../libmisc/libstackchk.a
+#TMP_LIBS += ../libmisc/libcpuuse.a
 
 ## XXX temporarily removed because it causes a
 ## XXX number of BSPs to not link "main(){}" used by autoconf
@@ -43,45 +43,45 @@ TMP_LIBS += ../libmisc/libcpuuse.a
 # endif
 
 if LIBSHELL
-TMP_LIBS += ../libmisc/libshell.a
+#TMP_LIBS += ../libmisc/libshell.a
 endif
 
-TMP_LIBS += ../libmisc/libbspcmdline.a
-TMP_LIBS += ../libmisc/libcapture.a
-TMP_LIBS += ../libmisc/libdumpbuf.a
-TMP_LIBS += ../libmisc/libdevnull.a
-TMP_LIBS += ../libmisc/libdummy.a
-TMP_LIBS += ../libmisc/libfsmount.a
-TMP_LIBS += ../libmisc/libmouse.a
-TMP_LIBS += ../libmisc/libmw-fb.a
-TMP_LIBS += ../libmisc/libredirector.a
-TMP_LIBS += ../libmisc/libstringto.a
+#TMP_LIBS += ../libmisc/libbspcmdline.a
+#TMP_LIBS += ../libmisc/libcapture.a
+#TMP_LIBS += ../libmisc/libdumpbuf.a
+#TMP_LIBS += ../libmisc/libdevnull.a
+#TMP_LIBS += ../libmisc/libdummy.a
+#TMP_LIBS += ../libmisc/libfsmount.a
+#TMP_LIBS += ../libmisc/libmouse.a
+#TMP_LIBS += ../libmisc/libmw-fb.a
+#TMP_LIBS += ../libmisc/libredirector.a
+#TMP_LIBS += ../libmisc/libstringto.a
 
 if LIBUTF8PROC
-TMP_LIBS += ../libmisc/libutf8proc.a
+#TMP_LIBS += ../libmisc/libutf8proc.a
 endif
 
-TMP_LIBS += ../libmisc/libuuid.a
+#TMP_LIBS += ../libmisc/libuuid.a
 
-TMP_LIBS += ../libi2c/libi2c.a
+#TMP_LIBS += ../libi2c/libi2c.a
 
 if LIBNETWORKING
-TMP_LIBS += ../libnetworking/libnetworking.a
-TMP_LIBS += ../libnetworking/libc.a
-TMP_LIBS += ../libnetworking/lib.a
+#TMP_LIBS += ../libnetworking/libnetworking.a
+#TMP_LIBS += ../libnetworking/libc.a
+#TMP_LIBS += ../libnetworking/lib.a
 endif
 
 if LIBRPC
-TMP_LIBS += ../librpc/librpc.a
-TMP_LIBS += ../librpc/libxdr.a
+#TMP_LIBS += ../librpc/librpc.a
+#TMP_LIBS += ../librpc/libxdr.a
 endif
 
 if NEWLIB
-TMP_LIBS += ../libmd/libmd.a
+#TMP_LIBS += ../libmd/libmd.a
 endif
 
 if LIBDL
-TMP_LIBS += ../libdl/libdl.a
+#TMP_LIBS += ../libdl/libdl.a
 endif
 
 librtemscpu.a: $(TMP_LIBS)

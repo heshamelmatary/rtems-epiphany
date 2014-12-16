@@ -4,25 +4,27 @@ include $(top_srcdir)/automake/compile.am
 include $(top_srcdir)/automake/multilib.am
 
 # librtemscpu
-SUBDIRS = . score rtems sapi posix
-SUBDIRS += dev
-SUBDIRS += libcrypt
-SUBDIRS += libcsupport libblock libfs
-SUBDIRS += libnetworking librpc
-SUBDIRS += libi2c
-SUBDIRS += libmisc
-SUBDIRS += libmd
-SUBDIRS += libgnat
-SUBDIRS += libdl
+SUBDIRS = . score rtems sapi
+SUBDIRS += libcsupport 
+#SUBDIRS = . score rtems sapi posix
+#SUBDIRS += dev
+#SUBDIRS += libcrypt
+#SUBDIRS += libcsupport libblock libfs
+#SUBDIRS += libnetworking librpc
+#SUBDIRS += libi2c
+#SUBDIRS += libmisc
+#SUBDIRS += libmd
+#SUBDIRS += libgnat
+#SUBDIRS += libdl
 SUBDIRS += wrapup
 
 SUBDIRS += zlib
 
 # applications
-SUBDIRS += ftpd
-SUBDIRS += telnetd
-SUBDIRS += pppd
-SUBDIRS += mghttpd
+#SUBDIRS += ftpd
+#SUBDIRS += telnetd
+#SUBDIRS += pppd
+#SUBDIRS += mghttpd
 
 noinst_DATA = preinstall-stamp
 preinstall-stamp:

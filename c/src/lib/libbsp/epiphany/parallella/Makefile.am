@@ -27,7 +27,7 @@ include_bsp_HEADERS += ../../shared/include/utility.h
 include_bsp_HEADERS += ../../shared/include/irq-generic.h
 include_bsp_HEADERS += ../../shared/include/irq-info.h
 include_bsp_HEADERS += ../../shared/include/stackalloc.h
-include_bsp_HEADERS += ../../shared/include/console-polled.h
+#include_bsp_HEADERS += ../../shared/include/console-polled.h
 
 nodist_include_HEADERS = include/bspopts.h
 
@@ -50,7 +50,7 @@ noinst_LIBRARIES += libbsp.a
 
 # Startup
 libbsp_a_SOURCES = ../../shared/bspreset.c
-libbsp_a_SOURCES += ../../shared/bspstart.c
+libbsp_a_SOURCES += startup/bspstart.c
 
 # Shared
 libbsp_a_SOURCES += ../../shared/bootcard.c
@@ -60,15 +60,14 @@ libbsp_a_SOURCES += ../../shared/bsplibc.c
 libbsp_a_SOURCES += ../../shared/bsppost.c
 libbsp_a_SOURCES += ../../shared/bsppredriverhook.c
 libbsp_a_SOURCES += ../../shared/bsppretaskinghook.c
-libbsp_a_SOURCES += ../../shared/gnatinstallhandler.c
-libbsp_a_SOURCES += ../../shared/sbrk.c
-libbsp_a_SOURCES += ../../shared/src/stackalloc.c
+#libbsp_a_SOURCES += ../../shared/gnatinstallhandler.c
+#libbsp_a_SOURCES += ../../shared/src/stackalloc.c
 
 # clock
 libbsp_a_SOURCES += clock/clockdrv.c ../../../shared/clockdrv_shell.h
 
 # console
-libbsp_a_SOURCES += ../../shared/console-polled.c
+#libbsp_a_SOURCES += ../../shared/console-polled.c
 
 # SMP
 if HAS_SMP

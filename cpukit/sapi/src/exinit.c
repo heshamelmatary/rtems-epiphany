@@ -54,7 +54,7 @@
 
 
 #include <rtems/rtems/rtemsapi.h>
-#include <rtems/posix/posixapi.h>
+//#include <rtems/posix/posixapi.h>
 
 Objects_Information *_Internal_Objects[ OBJECTS_INTERNAL_CLASSES_LAST + 1 ];
 
@@ -141,7 +141,7 @@ void rtems_initialize_data_structures(void)
 
   _Extension_Manager_initialization();
 
-  _POSIX_API_Initialize();
+  //_POSIX_API_Initialize();
 
   _System_state_Set( SYSTEM_STATE_BEFORE_MULTITASKING );
 

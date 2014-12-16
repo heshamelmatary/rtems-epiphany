@@ -36,10 +36,10 @@
  */
 
 #include <bsp.h>
-#include <bsp/console-polled.h>
-#include <rtems/libio.h>
+//#include <bsp/console-polled.h>
+//#include <rtems/libio.h>
 #include <stdlib.h>
-#include <assert.h>
+//#include <assert.h>
 #include <stdio.h>
 
 /*
@@ -79,7 +79,7 @@ static int asm_write (int CHAN, void* ADDR, int LEN)
 
 static char asm_read(int CHAN, void *ADDR, int LEN)
 {
-	register int chan asm("r0") = CHAN;
+	/*register int chan asm("r0") = CHAN;
 	register void* addr asm("r1") = ADDR;
 	register int len asm("r2") = LEN;
 	register int result asm("r0");
@@ -88,6 +88,7 @@ static char asm_read(int CHAN, void *ADDR, int LEN)
 	     "r" (chan), "r" (addr), "r" (len));
 
 	return (char) result;
+	*/
 }
 
 static void outbyte_console(char c)
@@ -111,8 +112,8 @@ static void outbyte_console(char c)
 
 static char inbyte_console( void )
 {
-  char c = asm_read (STDIN_FILENO, &c, 1);
-  return c;
+  //char c = asm_read (STDIN_FILENO, &c, 1);
+  //return c;
 }
 
 /*
@@ -145,6 +146,22 @@ int console_inbyte_nonblocking(
   if (!c)
     return -1;
   return c;
+}
+
+ssize_t write_parallella(
+  int         minor,
+  const char *bufarg,
+  size_t      len     
+)
+{
+  int nwrite = 0;
+  const char *buf = bufarg; 
+
+  while (nwrite < len) {
+    console_outbyte_polled( minor, *buf++ );
+    nwrite++;
+  }
+  return nwrite; 
 }
 
 /*

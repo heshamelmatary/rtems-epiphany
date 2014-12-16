@@ -27,7 +27,7 @@
 #include <rtems/rtems/support.h>
 #include <rtems/rtems/modes.h>
 #include <rtems/rtems/tasksimpl.h>
-#include <rtems/posix/keyimpl.h>
+//#include <rtems/posix/keyimpl.h>
 #include <rtems/score/stack.h>
 #include <rtems/score/threadimpl.h>
 #include <rtems/score/userextimpl.h>
@@ -128,7 +128,7 @@ static void _RTEMS_tasks_Terminate_extension(
   /*
    *  Run all the key destructors
    */
-  _POSIX_Keys_Run_destructors( executing );
+  //_POSIX_Keys_Run_destructors( executing );
 }
 
 #if !defined(RTEMS_SMP)
