@@ -54,7 +54,7 @@ static void epiphany_clock_at_tick(void)
 }
 
 /* Use timer0 on each eCPU for scheduling purposes */
-static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
+void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 {
    old_isr = NULL;
    
@@ -64,7 +64,7 @@ static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
    table[TIMER0] = new_isr;
 }
 
-static void epiphany_clock_initialize(void)
+void epiphany_clock_initialize(void)
 {
   unsigned int x = 0xDEADBEEF;
   
@@ -104,12 +104,13 @@ static uint32_t epiphany_clock_nanoseconds_since_last_tick(void)
 
 CPU_Counter_ticks _CPU_Counter_read(void)
 {
-  uint32_t ticks_since_last_timer_interrupt, timer_val;
+/*  uint32_t ticks_since_last_timer_interrupt, timer_val;
   asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (timer_val):);
   ticks_since_last_timer_interrupt = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - 
   timer_val;
 
   return cpu_counter_ticks + ticks_since_last_timer_interrupt;
+*/
 }
 
 CPU_Counter_ticks _CPU_Counter_difference(
@@ -119,6 +120,13 @@ CPU_Counter_ticks _CPU_Counter_difference(
 {
   return second - first;
 }
+
+void bsp_start(void)
+{
+  epiphany_clock_handler_install(Clock_isr, (void *) 0);
+  epiphany_clock_initialize();
+}
+
 #define Clock_driver_support_at_tick() epiphany_clock_at_tick()
 
 #define Clock_driver_support_initialize_hardware() epiphany_clock_initialize()

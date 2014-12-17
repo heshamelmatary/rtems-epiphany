@@ -58,13 +58,20 @@ TERMIOS_C_FILES =
 
 SYSTEM_CALL_C_FILES = src/syscall_stubs.c src/write.c \
     src/write_r.c src/libio_helper_null.c \
-    src/ioctl.c src/mkdir.c src/mknod.c src/mkfifo.c src/rmdir.c \
-    src/chdir.c src/chmod.c src/fchdir.c src/fchmod.c src/fchown.c src/chown.c \
-    src/link.c src/unlink.c src/umask.c src/ftruncate.c src/utime.c \
-    src/fcntl.c src/fpathconf.c src/getdents.c src/fsync.c src/fdatasync.c \
-    src/pipe.c src/dup.c src/dup2.c src/symlink.c src/readlink.c \
-    src/chroot.c src/sync.c src/_rename_r.c src/statvfs.c src/utimes.c src/lchown.c
+    src/ioctl.c \
+    src/link.c src/unlink.c src/utime.c \
+    src/fcntl.c \
+    src/_rename_r.c src/statvfs.c src/utimes.c
 
+#SYSTEM_CALL_C_FILES = src/syscall_stubs.c src/write.c \
+#    src/write_r.c src/libio_helper_null.c \
+#    src/ioctl.c src/mkdir.c src/mknod.c src/mkfifo.c src/rmdir.c \
+#    src/chdir.c src/chmod.c src/fchdir.c src/fchmod.c src/fchown.c src/chown.c \
+#    src/link.c src/unlink.c src/umask.c src/ftruncate.c src/utime.c \
+#    src/fcntl.c src/fpathconf.c src/getdents.c src/fsync.c src/fdatasync.c \
+#    src/pipe.c src/dup.c src/dup2.c src/symlink.c src/readlink.c \
+#    src/chroot.c src/sync.c src/_rename_r.c src/statvfs.c src/utimes.c src/lchown.c
+#
 ## Until sys/uio.h is moved to libcsupport, we have to have networking
 ## enabled to compile these.  Hopefully this is a temporary situation.
 if NEWLIB
@@ -83,20 +90,20 @@ ID_C_FILES = #src/getegid.c src/geteuid.c src/getgid.c src/getgroups.c \
     #src/setsid.c
 
 MALLOC_C_FILES = src/malloc_initialize.c src/calloc.c src/malloc.c \
-    src/realloc.c src/_calloc_r.c src/_malloc_r.c \
-    src/free.c src/_free_r.c \
-    src/_realloc_r.c src/mallocfreespace.c \
-    src/mallocgetheapptr.c src/mallocsetheapptr.c \
-    src/mallocinfo.c src/malloc_walk.c \
-    src/posix_memalign.c \
-    src/rtems_memalign.c src/malloc_deferred.c \
-    src/malloc_dirtier.c src/malloc_p.h src/rtems_malloc.c \
-    src/rtems_heap_extend_via_sbrk.c \
-    src/rtems_heap_null_extend.c \
-    src/rtems_heap_extend.c \
-    src/rtems_heap_greedy.c
-MALLOC_C_FILES += src/cachealignedalloc.c
-MALLOC_C_FILES += src/cachecoherentalloc.c
+     src/rtems_heap_null_extend.c
+#    src/realloc.c src/_calloc_r.c src/_malloc_r.c \
+#    src/free.c src/_free_r.c \
+#    src/_realloc_r.c src/mallocfreespace.c \
+#    src/mallocgetheapptr.c src/mallocsetheapptr.c \
+#    src/mallocinfo.c src/malloc_walk.c \
+#    src/posix_memalign.c \
+#    src/rtems_memalign.c src/malloc_deferred.c \
+#    src/malloc_dirtier.c src/malloc_p.h src/rtems_malloc.c \
+#    src/rtems_heap_extend_via_sbrk.c \
+#    src/rtems_heap_extend.c \
+#    src/rtems_heap_greedy.c
+#MALLOC_C_FILES += src/cachealignedalloc.c
+#MALLOC_C_FILES += src/cachecoherentalloc.c
 
 PASSWORD_GROUP_C_FILES = #src/pwdgrp.c
 PASSWORD_GROUP_C_FILES += #src/getgrent.c

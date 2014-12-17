@@ -96,10 +96,10 @@ include_rtems_score_HEADERS += include/rtems/score/cpuopts.h
 include_rtems_score_HEADERS += include/rtems/score/basedefs.h
 
 if HAS_PTHREADS
-include_rtems_score_HEADERS += include/rtems/score/corespinlock.h
-include_rtems_score_HEADERS += include/rtems/score/corespinlockimpl.h
-include_rtems_score_HEADERS += include/rtems/score/corerwlock.h
-include_rtems_score_HEADERS += include/rtems/score/corerwlockimpl.h
+#include_rtems_score_HEADERS += include/rtems/score/corespinlock.h
+#include_rtems_score_HEADERS += include/rtems/score/corespinlockimpl.h
+#include_rtems_score_HEADERS += include/rtems/score/corerwlock.h
+#include_rtems_score_HEADERS += include/rtems/score/corerwlockimpl.h
 endif
 
 if HAS_MP
@@ -152,14 +152,16 @@ libscore_a_SOURCES += src/apimutex.c \
     src/apimutexlock.c src/apimutexunlock.c
 
 ## CORE_BARRIER_C_FILES
-libscore_a_SOURCES += src/corebarrier.c src/corebarrierrelease.c \
-    src/corebarrierwait.c
+libscore_a_SOURCES += 
+    #src/corebarrier.c src/corebarrierrelease.c \
+    #src/corebarrierwait.c
 
 ## CORE_MESSAGE_QUEUE_C_FILES
-libscore_a_SOURCES += src/coremsg.c src/coremsgbroadcast.c \
-    src/coremsgclose.c src/coremsgflush.c src/coremsgflushwait.c \
-    src/coremsginsert.c src/coremsgflushsupp.c src/coremsgseize.c \
-    src/coremsgsubmit.c
+libscore_a_SOURCES += 
+    #src/coremsg.c src/coremsgbroadcast.c \
+    #src/coremsgclose.c src/coremsgflush.c src/coremsgflushwait.c \
+    #src/coremsginsert.c src/coremsgflushsupp.c src/coremsgseize.c \
+    #src/coremsgsubmit.c
 
 ## CORE_MUTEX_C_FILES
 libscore_a_SOURCES += src/coremutex.c src/coremutexflush.c \
@@ -172,13 +174,13 @@ libscore_a_SOURCES += src/percpuasm.c
 
 ## CORE_RWLOCK_C_FILES
 if HAS_PTHREADS
-libscore_a_SOURCES += src/corerwlock.c src/corerwlockobtainread.c \
-    src/corerwlockobtainwrite.c src/corerwlockrelease.c src/corerwlocktimeout.c
+#libscore_a_SOURCES += src/corerwlock.c src/corerwlockobtainread.c \
+#    src/corerwlockobtainwrite.c src/corerwlockrelease.c src/corerwlocktimeout.c
 endif
 
 ## CORE_SEMAPHORE_C_FILES
-libscore_a_SOURCES += src/coresem.c src/coresemflush.c src/coresemseize.c \
-    src/coresemsurrender.c
+#libscore_a_SOURCES += src/coresem.c src/coresemflush.c src/coresemseize.c \
+#    src/coresemsurrender.c
 
 ## CORE_SPINLOCK_C_FILES
 if HAS_PTHREADS
@@ -227,47 +229,47 @@ libscore_a_SOURCES += src/schedulerpriority.c \
     src/schedulerpriorityyield.c
 
 ## SCHEDULERSIMPLE_C_FILES
-libscore_a_SOURCES += src/schedulersimple.c \
-    src/schedulersimpleblock.c \
-    src/schedulersimplechangepriority.c \
-    src/schedulersimpleschedule.c \
-    src/schedulersimpleunblock.c \
-    src/schedulersimpleyield.c
+#libscore_a_SOURCES += src/schedulersimple.c \
+#    src/schedulersimpleblock.c \
+#    src/schedulersimplechangepriority.c \
+#    src/schedulersimpleschedule.c \
+#    src/schedulersimpleunblock.c \
+#    src/schedulersimpleyield.c
 
 ## SCHEDULEREDF_C_FILES
-libscore_a_SOURCES += src/scheduleredf.c \
-    src/scheduleredfnodeinit.c \
-    src/scheduleredfblock.c \
-    src/scheduleredfchangepriority.c \
-    src/scheduleredfprioritycompare.c \
-    src/scheduleredfreleasejob.c \
-    src/scheduleredfschedule.c \
-    src/scheduleredfunblock.c \
-    src/scheduleredfupdate.c \
-    src/scheduleredfyield.c
+#libscore_a_SOURCES += src/scheduleredf.c \
+#    src/scheduleredfnodeinit.c \
+#    src/scheduleredfblock.c \
+#    src/scheduleredfchangepriority.c \
+#    src/scheduleredfprioritycompare.c \
+#    src/scheduleredfreleasejob.c \
+#    src/scheduleredfschedule.c \
+#    src/scheduleredfunblock.c \
+#    src/scheduleredfupdate.c \
+#    src/scheduleredfyield.c
 
 ## SCHEDULERCBS_C_FILES
-libscore_a_SOURCES += src/schedulercbs.c \
-    src/schedulercbsnodeinit.c \
-    src/schedulercbsattachthread.c \
-    src/schedulercbscleanup.c \
-    src/schedulercbscreateserver.c \
-    src/schedulercbsdestroyserver.c \
-    src/schedulercbsdetachthread.c \
-    src/schedulercbsgetapprovedbudget.c \
-    src/schedulercbsgetexecutiontime.c \
-    src/schedulercbsgetparameters.c \
-    src/schedulercbsgetremainingbudget.c \
-    src/schedulercbsgetserverid.c \
-    src/schedulercbssetparameters.c \
-    src/schedulercbsreleasejob.c \
-    src/schedulercbsunblock.c
+#libscore_a_SOURCES += src/schedulercbs.c \
+#    src/schedulercbsnodeinit.c \
+#    src/schedulercbsattachthread.c \
+#    src/schedulercbscleanup.c \
+#    src/schedulercbscreateserver.c \
+#    src/schedulercbsdestroyserver.c \
+#    src/schedulercbsdetachthread.c \
+#    src/schedulercbsgetapprovedbudget.c \
+#    src/schedulercbsgetexecutiontime.c \
+#    src/schedulercbsgetparameters.c \
+#    src/schedulercbsgetremainingbudget.c \
+#    src/schedulercbsgetserverid.c \
+#    src/schedulercbssetparameters.c \
+#    src/schedulercbsreleasejob.c \
+#    src/schedulercbsunblock.c
 
 ## PROTECTED_HEAP_C_FILES
-libscore_a_SOURCES += src/pheapallocate.c \
-    src/pheapextend.c src/pheapfree.c src/pheapgetsize.c \
-    src/pheapgetblocksize.c src/pheapgetfreeinfo.c src/pheapgetinfo.c \
-    src/pheapinit.c src/pheapresizeblock.c src/pheapwalk.c src/pheapiterate.c
+#libscore_a_SOURCES += src/pheapallocate.c \
+#    src/pheapextend.c src/pheapfree.c src/pheapgetsize.c \
+#    src/pheapgetblocksize.c src/pheapgetfreeinfo.c src/pheapgetinfo.c \
+#    src/pheapinit.c src/pheapresizeblock.c src/pheapwalk.c src/pheapiterate.c
 
 ## FREECHAIN_C_FILES
 libscore_a_SOURCES += src/freechain.c

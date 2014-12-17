@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I ../aclocal
 
-_SUBDIRS =  hello minimum
+_SUBDIRS =  hello ticker minimum
 #_SUBDIRS = hello capture ticker 
 
 if MPTESTS

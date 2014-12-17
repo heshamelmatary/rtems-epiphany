@@ -15,6 +15,8 @@
  *  http://www.rtems.org/license/LICENSE.
  */
 
+#ifndef CLOCK_ISR_H
+#define CLOCK_ISR_H
 #include <stdlib.h>
 
 #include <bsp.h>
@@ -123,7 +125,7 @@ rtems_isr Clock_isr(
  */
 void Clock_exit( void )
 {
-  Clock_driver_support_shutdown_hardware();
+  //Clock_driver_support_shutdown_hardware();
 
   /* do not restore old vector */
 }
@@ -145,40 +147,42 @@ rtems_device_driver Clock_initialize(
   void *pargp
 )
 {
-  rtems_isr_entry  Old_ticker;
+  //rtems_isr_entry  Old_ticker;
 
-  Clock_driver_ticks = 0;
+  //Clock_driver_ticks = 0;
 
   /*
    *  Find timer -- some BSPs search buses for hardware timer
    */
-  Clock_driver_support_find_timer();
+  //Clock_driver_support_find_timer();
 
   /*
    *  Install vector
    */
-  (void) Old_ticker;
-  Clock_driver_support_install_isr( Clock_isr, Old_ticker );
+  //(void) Old_ticker;
+  //Clock_driver_support_install_isr( Clock_isr, Old_ticker );
 
   #if defined(Clock_driver_nanoseconds_since_last_tick)
-    rtems_clock_set_nanoseconds_extension(
+    /*rtems_clock_set_nanoseconds_extension(
       Clock_driver_nanoseconds_since_last_tick
-    );
+    );*/
   #endif
 
   /*
    *  Now initialize the hardware that is the source of the tick ISR.
    */
-  Clock_driver_support_initialize_hardware();
+  //Clock_driver_support_initialize_hardware();
 
-  atexit( Clock_exit );
+  //atexit( Clock_exit );
 
   /*
    *  If we are counting ISRs per tick, then initialize the counter.
    */
   #if CLOCK_DRIVER_ISRS_PER_TICK
-    Clock_driver_isrs = CLOCK_DRIVER_ISRS_PER_TICK_VALUE;
+    //Clock_driver_isrs = CLOCK_DRIVER_ISRS_PER_TICK_VALUE;
   #endif
 
   return RTEMS_SUCCESSFUL;
 }
+
+#endif /* CLOCK_ISR_H */

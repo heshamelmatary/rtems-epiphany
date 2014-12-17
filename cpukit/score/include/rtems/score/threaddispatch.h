@@ -15,7 +15,7 @@
 #define _RTEMS_SCORE_THREADDISPATCH_H
 
 #include <rtems/score/percpu.h>
-#include <rtems/score/smplock.h>
+//#include <rtems/score/smplock.h>
 #include <rtems/score/profiling.h>
 
 #ifdef __cplusplus

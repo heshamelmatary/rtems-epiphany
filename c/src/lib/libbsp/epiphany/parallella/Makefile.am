@@ -50,16 +50,16 @@ noinst_LIBRARIES += libbsp.a
 
 # Startup
 libbsp_a_SOURCES = ../../shared/bspreset.c
-libbsp_a_SOURCES += startup/bspstart.c
+#libbsp_a_SOURCES += startup/bspstart.c
 
 # Shared
 libbsp_a_SOURCES += ../../shared/bootcard.c
-libbsp_a_SOURCES += ../../shared/bspclean.c
+#libbsp_a_SOURCES += ../../shared/bspclean.c
 libbsp_a_SOURCES += ../../shared/bspgetworkarea.c
-libbsp_a_SOURCES += ../../shared/bsplibc.c
-libbsp_a_SOURCES += ../../shared/bsppost.c
-libbsp_a_SOURCES += ../../shared/bsppredriverhook.c
-libbsp_a_SOURCES += ../../shared/bsppretaskinghook.c
+#libbsp_a_SOURCES += ../../shared/bsplibc.c
+#libbsp_a_SOURCES += ../../shared/bsppost.c
+#libbsp_a_SOURCES += ../../shared/bsppredriverhook.c
+#libbsp_a_SOURCES += ../../shared/bsppretaskinghook.c
 #libbsp_a_SOURCES += ../../shared/gnatinstallhandler.c
 #libbsp_a_SOURCES += ../../shared/src/stackalloc.c
 

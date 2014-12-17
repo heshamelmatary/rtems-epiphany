@@ -185,10 +185,9 @@ _ISR_Handler:
    lsl  r17, r17, #(PER_CPU_CONTROL_SIZE_LOG2)
    add  r18, r18, r17
 #endif
-   
 	 
-	 add  r6, r18, #(PER_CPU_ISR_NEST_LEVEL)
-	 add  r8, r18, #(PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL)
+	add  r6, r18, #(PER_CPU_ISR_NEST_LEVEL)
+	add  r8, r18, #(PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL)
   
   ldr     r5, [r6]
   ldr     r7, [r8]
@@ -196,7 +195,6 @@ _ISR_Handler:
   add     r7, r7, #1
   str     r5, [r6]
   str     r7, [r8]
-  
   
   /* Keep sp (Exception frame address) in r32 - Callee saved */
   mov   r32, sp

@@ -66,9 +66,6 @@ void boot_card(
   const char *cmdline
 )
 {
-  volatile register int *i = (int *) 0x7FB8;
-  *i = 0xA0A0;
-
   rtems_interrupt_level  bsp_isr_level;
 
   /*
@@ -98,7 +95,7 @@ void boot_card(
    *  Initialize the C library for those BSPs using the shared
    *  framework.
    */
-  bsp_libc_init();
+  //bsp_libc_init();
 
   /*
    *  Let the BSP do any required initialization now that RTEMS
@@ -108,7 +105,7 @@ void boot_card(
    *  can be called by device drivers.  For BSPs using the shared
    *  framework, this routine can be empty.
    */
-  bsp_pretasking_hook();
+  //bsp_pretasking_hook();
 
   /*
    *  If debug is enabled, then enable all dynamic RTEMS debug
@@ -125,7 +122,7 @@ void boot_card(
    *  Let RTEMS perform initialization it requires before drivers
    *  are allowed to be initialized.
    */
-  rtems_initialize_before_drivers();
+  //rtems_initialize_before_drivers();
 
   /*
    *  Execute BSP specific pre-driver hook. Drivers haven't gotten
@@ -135,18 +132,18 @@ void boot_card(
    *  NOTE: Many BSPs do not require this handler and use the
    *        shared stub.
    */
-  bsp_predriver_hook();
+  //bsp_predriver_hook();
 
   /*
    *  Initialize all device drivers.
    */
-  rtems_initialize_device_drivers();
+  //rtems_initialize_device_drivers();
 
   /*
    *  Invoke the postdriver hook.  This normally opens /dev/console
    *  for use as stdin, stdout, and stderr.
    */
-  bsp_postdriver_hook();
+  //bsp_postdriver_hook();
 
   /*
    *  Complete initialization of RTEMS and switch to the first task.

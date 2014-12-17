@@ -80,20 +80,20 @@ endif
 ## src
 librtems_a_SOURCES = src/rtemsbuildid.c
 librtems_a_SOURCES += src/rtemsbuildname.c
-librtems_a_SOURCES += src/rtemsobjectgetname.c
-librtems_a_SOURCES += src/rtemsobjectsetname.c
-librtems_a_SOURCES += src/rtemsobjectidapimaximum.c
-librtems_a_SOURCES += src/rtemsobjectidapiminimum.c
-librtems_a_SOURCES += src/rtemsobjectidgetapi.c
-librtems_a_SOURCES += src/rtemsobjectidgetclass.c
-librtems_a_SOURCES += src/rtemsobjectidgetindex.c
-librtems_a_SOURCES += src/rtemsobjectidgetnode.c
-librtems_a_SOURCES += src/rtemsobjectapiminimumclass.c
-librtems_a_SOURCES += src/rtemsobjectapimaximumclass.c
-librtems_a_SOURCES += src/rtemsobjectgetapiname.c
-librtems_a_SOURCES += src/rtemsobjectgetapiclassname.c
-librtems_a_SOURCES += src/rtemsobjectgetclassinfo.c
-librtems_a_SOURCES += src/rtemsobjectgetclassicname.c
+#librtems_a_SOURCES += src/rtemsobjectgetname.c
+#librtems_a_SOURCES += src/rtemsobjectsetname.c
+#librtems_a_SOURCES += src/rtemsobjectidapimaximum.c
+#librtems_a_SOURCES += src/rtemsobjectidapiminimum.c
+#librtems_a_SOURCES += src/rtemsobjectidgetapi.c
+#librtems_a_SOURCES += src/rtemsobjectidgetclass.c
+#librtems_a_SOURCES += src/rtemsobjectidgetindex.c
+#librtems_a_SOURCES += src/rtemsobjectidgetnode.c
+#librtems_a_SOURCES += src/rtemsobjectapiminimumclass.c
+#librtems_a_SOURCES += src/rtemsobjectapimaximumclass.c
+#librtems_a_SOURCES += src/rtemsobjectgetapiname.c
+#librtems_a_SOURCES += src/rtemsobjectgetapiclassname.c
+#librtems_a_SOURCES += src/rtemsobjectgetclassinfo.c
+#librtems_a_SOURCES += src/rtemsobjectgetclassicname.c
 
 ## TASK_C_FILES
 librtems_a_SOURCES += src/tasks.c
@@ -215,15 +215,15 @@ librtems_a_SOURCES += src/clocktodvalidate.c
 #librtems_a_SOURCES += src/semsetpriority.c
 
 ## EVENT_C_FILES
-librtems_a_SOURCES += src/event.c
-librtems_a_SOURCES += src/eventreceive.c
-librtems_a_SOURCES += src/eventseize.c
-librtems_a_SOURCES += src/eventsend.c
-librtems_a_SOURCES += src/eventsurrender.c
-librtems_a_SOURCES += src/eventtimeout.c
-librtems_a_SOURCES += src/eventdata.c
-librtems_a_SOURCES += src/systemeventsend.c
-librtems_a_SOURCES += src/systemeventreceive.c
+#librtems_a_SOURCES += src/event.c
+#librtems_a_SOURCES += src/eventreceive.c
+#librtems_a_SOURCES += src/eventseize.c
+#librtems_a_SOURCES += src/eventsend.c
+#librtems_a_SOURCES += src/eventsurrender.c
+#librtems_a_SOURCES += src/eventtimeout.c
+#librtems_a_SOURCES += src/eventdata.c
+#librtems_a_SOURCES += src/systemeventsend.c
+#librtems_a_SOURCES += src/systemeventreceive.c
 
 ## SIGNAL_C_FILES
 librtems_a_SOURCES += src/signal.c
@@ -264,13 +264,13 @@ librtems_a_SOURCES += src/signalsend.c
 #librtems_a_SOURCES += src/dpmemdata.c
 
 ## WORKSPACE_FILES
-librtems_a_SOURCES += src/workspace.c
-librtems_a_SOURCES += src/workspacegreedy.c
+#librtems_a_SOURCES += src/workspace.c
+#librtems_a_SOURCES += src/workspacegreedy.c
 
-librtems_a_SOURCES += src/modes.c
+#librtems_a_SOURCES += src/modes.c
 
-#librtems_a_SOURCES += src/status.c
-#librtems_a_SOURCES += src/statustext.c
+librtems_a_SOURCES += src/status.c
+librtems_a_SOURCES += src/statustext.c
 
 librtems_a_SOURCES += src/getcurrentprocessor.c
 librtems_a_SOURCES += src/getprocessorcount.c

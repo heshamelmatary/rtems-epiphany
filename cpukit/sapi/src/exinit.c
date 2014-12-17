@@ -101,13 +101,13 @@ void rtems_initialize_data_structures(void)
    *  Do this as early as possible to ensure no debugging output
    *  is even attempted to be printed.
    */
-  _Debug_Manager_initialization();
+  //_Debug_Manager_initialization();
 
   _API_extensions_Initialization();
 
   _Thread_Dispatch_initialization();
 
-  _User_extensions_Handler_initialization();
+  //_User_extensions_Handler_initialization();
   _ISR_Handler_initialization();
 
   /*
@@ -131,7 +131,7 @@ void rtems_initialize_data_structures(void)
     _MPCI_Handler_initialization( RTEMS_TIMEOUT );
   #endif
 
-  _SMP_Handler_initialize();
+  //_SMP_Handler_initialize();
 
   _CPU_set_Handler_initialization();
 
@@ -139,7 +139,7 @@ void rtems_initialize_data_structures(void)
 
   _RTEMS_API_Initialize();
 
-  _Extension_Manager_initialization();
+  //_Extension_Manager_initialization();
 
   //_POSIX_API_Initialize();
 
@@ -182,7 +182,7 @@ void rtems_initialize_device_drivers(void)
    *  NOTE:  The MPCI may be build upon a device driver.
    */
 
-  _IO_Initialize_all_drivers();
+  //_IO_Initialize_all_drivers();
 
   #if defined(RTEMS_MULTIPROCESSING)
     if ( _System_state_Is_multiprocessing ) {
@@ -205,7 +205,7 @@ void rtems_initialize_start_multitasking(void)
 {
   _System_state_Set( SYSTEM_STATE_UP );
 
-  _SMP_Request_start_multitasking();
+  //_SMP_Request_start_multitasking();
 
   _Thread_Start_multitasking();
 
