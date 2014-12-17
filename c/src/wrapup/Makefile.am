@@ -8,25 +8,25 @@ include $(top_srcdir)/automake/compile.am
 project_lib_DATA = o-optimize/librtemsbsp.a
 CLEANFILES = o-optimize/librtemsbsp.a
 
-SRCS = ../support/libsupport.a
+#SRCS = ../support/libsupport.a
 
-SRCS += ../lib/libbsp/@RTEMS_CPU@/@RTEMS_BSP_FAMILY@/libbsp.a
+SRCS = ../lib/libbsp/@RTEMS_CPU@/@RTEMS_BSP_FAMILY@/libbsp.a
 
 # FIXME: ATM, there is no libcpu.a, anymore.
 # SRCS += $(wildcard $(PROJECT_LIB)/libcpu.a)
 
-SRCS += ../libchip/libflash.a
-SRCS += ../libchip/librtcio.a
-SRCS += ../libchip/libserialio.a
-SRCS += ../libchip/libide.a
+#SRCS += ../libchip/libflash.a
+#SRCS += ../libchip/librtcio.a
+#SRCS += ../libchip/libserialio.a
+#SRCS += ../libchip/libide.a
 if HAS_NETWORKING
-SRCS += ../libchip/libnetchip.a
+#SRCS += ../libchip/libnetchip.a
 endif
-SRCS += ../libchip/libi2cio.a
-SRCS += ../libchip/libdisplay.a
+#SRCS += ../libchip/libi2cio.a
+#SRCS += ../libchip/libdisplay.a
 
 if HAS_MP
-SRCS += ../libchip/shmdr.rel
+#SRCS += ../libchip/shmdr.rel
 endif
 
 o-optimize/librtemsbsp.a: $(SRCS)

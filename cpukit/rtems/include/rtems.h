@@ -36,27 +36,28 @@
 #include <rtems/rtems/options.h>
 #include <rtems/rtems/tasks.h>
 #include <rtems/rtems/intr.h>
-#include <rtems/rtems/barrier.h>
-#include <rtems/rtems/cache.h>
+//#include <rtems/rtems/barrier.h>
+//#include <rtems/rtems/cache.h>
 #include <rtems/rtems/clock.h>
 #include <rtems/extension.h>
-#include <rtems/rtems/timer.h>
+#include <rtems/rtems/object.h>
+#include <rtems/io.h>
+/*#include <rtems/rtems/timer.h>
 #include <rtems/rtems/sem.h>
 #include <rtems/rtems/message.h>
 #include <rtems/rtems/event.h>
 #include <rtems/rtems/signal.h>
 #include <rtems/rtems/event.h>
-#include <rtems/rtems/object.h>
 #include <rtems/rtems/part.h>
 #include <rtems/rtems/region.h>
 #include <rtems/rtems/dpmem.h>
-#include <rtems/io.h>
+*/
 #include <rtems/fatal.h>
-#include <rtems/rtems/ratemon.h>
+//#include <rtems/rtems/ratemon.h>
 #if defined(RTEMS_MULTIPROCESSING)
 #include <rtems/rtems/mp.h>
 #endif
-#include <rtems/rtems/smp.h>
+//#include <rtems/rtems/smp.h>
 
 #include <rtems/rtems/support.h>
 

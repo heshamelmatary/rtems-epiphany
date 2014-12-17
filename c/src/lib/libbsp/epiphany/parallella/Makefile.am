@@ -20,13 +20,13 @@ include_HEADERS = include/bsp.h
 include_HEADERS += include/tm27.h
 
 nodist_include_bsp_HEADERS = ../../shared/include/bootcard.h
-include_bsp_HEADERS = ../shared/include/linker-symbols.h
+#include_bsp_HEADERS = ../shared/include/linker-symbols.h
 
-include_bsp_HEADERS += ../../../libbsp/shared/include/mm.h
-include_bsp_HEADERS += ../../shared/include/utility.h
-include_bsp_HEADERS += ../../shared/include/irq-generic.h
-include_bsp_HEADERS += ../../shared/include/irq-info.h
-include_bsp_HEADERS += ../../shared/include/stackalloc.h
+#include_bsp_HEADERS += ../../../libbsp/shared/include/mm.h
+#include_bsp_HEADERS += ../../shared/include/utility.h
+#include_bsp_HEADERS += ../../shared/include/irq-generic.h
+#include_bsp_HEADERS += ../../shared/include/irq-info.h
+#include_bsp_HEADERS += ../../shared/include/stackalloc.h
 #include_bsp_HEADERS += ../../shared/include/console-polled.h
 
 nodist_include_HEADERS = include/bspopts.h

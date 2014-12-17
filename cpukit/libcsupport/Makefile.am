@@ -44,20 +44,20 @@ include_rtems_zilog_HEADERS += include/zilog/z8536.h
 ##  General stuff
 ERROR_C_FILES = src/error.c src/__assert.c
 
-ASSOCIATION_C_FILES = src/assoclocalbyname.c \
-    src/assoclocalbyremotebitfield.c src/assoclocalbyremote.c \
-    src/assocnamebad.c src/assocnamebylocalbitfield.c \
-    src/assocnamebylocal.c src/assocnamebyremotebitfield.c \
-    src/assocnamebyremote.c src/assocptrbylocal.c src/assocptrbyname.c \
-    src/assocptrbyremote.c src/assocremotebylocalbitfield.c \
-    src/assocremotebylocal.c src/assocremotebyname.c src/libio_helper_null.c
+ASSOCIATION_C_FILES = #src/assoclocalbyname.c \
+    #src/assoclocalbyremotebitfield.c src/assoclocalbyremote.c \
+    #src/assocnamebad.c src/assocnamebylocalbitfield.c \
+    #src/assocnamebylocal.c src/assocnamebyremotebitfield.c \
+    #src/assocnamebyremote.c src/assocptrbylocal.c src/assocptrbyname.c \
+    #src/assocptrbyremote.c src/assocremotebylocalbitfield.c \
+    #src/assocremotebylocal.c src/assocremotebyname.c src/libio_helper_null.c
 
 BASE_FS_C_FILES = 
 
 TERMIOS_C_FILES = 
 
 SYSTEM_CALL_C_FILES = src/syscall_stubs.c src/write.c \
-    src/write_r.c \
+    src/write_r.c src/libio_helper_null.c \
     src/ioctl.c src/mkdir.c src/mknod.c src/mkfifo.c src/rmdir.c \
     src/chdir.c src/chmod.c src/fchdir.c src/fchmod.c src/fchown.c src/chown.c \
     src/link.c src/unlink.c src/umask.c src/ftruncate.c src/utime.c \
@@ -73,14 +73,14 @@ endif
 
 DIRECTORY_SCAN_C_FILES =
 ## Newlib SHOULD have provided this one
-DIRECTORY_SCAN_C_FILES += src/readdir_r.c
+DIRECTORY_SCAN_C_FILES += #src/readdir_r.c
 ## Comment out when using these from newlib's unix directory
-DIRECTORY_SCAN_C_FILES += src/getcwd.c
+DIRECTORY_SCAN_C_FILES += #src/getcwd.c
 
-ID_C_FILES = src/getegid.c src/geteuid.c src/getgid.c src/getgroups.c \
-    src/getlogin.c src/getpgrp.c src/getpid.c src/getppid.c src/getuid.c \
-    src/seteuid.c src/setgid.c src/setuid.c src/setegid.c src/setpgid.c \
-    src/setsid.c
+ID_C_FILES = #src/getegid.c src/geteuid.c src/getgid.c src/getgroups.c \
+    #src/getlogin.c src/getpgrp.c src/getpid.c src/getppid.c src/getuid.c \
+    #src/seteuid.c src/setgid.c src/setuid.c src/setegid.c src/setpgid.c \
+    #src/setsid.c
 
 MALLOC_C_FILES = src/malloc_initialize.c src/calloc.c src/malloc.c \
     src/realloc.c src/_calloc_r.c src/_malloc_r.c \
@@ -98,23 +98,24 @@ MALLOC_C_FILES = src/malloc_initialize.c src/calloc.c src/malloc.c \
 MALLOC_C_FILES += src/cachealignedalloc.c
 MALLOC_C_FILES += src/cachecoherentalloc.c
 
-PASSWORD_GROUP_C_FILES = src/pwdgrp.c
-PASSWORD_GROUP_C_FILES += src/getgrent.c
-PASSWORD_GROUP_C_FILES += src/getgrnam.c
-PASSWORD_GROUP_C_FILES += src/getpwent.c
+PASSWORD_GROUP_C_FILES = #src/pwdgrp.c
+PASSWORD_GROUP_C_FILES += #src/getgrent.c
+PASSWORD_GROUP_C_FILES += #src/getgrnam.c
+PASSWORD_GROUP_C_FILES += #src/getpwent.c
 
-TERMINAL_IDENTIFICATION_C_FILES = src/ctermid.c
+TERMINAL_IDENTIFICATION_C_FILES = #src/ctermid.c
 ## 20 Nov 2008: Now using these from newlib's posix directory
-TERMINAL_IDENTIFICATION_C_FILES += src/isatty.c src/isatty_r.c
+TERMINAL_IDENTIFICATION_C_FILES += #src/isatty.c src/isatty_r.c
 ## Comment out when using these from newlib's unix directory
-TERMINAL_IDENTIFICATION_C_FILES += src/ttyname.c
+TERMINAL_IDENTIFICATION_C_FILES += #src/ttyname.c
 
-LIBC_GLUE_C_FILES = src/__getpid.c src/__gettod.c src/__times.c \
-    src/truncate.c src/access.c src/lstat.c src/pathconf.c \
-    src/newlibc_reent.c src/newlibc_init.c src/newlibc_exit.c \
-    src/kill_noposix.c src/utsname.c src/realpath.c
+LIBC_GLUE_C_FILES = src/newlibc_reent.c src/newlibc_init.c src/newlibc_exit.c \
+    #src/__getpid.c src/__gettod.c src/__times.c \
+    #src/truncate.c src/access.c src/lstat.c src/pathconf.c \
+    #src/newlibc_reent.c src/newlibc_init.c src/newlibc_exit.c \
+    #src/kill_noposix.c src/utsname.c src/realpath.c
 
-BSD_LIBC_C_FILES = src/strlcpy.c src/strlcat.c src/issetugid.c
+BSD_LIBC_C_FILES = #src/strlcpy.c src/strlcat.c src/issetugid.c
 
 libcsupport_a_SOURCES = src/gxx_wrappers.c src/getchark.c src/printk.c \
     src/printk_plugin.c src/putk.c src/vprintk.c \

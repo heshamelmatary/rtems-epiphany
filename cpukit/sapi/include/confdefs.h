@@ -1819,9 +1819,9 @@ const rtems_libio_helper rtems_fs_init_helper =
   #if CONFIGURE_SEMAPHORES == 0
     #define CONFIGURE_MEMORY_FOR_SEMAPHORES(_semaphores) 0
   #else
-    #define CONFIGURE_MEMORY_FOR_SEMAPHORES(_semaphores) \
-      _Configure_Object_RAM(_semaphores, sizeof(Semaphore_Control) ) + \
-        CONFIGURE_MEMORY_FOR_MRSP_SEMAPHORES
+    #define CONFIGURE_MEMORY_FOR_SEMAPHORES(_semaphores) 0 
+      //_Configure_Object_RAM(_semaphores, sizeof(Semaphore_Control) ) + \ 
+      // CONFIGURE_MEMORY_FOR_MRSP_SEMAPHORES
   #endif
 
   #ifndef CONFIGURE_MAXIMUM_MESSAGE_QUEUES

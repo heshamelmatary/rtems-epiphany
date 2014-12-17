@@ -26,7 +26,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-#include <bsp/linker-symbols.h>
+//#include <bsp/linker-symbols.h>
 #include <rtems/score/percpu.h>
 
 #define CPU_SIZEOF_POINTER 4
@@ -136,7 +136,6 @@ _bsp_start_vector_table_begin:
 _external_start:
 
 	;; Initialise the stack pointer and frame pointer.
-	nop
 	nop 
 	mov	sp,%low(bsp_section_stack_begin)
 	movt	sp,%high(bsp_section_stack_begin)
@@ -206,16 +205,12 @@ cpu0:
   
 _jump_to_c:
   ;; jump to bootcard
-	mov	r0,#0
-	mov	r1,#0
-	mov	r2,#0
 	mov r3,%low(_boot_card)
 	movt r3,%high(_boot_card)
 	jalr r3
 	;;bl	_boot_card
 
 	;; Should never reach here
-	idle
 
 .size   _external_start, .-_external_start
 
@@ -251,15 +246,4 @@ _jump_to_c:
 .balign 4
 .type   _EPIPHANY_Exception_default, %function
 _EPIPHANY_Exception_default:
-  idle
- 
-.balign 4
-.type   secondary_processor_wait, %function
-secondary_processor_wait: 
- /* Clear the reset interrupt flag */
-  mov    r0, %low(_wait)
-  movt   r0, %high(_wait)
-  movts  iret, r0
-  rti
- _wait:
   idle

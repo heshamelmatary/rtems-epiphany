@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([rtems-c-src],[_RTEMS_VERSION],[https://devel.rtems.org/newticket])
-AC_CONFIG_SRCDIR([libchip])
+#AC_CONFIG_SRCDIR([libchip])
 RTEMS_TOP(../..)
 
 RTEMS_ENABLE_CXX
@@ -137,7 +137,7 @@ RTEMS_CPU_SUBDIRS([lib/libbsp])
 AC_SUBST(libbsp_cpu_subdir,$RTEMS_CPU)
 
 BSP_SUBDIRS="$BSP_SUBDIRS lib"
-BSP_SUBDIRS="$BSP_SUBDIRS libchip"
+BSP_SUBDIRS="$BSP_SUBDIRS"
 
 AS_IF([test "$RTEMS_HAS_CPLUSPLUS" = "yes"],[
   AC_CONFIG_SUBDIRS([librtems++])
@@ -215,7 +215,6 @@ AC_CONFIG_FILES([Makefile],
 
 AC_CONFIG_FILES([
 support/Makefile
-libchip/Makefile
 lib/Makefile
 lib/libcpu/Makefile
 lib/libbsp/Makefile

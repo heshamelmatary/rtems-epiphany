@@ -19,7 +19,7 @@
 #include <rtems.h>
 #include <bsp.h>
 #include <rtems/score/epiphany-utility.h>
-#include <bsp/linker-symbols.h>
+//#include <bsp/linker-symbols.h>
 
 /* The number of clock cycles before generating a tick timer interrupt. */
 #define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x0000FFFF

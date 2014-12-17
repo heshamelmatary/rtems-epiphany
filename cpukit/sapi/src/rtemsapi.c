@@ -26,21 +26,21 @@
 #include <rtems/rtems/rtemsapi.h>
 
 #include <rtems/rtems/intr.h>
-#include <rtems/rtems/barrierimpl.h>
+//#include <rtems/rtems/barrierimpl.h>
 #include <rtems/rtems/clock.h>
 #include <rtems/rtems/tasksimpl.h>
-#include <rtems/rtems/dpmemimpl.h>
+//#include <rtems/rtems/dpmemimpl.h>
 #include <rtems/rtems/eventimpl.h>
-#include <rtems/rtems/messageimpl.h>
+//#include <rtems/rtems/messageimpl.h>
 #if defined(RTEMS_MULTIPROCESSING)
 #include <rtems/rtems/mp.h>
 #endif
-#include <rtems/rtems/partimpl.h>
-#include <rtems/rtems/ratemonimpl.h>
-#include <rtems/rtems/regionimpl.h>
-#include <rtems/rtems/semimpl.h>
-#include <rtems/rtems/signalimpl.h>
-#include <rtems/rtems/timerimpl.h>
+//#include <rtems/rtems/partimpl.h>
+//#include <rtems/rtems/ratemonimpl.h>
+//#include <rtems/rtems/regionimpl.h>
+//#include <rtems/rtems/semimpl.h>
+//#include <rtems/rtems/signalimpl.h>
+//#include <rtems/rtems/timerimpl.h>
 
 Objects_Information *_RTEMS_Objects[ OBJECTS_RTEMS_CLASSES_LAST + 1 ];
 
@@ -57,14 +57,14 @@ void _RTEMS_API_Initialize(void)
   #endif
 
   _RTEMS_tasks_Manager_initialization();
-  _Timer_Manager_initialization();
-  _Signal_Manager_initialization();
-  _Event_Manager_initialization();
-  _Message_queue_Manager_initialization();
-  _Semaphore_Manager_initialization();
-  _Partition_Manager_initialization();
-  _Region_Manager_initialization();
-  _Dual_ported_memory_Manager_initialization();
-  _Rate_monotonic_Manager_initialization();
-  _Barrier_Manager_initialization();
+  //_Timer_Manager_initialization();
+  //_Signal_Manager_initialization();
+  //_Event_Manager_initialization();
+  //_Message_queue_Manager_initialization();
+  //_Semaphore_Manager_initialization();
+  //_Partition_Manager_initialization();
+  //_Region_Manager_initialization();
+  //_Dual_ported_memory_Manager_initialization();
+  //_Rate_monotonic_Manager_initialization();
+  //_Barrier_Manager_initialization();
 }

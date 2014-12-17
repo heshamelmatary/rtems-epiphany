@@ -4,7 +4,7 @@ include $(top_srcdir)/automake/compile.am
 include $(top_srcdir)/automake/multilib.am
 
 # librtemscpu
-SUBDIRS = . score rtems sapi
+SUBDIRS = . score rtems sapi 
 SUBDIRS += libcsupport 
 #SUBDIRS = . score rtems sapi posix
 #SUBDIRS += dev
@@ -18,7 +18,7 @@ SUBDIRS += libcsupport
 #SUBDIRS += libdl
 SUBDIRS += wrapup
 
-SUBDIRS += zlib
+#SUBDIRS += zlib
 
 # applications
 #SUBDIRS += ftpd

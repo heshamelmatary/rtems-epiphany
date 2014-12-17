@@ -33,16 +33,16 @@ extern "C" {
 #include <rtems/rtems/intr.h>
 #include <rtems/rtems/clock.h>
 #include <rtems/rtems/tasks.h>
-#include <rtems/rtems/dpmem.h>
+//#include <rtems/rtems/dpmem.h>
 #include <rtems/rtems/event.h>
 #if defined(RTEMS_MULTIPROCESSING)
 #include <rtems/rtems/mp.h>
 #endif
-#include <rtems/rtems/part.h>
-#include <rtems/rtems/ratemon.h>
-#include <rtems/rtems/region.h>
-#include <rtems/rtems/signal.h>
-#include <rtems/rtems/timer.h>
+//#include <rtems/rtems/part.h>
+//#include <rtems/rtems/ratemon.h>
+//#include <rtems/rtems/region.h>
+//#include <rtems/rtems/signal.h>
+//#include <rtems/rtems/timer.h>
 
 #if defined(RTEMS_MULTIPROCESSING)
 /*

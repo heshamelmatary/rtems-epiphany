@@ -65,21 +65,15 @@
 static void outbyte_console( char );
 static char inbyte_console( void );
 
-void console_initialize_hardware(void)
+/*void console_initialize_hardware(void)
 {
   *(PARALLELLA_REG(PARALLELLA_CONSOLE_REG_CTRL)) = 0;
   *(PARALLELLA_REG(PARALLELLA_CONSOLE_REG_DATA)) = 0;
-}
+}*/
 
-/* prototypical inline asm */
-static int asm_write (int CHAN, void* ADDR, int LEN)
+/*static char asm_read(int CHAN, void *ADDR, int LEN)
 {
-	
-}
-
-static char asm_read(int CHAN, void *ADDR, int LEN)
-{
-	/*register int chan asm("r0") = CHAN;
+	register int chan asm("r0") = CHAN;
 	register void* addr asm("r1") = ADDR;
 	register int len asm("r2") = LEN;
 	register int result asm("r0");
@@ -88,8 +82,8 @@ static char asm_read(int CHAN, void *ADDR, int LEN)
 	     "r" (chan), "r" (addr), "r" (len));
 
 	return (char) result;
-	*/
-}
+	
+}*/
 
 static void outbyte_console(char c)
 {
@@ -110,25 +104,26 @@ static void outbyte_console(char c)
   //asm_write (STDOUT_FILENO, &c, 1);
 }
 
-static char inbyte_console( void )
+/*static char inbyte_console( void )
 {
   //char c = asm_read (STDIN_FILENO, &c, 1);
   //return c;
 }
-
+*/
 /*
  *  console_outbyte_polled
  *
  *  This routine transmits a character using polling.
  */
 
-void console_outbyte_polled(
+/*void console_outbyte_polled(
   int  port,
   char ch
 )
 {
   outbyte_console( ch );
 }
+*/
 
 /*
  *  console_inbyte_nonblocking
@@ -136,7 +131,7 @@ void console_outbyte_polled(
  *  This routine polls for a character.
  */
 
-int console_inbyte_nonblocking(
+/*int console_inbyte_nonblocking(
   int port
 )
 {
@@ -146,9 +141,9 @@ int console_inbyte_nonblocking(
   if (!c)
     return -1;
   return c;
-}
+}*/
 
-ssize_t write_parallella(
+/*ssize_t write_parallella(
   int         minor,
   const char *bufarg,
   size_t      len     
@@ -158,11 +153,11 @@ ssize_t write_parallella(
   const char *buf = bufarg; 
 
   while (nwrite < len) {
-    console_outbyte_polled( minor, *buf++ );
+    outbyte_console( *buf++ );
     nwrite++;
   }
   return nwrite; 
-}
+}*/
 
 /*
  *  To support printk
@@ -170,7 +165,7 @@ ssize_t write_parallella(
 
 #include <rtems/bspIo.h>
 
-static void Parallella_output_char(char c) { console_outbyte_polled( 0, c ); }
+static void Parallella_output_char(char c) { outbyte_console(c ); }
 
 BSP_output_char_function_type           BSP_output_char = Parallella_output_char;
 BSP_polling_getchar_function_type       BSP_poll_char = NULL;
