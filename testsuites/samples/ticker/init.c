@@ -1,79 +1,81 @@
 /*
- *  COPYRIGHT (c) 1989-2012.
+ *  COPYRIGHT (c) 1989-2007.
  *  On-Line Applications Research Corporation (OAR).
  *
  *  The license and distribution terms for this file may be
  *  found in the file LICENSE in this distribution or at
- *  http://www.rtems.org/license/LICENSE.
+ *  http://www.rtems.com/license/LICENSE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include <stdlib.h>
 
-#define CONFIGURE_INIT
-#include "system.h"
+#include <bsp.h>
+#include <rtems/rtems/tasks.h>
+#include <rtems/rtems/clock.h>
 
-const char rtems_test_name[] = "CLOCK TICK";
+rtems_task Test_task(
+  rtems_task_argument task_index
+)
+{
+  rtems_status_code status;
+  rtems_interval    ticks;
+  struct timespec   uptime;
 
-/*
- *  Keep the names and IDs in global variables so another task can use them.
- */
+  ticks = task_index * (5 * rtems_clock_get_ticks_per_second());
+  for ( ; ; ) {
+    status = rtems_task_wake_after( ticks );
 
-rtems_id   Task_id[ 4 ];         /* array of task ids */
-rtems_name Task_name[ 4 ];       /* array of task names */
+    status = rtems_clock_get_uptime( &uptime );
+    if ( uptime.tv_sec >= 35 ) {
+      printk( "*** END OF LOW MEMORY CLOCK TICK TEST (delay) ***\n" );
+      rtems_shutdown_executive( 0 );
+    }
+    printk( "TA%d - rtems_clock_uptime - %d:%d\n", 
+      task_index, uptime.tv_sec, uptime.tv_nsec 
+    );
+  }
+}
 
 rtems_task Init(
   rtems_task_argument argument
 )
 {
   rtems_status_code status;
-  rtems_time_of_day time;
+  rtems_id          id;
+  int               i;
 
-  TEST_BEGIN();
+  printk( "\n\n*** LOW MEMORY CLOCK TICK TEST (delay) ***\n" );
 
-  time.year   = 1988;
-  time.month  = 12;
-  time.day    = 31;
-  time.hour   = 9;
-  time.minute = 0;
-  time.second = 0;
-  time.ticks  = 0;
+  for (i=1 ; i<=3 ; i++ ) {
+    status = rtems_task_create(
+      rtems_build_name( 'T', 'A', 0x30+1, ' ' ), 1, 0, RTEMS_DEFAULT_MODES,
+      RTEMS_DEFAULT_ATTRIBUTES, &id
+    );
+    status = rtems_task_start( id, Test_task, i );
+  }
 
-  status = rtems_clock_set( &time );
-  directive_failed( status, "clock get" );
-
-  Task_name[ 1 ] = rtems_build_name( 'T', 'A', '1', ' ' );
-  Task_name[ 2 ] = rtems_build_name( 'T', 'A', '2', ' ' );
-  Task_name[ 3 ] = rtems_build_name( 'T', 'A', '3', ' ' );
-
-  status = rtems_task_create(
-    Task_name[ 1 ], 1, RTEMS_MINIMUM_STACK_SIZE * 2, RTEMS_DEFAULT_MODES,
-    RTEMS_DEFAULT_ATTRIBUTES, &Task_id[ 1 ]
-  );
-  directive_failed( status, "create 1" ); 
-
-  status = rtems_task_create(
-    Task_name[ 2 ], 1, RTEMS_MINIMUM_STACK_SIZE * 2, RTEMS_DEFAULT_MODES,
-    RTEMS_DEFAULT_ATTRIBUTES, &Task_id[ 2 ]
-  );
-  directive_failed( status, "create 2" ); 
-
-  status = rtems_task_create(
-    Task_name[ 3 ], 1, RTEMS_MINIMUM_STACK_SIZE * 2, RTEMS_DEFAULT_MODES,
-    RTEMS_DEFAULT_ATTRIBUTES, &Task_id[ 3 ]
-  );
-  directive_failed( status, "create 3" ); 
-
-  status = rtems_task_start( Task_id[ 1 ], Test_task, 1 );
-  directive_failed( status, "start 1" ); 
-
-  status = rtems_task_start( Task_id[ 2 ], Test_task, 2 );
-  directive_failed( status, "start 2" ); 
-
-  status = rtems_task_start( Task_id[ 3 ], Test_task, 3 );
-  directive_failed( status, "start 3" ); 
-
-  status = rtems_task_delete( RTEMS_SELF );
-  directive_failed( status, "delete" ); 
+  while( 1 )
+    ;
 }
+
+/**************** START OF CONFIGURATION INFORMATION ****************/
+
+#define CONFIGURE_INIT
+
+#define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
+#define CONFIGURE_APPLICATION_DISABLE_FILESYSTEM
+#define CONFIGURE_DISABLE_NEWLIB_REENTRANCY
+#define CONFIGURE_TERMIOS_DISABLED
+#define CONFIGURE_LIBIO_MAXIMUM_FILE_DESCRIPTORS 0
+#define CONFIGURE_MINIMUM_TASK_STACK_SIZE 512
+#define CONFIGURE_MAXIMUM_PRIORITY 15
+#define CONFIGURE_DISABLE_CLASSIC_API_NOTEPADS
+#define CONFIGURE_IDLE_TASK_BODY Init
+#define CONFIGURE_IDLE_TASK_INITIALIZES_APPLICATION
+
+#define CONFIGURE_MAXIMUM_TASKS             3
+
+#include <rtems/confdefs.h>
+
+/****************  END OF CONFIGURATION INFORMATION  ****************/
+

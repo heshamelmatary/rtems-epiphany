@@ -1,6 +1,6 @@
 
 rtems_tests_PROGRAMS = ticker
-ticker_SOURCES = init.c tasks.c system.h
+ticker_SOURCES = init.c 
 
 dist_rtems_tests_DATA = ticker.scn
 dist_rtems_tests_DATA += ticker.doc

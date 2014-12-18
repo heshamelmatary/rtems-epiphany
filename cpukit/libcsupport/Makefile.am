@@ -84,10 +84,10 @@ DIRECTORY_SCAN_C_FILES += #src/readdir_r.c
 ## Comment out when using these from newlib's unix directory
 DIRECTORY_SCAN_C_FILES += #src/getcwd.c
 
-ID_C_FILES = #src/getegid.c src/geteuid.c src/getgid.c src/getgroups.c \
-    #src/getlogin.c src/getpgrp.c src/getpid.c src/getppid.c src/getuid.c \
-    #src/seteuid.c src/setgid.c src/setuid.c src/setegid.c src/setpgid.c \
-    #src/setsid.c
+ID_C_FILES = src/getegid.c src/geteuid.c src/getgid.c src/getgroups.c \
+    src/getlogin.c src/getpgrp.c src/getpid.c src/getppid.c src/getuid.c \
+    src/seteuid.c src/setgid.c src/setuid.c src/setegid.c src/setpgid.c \
+    src/setsid.c
 
 MALLOC_C_FILES = src/malloc_initialize.c src/calloc.c src/malloc.c \
      src/rtems_heap_null_extend.c
@@ -120,7 +120,7 @@ LIBC_GLUE_C_FILES = src/newlibc_reent.c src/newlibc_init.c src/newlibc_exit.c \
     #src/__getpid.c src/__gettod.c src/__times.c \
     #src/truncate.c src/access.c src/lstat.c src/pathconf.c \
     #src/newlibc_reent.c src/newlibc_init.c src/newlibc_exit.c \
-    #src/kill_noposix.c src/utsname.c src/realpath.c
+    src/kill_noposix.c src/utsname.c src/realpath.c
 
 BSD_LIBC_C_FILES = #src/strlcpy.c src/strlcat.c src/issetugid.c
 

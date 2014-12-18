@@ -103,7 +103,7 @@ void rtems_initialize_data_structures(void)
    */
   //_Debug_Manager_initialization();
 
-  _API_extensions_Initialization();
+  //_API_extensions_Initialization();
 
   _Thread_Dispatch_initialization();
 
