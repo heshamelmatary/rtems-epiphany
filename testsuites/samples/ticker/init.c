@@ -13,6 +13,8 @@
 #include <rtems/rtems/tasks.h>
 #include <rtems/rtems/clock.h>
 
+int *footprint = 0x8F800008;
+
 rtems_task Test_task(
   rtems_task_argument task_index
 )
@@ -27,12 +29,13 @@ rtems_task Test_task(
 
     status = rtems_clock_get_uptime( &uptime );
     if ( uptime.tv_sec >= 35 ) {
-      printk( "*** END OF LOW MEMORY CLOCK TICK TEST (delay) ***\n" );
+      //printk( "*** END OF LOW MEMORY CLOCK TICK TEST (delay) ***\n" );
+      (*footprint)++;
       rtems_shutdown_executive( 0 );
     }
-    printk( "TA%d - rtems_clock_uptime - %d:%d\n", 
+    /*printk( "TA%d - rtems_clock_uptime - %d:%d\n", 
       task_index, uptime.tv_sec, uptime.tv_nsec 
-    );
+    );*/
   }
 }
 
@@ -40,11 +43,12 @@ rtems_task Init(
   rtems_task_argument argument
 )
 {
+  *footprint = 0;
   rtems_status_code status;
   rtems_id          id;
   int               i;
 
-  printk( "\n\n*** LOW MEMORY CLOCK TICK TEST (delay) ***\n" );
+  //printk( "\n\n*** LOW MEMORY CLOCK TICK TEST (delay) ***\n" );
 
   for (i=1 ; i<=3 ; i++ ) {
     status = rtems_task_create(
@@ -67,7 +71,7 @@ rtems_task Init(
 #define CONFIGURE_DISABLE_NEWLIB_REENTRANCY
 #define CONFIGURE_TERMIOS_DISABLED
 #define CONFIGURE_LIBIO_MAXIMUM_FILE_DESCRIPTORS 0
-#define CONFIGURE_MINIMUM_TASK_STACK_SIZE 128 
+#define CONFIGURE_MINIMUM_TASK_STACK_SIZE 512 
 #define CONFIGURE_MAXIMUM_PRIORITY 15
 #define CONFIGURE_DISABLE_CLASSIC_API_NOTEPADS
 #define CONFIGURE_IDLE_TASK_BODY Init
