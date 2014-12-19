@@ -21,7 +21,9 @@ void main()
 {
 
   e_platform_t platform;
-  e_epiphany_t workgroup;
+  e_epiphany_t workgroup_boot;
+  e_epiphany_t workgroup1;
+  e_epiphany_t workgroup2;
   e_mem_t      e_mem;
   int rtems_console_ctrl, rtems_console_data = 0;
   
@@ -47,13 +49,25 @@ void main()
   col = 0;  
   coreid = (row + platform.row) * 64 + (col + platform.col);
 
-  if( e_open(&workgroup, row, col, 4, 4) != E_OK )
+  if( e_open(&workgroup_boot, row, col, 1, 1) != E_OK )
   {
     printf("Failed to open workgroup \n");
     exit(0);
   }
 
-  if ( e_reset_group(&workgroup) != E_OK )
+  if( e_open(&workgroup1, 0, 1, 1, 3) != E_OK )
+  {
+    printf("Failed to open workgroup \n");
+    exit(0);
+  }
+
+  if( e_open(&workgroup2, 1, 0, 3, 4) != E_OK )
+  {
+    printf("Failed to open workgroup \n");
+    exit(0);
+  }
+
+  if ( (e_reset_group(&workgroup_boot) & e_reset_group(&workgroup1) & e_reset_group(&workgroup2)) != E_OK )
   {
     printf("Failed to reset the workgroup \n");
     exit(0);
@@ -70,48 +84,69 @@ void main()
 
   printf("*** Loading the program to Epiphany ***\n");
    
-  if( e_load_group("smp01.srec", &workgroup, 0, 0, 4, 4, E_TRUE) != E_OK )
+  /* Load the boot processor and start it immediately */
+  if ( e_load_group("ticker.srec", &workgroup_boot, 0, 0, 1, 1, E_FALSE) != E_OK )
   {
-    printf("Failed to load the program \n");
+    printf("Failed to start the workgroup program \n");
     exit(0);
   }
-
-  /* Loading the running the exe program */
-  /*if( e_load("smp01.srec", &workgroup, 0, 0, E_FALSE) != E_OK )
-  {
-    printf("Failed to load the program \n");
-    exit(0);
-  }
-
-  if( e_load("smp01.srec", &workgroup, 0, 2, E_FALSE) != E_OK )
-  {
-    printf("Failed to load the program \n");
-    exit(0);
-  }
-  if( e_load("smp01.srec", &workgroup, 0, 1, E_FALSE) != E_OK )
-
-  {
-    printf("Failed to load the program \n");
-    exit(0);
-  }*/
   
+  if ( e_load_group("ticker.srec", &workgroup1, 0, 0, 1, 3, E_FALSE) != E_OK )
+  {
+    printf("Failed to start the workgroup program \n");
+    exit(0);
+  }
+  if ( e_load_group("ticker.srec", &workgroup2, 0, 0, 3, 4, E_FALSE) != E_OK )
+  {
+    printf("Failed to start the workgroup program \n");
+    exit(0);
+  }
+
+  e_start_group(&workgroup_boot);
+  e_start_group(&workgroup1);
+  //e_start(&workgroup2, 0, 0);
+  usleep(1000000);
+  
+  int x = 3;
+  for(x = 4 ; x<16; x++)
+  {
+    e_start(&workgroup2, (x/4) - 1   ,x % 4);
+    usleep(100000);
+  }
+  //e_start_group(&workgroup2);
+  //usleep(1000000);
+  //usleep(100000);
+ 
+  /*if ( e_start(&workgroup, 0, 0) != E_OK )
+  {
+    printf("Failed to start the workgroup program \n");
+    exit(0);
+  }
+  
+  usleep(100000);
+
+  if ( e_start(&workgroup, 0, 1) != E_OK )
+  {
+    printf("Failed to start the workgroup program \n");
+    exit(0);
+  }
+  
+  usleep(10000);
+
+  if ( e_start(&workgroup, 0, 2) != E_OK )
+  {
+    printf("Failed to start the workgroup program \n");
+    exit(0);
+  }
+  */
   /*if( e_load("smp01.srec", &workgroup, 0, 2, E_FALSE) != E_OK )
   {
     printf("Failed to load the program \n");
     exit(0);
   }
   */
-  /*if ( e_start_group(&workgroup) != E_OK )
-  {
-    printf("Failed to start the workgroup program \n");
-    exit(0);
-  }*/
-  //usleep(100000);
 
-  e_read(&e_mem, 0, 0, 0x0, &rtems_console_ctrl, 4);
-  e_read(&e_mem, 0, 0, 0x4, &rtems_console_data, 4);
-  printf("rcc =  %x \n", rtems_console_ctrl);
-  printf("rcd = %d \n", rtems_console_data);
+  //usleep(100000);
  
   /* TODO Poll for data until console closed from Epiphany */
   while (1)
@@ -143,7 +178,7 @@ void main()
   e_free(&e_mem);
 
   /* Close the workgroup */
-  if ( e_close(&workgroup) != E_OK)
+  if ( e_close(&workgroup_boot) != E_OK)
   {
     printf("Failed to close the workgroup \n");
     exit(0);
