@@ -137,8 +137,8 @@ _external_start:
 
 	;; Initialise the stack pointer and frame pointer.
 	nop 
-	mov	sp,%low(bsp_section_stack_begin)
-	movt	sp,%high(bsp_section_stack_begin)
+	mov	sp,%low(bsp_stack_main_begin)
+	movt	sp,%high(bsp_stack_main_begin)
 	mov	fp,sp
 
 #ifdef RTEMS_SMP
@@ -188,8 +188,8 @@ cpu0:
 	;; Zero the data space
 	mov	r0,%low(bsp_section_bss_begin)
 	movt	r0,%high(bsp_section_bss_begin)
-	mov	r1,%low(bsp_section_stack_begin)
-	movt	r1,%high(bsp_section_stack_begin)
+	mov	r1,%low(bsp_stack_main_begin)
+	movt	r1,%high(bsp_stack_main_begin)
 	mov	r2,#0
 	mov	r3,#0
 .L0_init_:

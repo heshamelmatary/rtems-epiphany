@@ -6,35 +6,34 @@ ENTRY (_start)
 MEMORY
   {
       VECTOR_RAM     (AIW) : ORIGIN = 0x00000000, LENGTH = 0xB0
-      LOCAL_MEM      (AIW) : ORIGIN = 0x000000B0, LENGTH = 0x7F4F
+      LOCAL_MEM      (AIW) : ORIGIN = 0x000000B0, LENGTH = 0x7F50
       RAM   : ORIGIN = 0x8E000000, LENGTH = 0x01000000
   }
 
 REGION_ALIAS ("REGION_START", LOCAL_MEM);
 REGION_ALIAS ("REGION_VECTOR", VECTOR_RAM);
-REGION_ALIAS ("REGION_TEXT", RAM);
-REGION_ALIAS ("REGION_TEXT_LOAD", RAM);
-REGION_ALIAS ("REGION_RODATA", RAM);
-REGION_ALIAS ("REGION_RODATA_LOAD", RAM);
-REGION_ALIAS ("REGION_DATA", RAM);
-REGION_ALIAS ("REGION_DATA_LOAD", RAM);
-REGION_ALIAS ("REGION_FAST_DATA", RAM);
-REGION_ALIAS ("REGION_FAST_DATA_LOAD", RAM);
-REGION_ALIAS ("REGION_BSS", RAM);
-REGION_ALIAS ("REGION_WORK", RAM);
-REGION_ALIAS ("REGION_STACK", RAM);
+REGION_ALIAS ("REGION_TEXT", LOCAL_MEM);
+REGION_ALIAS ("REGION_TEXT_LOAD", LOCAL_MEM);
+REGION_ALIAS ("REGION_RODATA", LOCAL_MEM);
+REGION_ALIAS ("REGION_RODATA_LOAD", LOCAL_MEM);
+REGION_ALIAS ("REGION_DATA", LOCAL_MEM);
+REGION_ALIAS ("REGION_DATA_LOAD", LOCAL_MEM);
+REGION_ALIAS ("REGION_FAST_DATA", LOCAL_MEM);
+REGION_ALIAS ("REGION_FAST_DATA_LOAD", LOCAL_MEM);
+REGION_ALIAS ("REGION_BSS", LOCAL_MEM);
+REGION_ALIAS ("REGION_WORK", LOCAL_MEM);
+REGION_ALIAS ("REGION_STACK", LOCAL_MEM);
 
 /* The following address is used for text output */
 bsp_section_outbut_buffer = 0x8F800000;
 bsp_section_vector_begin = 0x00000000;
-bsp_section_stack_begin = 0x8EFFFF00;
-//bsp_section_stack_begin = 0x00007FF0;
+//bsp_section_stack_begin = 0x8EFFFF00;
+bsp_stack_main_begin = 0x00007FF0;
 /*
  * Global symbols that may be defined externally
  */
 bsp_vector_table_size = DEFINED (bsp_vector_table_size) ? bsp_vector_table_size
 : 64;
-/* 8192 for raw vector table, and 17 * 4 for handlers vector. */
 
 bsp_section_xbarrier_align  = DEFINED (bsp_section_xbarrier_align) ? bsp_section_xbarrier_align : 1;
 bsp_section_robarrier_align = DEFINED (bsp_section_robarrier_align) ? bsp_section_robarrier_align : 1;
@@ -42,7 +41,7 @@ bsp_section_rwbarrier_align = DEFINED (bsp_section_rwbarrier_align) ? bsp_sectio
 
 bsp_stack_align = DEFINED (bsp_stack_align) ? bsp_stack_align : 8;
 
-bsp_stack_main_size = DEFINED (bsp_stack_main_size) ? bsp_stack_main_size : 0;
+bsp_stack_main_size = DEFINED (bsp_stack_main_size) ? bsp_stack_main_size : 4096;
 bsp_stack_main_size = ALIGN (bsp_stack_main_size, bsp_stack_align);
 
 _bsp_processor_count = DEFINED (_bsp_processor_count) ? _bsp_processor_count : 2;
@@ -61,7 +60,7 @@ SECTIONS {
 
   .start :  
   {
-    . = ALIGN(8);
+    . = ALIGN(4);
     bsp_section_start_begin = .;
     KEEP (*(.bsp_start_text))
     KEEP (*(.bsp_start_data))
@@ -74,7 +73,7 @@ SECTIONS {
   } > REGION_VECTOR AT > REGION_VECTOR
 
 .text :   {
-    . = ALIGN(8);
+    . = ALIGN(4);
     bsp_section_text_begin = .;
     *(.text.unlikely .text.*_unlikely)
     *(.text .stub .text.* .gnu.linkonce.t.*)
@@ -87,7 +86,7 @@ SECTIONS {
   } > REGION_TEXT AT > REGION_TEXT_LOAD
   .fini :   {
     KEEP (*(.fini))
-    . = ALIGN(8);
+    . = ALIGN(4);
     bsp_section_text_end = .;
   } > REGION_TEXT AT > REGION_TEXT_LOAD
   bsp_section_text_size = bsp_section_text_end - bsp_section_text_begin;
@@ -308,6 +307,9 @@ SECTIONS {
   } > REGION_BSS AT > REGION_BSS
   bsp_section_bss_size = bsp_section_bss_end - bsp_section_bss_begin;
 
+  bsp_stack_main_end = .;
+  . = ABSOLUTE (bsp_stack_main_begin);
+  
 .work :   {
     /*
      * The work section will occupy the remaining REGION_WORK region and
@@ -321,10 +323,11 @@ SECTIONS {
   _bsp_section_work_size = _bsp_section_work_end - _bsp_section_work_begin;
 
   .stack :   {
-    . = ALIGN(8);
+    bsp_section_stack_begin = .;
+    . += ORIGIN (REGION_STACK) + LENGTH (REGION_STACK) - ABSOLUTE (.);
     bsp_section_stack_end = .;
   } > REGION_STACK AT > REGION_STACK
-  bsp_section_stack_size = bsp_section_stack_begin - bsp_section_stack_end;
+  bsp_section_stack_size = bsp_section_stack_end - bsp_section_stack_begin;
 
   _RamBase = ORIGIN (REGION_WORK);
   _RamSize = LENGTH (REGION_WORK);

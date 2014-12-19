@@ -134,7 +134,7 @@ RTEMS_INLINE_ROUTINE void *_Heap_Allocate_aligned(
  */
 RTEMS_INLINE_ROUTINE void *_Heap_Allocate( Heap_Control *heap, uintptr_t size )
 {
-  return _Heap_Allocate_aligned_with_boundary( heap, size, 0, 0 );
+  return _Heap_Allocate_aligned_with_boundary( heap, size, 8, 0 );
 }
 
 /**

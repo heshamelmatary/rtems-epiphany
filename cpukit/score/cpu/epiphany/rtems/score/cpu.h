@@ -724,9 +724,9 @@ void _CPU_Context_Initialize(
  */
 
 #define _CPU_Fatal_halt(_source, _error ) \
-        printk("Fatal Error %d.%d Halted\n",_source, _error); \
         for(;;)
 
+//printk("Fatal Error %d.%d Halted\n",_source, _error); \
 /* end of Fatal Error manager macros */
 
 /* Bitfield handler macros */

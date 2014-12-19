@@ -47,7 +47,7 @@ void bsp_work_area_initialize(void)
     ram_end = (uintptr_t) bsp_uboot_board_info.bi_memstart +
                           bsp_uboot_board_info.bi_memsize;
   #else
-    ram_end = (uintptr_t)RamBase + (uintptr_t)RamSize - 8;
+    ram_end = (uintptr_t)RamBase + (uintptr_t)RamSize;
   #endif
 
   #ifdef BSP_INTERRUPT_STACK_AT_WORK_AREA_BEGIN
