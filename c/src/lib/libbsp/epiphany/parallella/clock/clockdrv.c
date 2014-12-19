@@ -18,8 +18,8 @@
 
 #include <rtems.h>
 #include <bsp.h>
-#include <rtems/score/e_lib.h> /* e-lib Epiphany library */
-#include <bsp/linker-symbols.h>
+#include <rtems/score/epiphany-utility.h>
+#//include <bsp/linker-symbols.h>
 
 /* The number of clock cycles before generating a tick timer interrupt. */
 #define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x0000FFFF
@@ -36,21 +36,10 @@ void Clock_isr(void *arg);
 static void epiphany_clock_at_tick(void)
 {
   unsigned int val = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT; 
-  unsigned int event_type = E_CTIMER_CLK;
-  /* The following e-lib function would not work properly 
-     because gcc emits the wrong code with wrong argument
-     registers ordering.
-   */
-  //x = e_ctimer_set(E_CTIMER_0, 0x00000000u);
-   
+  unsigned int event_type = 0x1; /* FIXME: Use macros or enum for event types */
+
   /* Embed assembly code for setting timer0 */
   asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
-  
-  /* The following e-lib function would not work properly 
-     because gcc emits the wrong code with wrong argument
-     registers ordering.
-   */
-  //x = e_ctimer_start(E_CTIMER_0, E_CTIMER_CLK);
   
   /* Embed assembly code for setting timer0 qouted from e-lib */
   asm volatile ("movfs r16, config; \t \n"
@@ -72,31 +61,19 @@ static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
    proc_ptr *table =
      (proc_ptr *) bsp_start_vector_table_begin;
      
-   table[E_TIMER0_INT] = new_isr;
-   /*e_irq_attach(E_TIMER0_INT, (sighandler_t) new_isr);*/ 
+   table[TIMER0] = new_isr;
 }
 
-static void epiphany_clock_initialize(void)
+void epiphany_clock_initialize(void)
 {
   unsigned int x = 0xDEADBEEF;
   
   unsigned int val = 0xFFFFFFFF; 
-  unsigned int event_type = E_CTIMER_CLK;
-  /* The following e-lib function would not work properly 
-     because gcc emits the wrong code with wrong argument
-     registers ordering.
-   */
-  //x = e_ctimer_set(E_CTIMER_0, 0x00000000u);
+  unsigned int event_type = TIMER0;
   
   /* Embed assembly code for setting timer0 */
   asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
 
-  /* The following e-lib function would not work properly 
-     because gcc emits the wrong code with wrong argument
-     registers ordering.
-   */
-  //x = e_ctimer_start(E_CTIMER_0, E_CTIMER_CLK);
-  
   /* Embed assembly code for setting timer0 qouted from e-lib */
   asm volatile ("movfs r16, config; \t \n"
                 "mov   r17, %%low(0xffffff0f);\t \n"
@@ -113,7 +90,6 @@ static void epiphany_clock_initialize(void)
 
  static void epiphany_clock_cleanup(void)
 {
-   e_ctimer_stop(E_CTIMER_0);
 }
 
 /*
@@ -127,12 +103,13 @@ static uint32_t epiphany_clock_nanoseconds_since_last_tick(void)
 
 CPU_Counter_ticks _CPU_Counter_read(void)
 {
-  uint32_t ticks_since_last_timer_interrupt;
-
+/*  uint32_t ticks_since_last_timer_interrupt, timer_val;
+  asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (timer_val):);
   ticks_since_last_timer_interrupt = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - 
-  e_ctimer_get(E_CTIMER_0);
+  timer_val;
 
   return cpu_counter_ticks + ticks_since_last_timer_interrupt;
+*/
 }
 
 CPU_Counter_ticks _CPU_Counter_difference(
