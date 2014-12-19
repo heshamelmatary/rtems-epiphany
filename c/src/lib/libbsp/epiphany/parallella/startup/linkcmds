@@ -28,7 +28,7 @@ REGION_ALIAS ("REGION_STACK", RAM);
 bsp_section_outbut_buffer = 0x8F800000;
 //_bsp_start_vector_table_begin = 0x00000000;
 bsp_section_vector_begin = 0x00000000;
-bsp_section_stack_begin = 0x8EFFFF00;
+bsp_section_main_begin = 0x8EFFFF00;
 
 /*
  * Global symbols that may be defined externally
@@ -43,10 +43,10 @@ bsp_section_rwbarrier_align = DEFINED (bsp_section_rwbarrier_align) ? bsp_sectio
 
 bsp_stack_align = DEFINED (bsp_stack_align) ? bsp_stack_align : 8;
 
-bsp_stack_main_size = DEFINED (bsp_stack_main_size) ? bsp_stack_main_size : 0;
+bsp_stack_main_size = DEFINED (bsp_stack_main_size) ? bsp_stack_main_size : 1024;
 bsp_stack_main_size = ALIGN (bsp_stack_main_size, bsp_stack_align);
 
-_bsp_processor_count = DEFINED (_bsp_processor_count) ? _bsp_processor_count : 2;
+_bsp_processor_count = DEFINED (_bsp_processor_count) ? _bsp_processor_count : 16;
 
 SECTIONS {
 
@@ -323,6 +323,9 @@ SECTIONS {
   bsp_section_work_size = bsp_section_work_end - bsp_section_work_begin;
 
   .stack :   {
+    . = ALIGN(8);
+    bsp_section_stack_begin = .;
+    . += ORIGIN (REGION_STACK) + LENGTH (REGION_STACK) - ABSOLUTE (.);
     . = ALIGN(8);
     bsp_section_stack_end = .;
   } > REGION_STACK AT > REGION_STACK

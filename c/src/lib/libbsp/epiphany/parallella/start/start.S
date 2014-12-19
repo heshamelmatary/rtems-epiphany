@@ -138,8 +138,8 @@ _external_start:
 	;; Initialise the stack pointer and frame pointer.
 	nop
 	nop 
-	mov	sp,%low(bsp_section_stack_begin)
-	movt	sp,%high(bsp_section_stack_begin)
+	mov	sp,%low(bsp_section_main_begin)
+	movt	sp,%high(bsp_section_main_begin)
 	mov	fp,sp
 
 #ifdef RTEMS_SMP
