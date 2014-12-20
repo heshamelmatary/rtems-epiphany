@@ -11,7 +11,29 @@
 #endif
 
 #include <rtems/asm.h>
+#include <rtems/score/percpu.h>
 
+#define PER_CPU_CONTROL_SIZE_LOG2 0x7
+#define CPU_PER_CPU_CONTROL_SIZE 0
+#define CPU_SIZEOF_POINTER 4
+
+#define PER_CPU_ISR_NEST_LEVEL \
+  PER_CPU_END_STACK
+#define PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL \
+  PER_CPU_ISR_NEST_LEVEL + 4
+#define PER_CPU_OFFSET_EXECUTING \
+  PER_CPU_THREAD_DISPATCH_DISABLE_LEVEL + 4
+#define PER_CPU_OFFSET_HEIR \
+  PER_CPU_OFFSET_EXECUTING + CPU_SIZEOF_POINTER
+#define PER_CPU_DISPATCH_NEEDED \
+  PER_CPU_OFFSET_HEIR + CPU_SIZEOF_POINTER
+
+#define DISPATCH_NEEDED \
+  (SYM(_Per_CPU_Information) + PER_CPU_DISPATCH_NEEDED)
+
+#define HEIR \
+  (SYM_Per_CPU_Information() + PER_CPU_OFFSET_HEIR)
+  
 .section .text,"a";
 .align 4
 
@@ -19,6 +41,7 @@ PUBLIC(_CPU_Context_switch)
 PUBLIC(_CPU_Context_restore)
 PUBLIC(_CPU_Context_restore_fp)
 PUBLIC(_CPU_Context_save_fp)
+.global restore;
 
 SYM(_CPU_Context_switch):
   gid
@@ -105,7 +128,14 @@ SYM(_CPU_Context_switch):
    */
   mov r27, #0
   str r27, [r0,67]
-
+ 
+  /* Check if heir is executing */
+  ldr r27, [r1,67]
+  sub r27, r27, #0
+  
+  bne _check_dispatch_needed
+  
+  b   smp_restore
   /* TODO 
      *   if ( test_and_set( &heir->is_executing ) ) {
      *     do {
@@ -121,11 +151,50 @@ SYM(_CPU_Context_switch):
      * }
      * @endcode
      */
-  ;;ldr r16, [r2, 67];
   
+_check_dispatch_needed:
+    
+   movfs r17, coreid
+   
+   /* Mapping from Epiphany IDs to 0-16 IDs macro */
+   mov   r19, #0x003
+   mov   r20, #0x0F0
+   and   r19, r17, r19
+   and   r20, r17, r20
+   add   r17, r19, r20
+   /* Mapping from Epiphany IDs to 0-16 IDs macro */
+   
+   lsl  r17, r17, #(PER_CPU_CONTROL_SIZE_LOG2)
+   add  r18, r18, r17
+   
+   
+ /* Check if dispatch needed */
+  add     r31, r18, #(PER_CPU_DISPATCH_NEEDED)
+  ldr     r32, [r31]
+  
+  sub     r35, r32, #0
+  beq     smp_restore
+  
+  /* cpu_self->dispatch_necessary = false; */
+  mov r27, #0 
+  str r27, [r31]
+  
+  /* heir = cpu_self->heir; */
+  add     r31, r18, #(PER_CPU_OFFSET_HEIR)
+  ldr     r32, [r31]
+  
+  add     r31, r18, #(PER_CPU_OFFSET_EXECUTING)
+  
+  str     r32, [r31]
+  
+  mov  r1, r32
+
+smp_restore:
+  
+  mov r27, #1
+  str r27, [r1,67]
 #endif
   
-
 SYM(restore):
 
   ldr r2,[r1,2]
