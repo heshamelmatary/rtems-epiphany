@@ -24,8 +24,13 @@ typedef enum
   SMP_MESSAGE,
   DMA0,
   DMA1,
-  SER,
+  SW_INT,
 } IRQ_PER_CORE_T;
+
+/* TODO: move this to different SMP place */
+
+#define CONSOLE_SMP_INTR_OFF_ARG0 0x50
+#define CONSOLE_SMP_INTR_OFF_ARG1 0x54
 
 /*  Per-core IO mapped register addresses 
  *  @see Epiphany architecture reference.
@@ -96,6 +101,8 @@ typedef enum
  * just use 32-bit registers 
  */
 #define EPIPHANY_REG(reg) (uint32_t *) (reg)
+
+void printk_smp_interrupt_handler();
 
 static inline uint32_t epiphany_coreid_to_rtems_map(uint32_t coreid);
 
