@@ -29,7 +29,7 @@ void _CPU_Context_Initialize(
 )
 {
   /* Decrement 200 byte to account for red-zone */
-  uint32_t stack = ((uint32_t) stack_area_begin) - 128;
+  uint32_t stack = ((uint32_t) stack_area_begin) /*- 128*/;
   uint32_t sr, config, iret;
   uint32_t stack_high = stack + stack_area_size;
 
