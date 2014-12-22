@@ -85,34 +85,42 @@ void main()
   printf("*** Loading the program to Epiphany ***\n");
    
   /* Load the boot processor and start it immediately */
-  if ( e_load_group("ticker.srec", &workgroup_boot, 0, 0, 1, 1, E_FALSE) != E_OK )
+  if ( e_load_group("smp01.srec", &workgroup_boot, 0, 0, 1, 1, E_FALSE) != E_OK )
   {
     printf("Failed to start the workgroup program \n");
     exit(0);
   }
   
-  if ( e_load_group("ticker.srec", &workgroup1, 0, 0, 1, 3, E_FALSE) != E_OK )
+  if ( e_load_group("smp01.srec", &workgroup1, 0, 0, 1, 3, E_FALSE) != E_OK )
   {
     printf("Failed to start the workgroup program \n");
     exit(0);
   }
-  if ( e_load_group("ticker.srec", &workgroup2, 0, 0, 3, 4, E_FALSE) != E_OK )
+  if ( e_load_group("smp01.srec", &workgroup2, 0, 0, 3, 4, E_FALSE) != E_OK )
   {
     printf("Failed to start the workgroup program \n");
     exit(0);
   }
 
   e_start_group(&workgroup_boot);
-  e_start_group(&workgroup1);
+  //usleep(1000000);
+  //e_start_group(&workgroup1);
   //e_start(&workgroup2, 0, 0);
-  usleep(1000000);
+  //usleep(1000000);
   
-  int x = 3;
-  for(x = 4 ; x<16; x++)
+  e_start(&workgroup1, 0, 0);
+  int x = 0;
+  /*for(x = 0 ; x<3; x++)
   {
+    usleep(10000);
+    e_start(&workgroup1, 0, x);
+  }*/
+
+  /*for(x = 4 ; x<16; x++)
+  {
+    usleep(10000);
     e_start(&workgroup2, (x/4) - 1   ,x % 4);
-    usleep(100000);
-  }
+  }*/
   //e_start_group(&workgroup2);
   //usleep(1000000);
   //usleep(100000);
