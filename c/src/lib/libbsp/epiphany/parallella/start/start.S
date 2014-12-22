@@ -154,6 +154,7 @@ _external_start:
    mov   r20, #0x0F0
    and   r19, r17, r19
    and   r20, r17, r20
+   lsr   r20, r20, #4  
    add   r17, r19, r20
    /* Mapping from Epiphany IDs to 0-16 IDs macro */
    
