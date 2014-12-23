@@ -31,6 +31,7 @@ rtems_task Test_task(
     if ( uptime.tv_sec >= 35 ) {
       //printk( "*** END OF LOW MEMORY CLOCK TICK TEST (delay) ***\n" );
       (*footprint)++;
+      //_Epiphany_Send_interrupt(0x809, 5);
       rtems_shutdown_executive( 0 );
     }
     /*printk( "TA%d - rtems_clock_uptime - %d:%d\n", 
@@ -50,7 +51,7 @@ rtems_task Init(
 
   //printk( "\n\n*** LOW MEMORY CLOCK TICK TEST (delay) ***\n" );
 
-  for (i=1 ; i<=3 ; i++ ) {
+  for (i=1 ; i<=2 ; i++ ) {
     status = rtems_task_create(
       rtems_build_name( 'T', 'A', 0x30+1, ' ' ), 1, 0, RTEMS_DEFAULT_MODES,
       RTEMS_DEFAULT_ATTRIBUTES, &id
@@ -77,7 +78,7 @@ rtems_task Init(
 #define CONFIGURE_IDLE_TASK_BODY Init
 #define CONFIGURE_IDLE_TASK_INITIALIZES_APPLICATION
 
-#define CONFIGURE_MAXIMUM_TASKS             3
+#define CONFIGURE_MAXIMUM_TASKS             2
 
 #include <rtems/confdefs.h>
 

@@ -28,9 +28,9 @@ rtems_task Init(
 )
 {
   //rtems_test_begin();
-  printk( "Hello World\n" );
+ // printk( "Hello World\n" );
   //rtems_test_end();
-  exit( 0 );
+  rtems_shutdown_executive( 0 );
 }
 
 
@@ -106,6 +106,6 @@ rtems_task Init(
  *  *  In this application, the initialization task performs the system
  *   *  initialization and then transforms itself into the idle task.
  *    */
-//#define CONFIGURE_IDLE_TASK_BODY Init
+#define CONFIGURE_IDLE_TASK_BODY Init
 
 #include <rtems/confdefs.h>

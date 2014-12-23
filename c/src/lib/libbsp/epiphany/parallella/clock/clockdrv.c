@@ -28,12 +28,15 @@
 extern char bsp_start_vector_table_begin[];
 
 /* CPU counter */
-static CPU_Counter_ticks cpu_counter_ticks;
+static CPU_Counter_ticks cpu_counter_ticks /*__attribute__((section(".clk_drv")))*/;
+
+void epiphany_clock_at_tick(void) __attribute__((section(".clk_drv")));
+void epiphany_clock_initialize(void) __attribute__((section(".clk_drv")));
 
 /* This prototype is added here to Avoid warnings */
 void Clock_isr(void *arg);
 
-static void epiphany_clock_at_tick(void)
+void epiphany_clock_at_tick(void)
 {
   unsigned int val = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT; 
   unsigned int event_type = 0x1; /* FIXME: Use macros or enum for event types */
@@ -51,6 +54,11 @@ static void epiphany_clock_at_tick(void)
                 "orr   r16, r16, r18; \t \n"
                 "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
+                
+   _Epiphany_Send_interrupt(0x808, TIMER0);
+   //while(*((uint32_t *) 0x58) == 0);
+   
+   //*((uint32_t *) 0x58) = 0;
 }
 
 /* Use timer0 on each eCPU for scheduling purposes */
@@ -66,10 +74,9 @@ void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 
 void epiphany_clock_initialize(void)
 {
-  unsigned int x = 0xDEADBEEF;
   
   unsigned int val = 0xFFFFFFFF; 
-  unsigned int event_type = TIMER0;
+  unsigned int event_type = 0x1;
   
   /* Embed assembly code for setting timer0 */
   asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
@@ -123,8 +130,11 @@ CPU_Counter_ticks _CPU_Counter_difference(
 
 void bsp_start(void)
 {
-  epiphany_clock_handler_install(Clock_isr, (void *) 0);
-  epiphany_clock_initialize();
+    epiphany_clock_handler_install(Clock_isr, (void *) 0);
+    rtems_clock_set_nanoseconds_extension(
+      epiphany_clock_nanoseconds_since_last_tick
+    );
+    //epiphany_clock_initialize();
 }
 
 #define Clock_driver_support_at_tick() epiphany_clock_at_tick()
