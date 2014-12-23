@@ -8,6 +8,7 @@ MEMORY
       VECTOR_RAM     (AIW) : ORIGIN = 0x00000000, LENGTH = 0xB0
       LOCAL_MEM      (AIW) : ORIGIN = 0x000000B0, LENGTH = 0x7F50
       RAM   : ORIGIN = 0x8E000000, LENGTH = 0x01000000
+      CORE1_LOCAL_MEM3 : ORIGIN = 0x0004000, LENGTH = 0x2000
   }
 
 REGION_ALIAS ("REGION_START", LOCAL_MEM);
@@ -23,11 +24,12 @@ REGION_ALIAS ("REGION_FAST_DATA_LOAD", LOCAL_MEM);
 REGION_ALIAS ("REGION_BSS", LOCAL_MEM);
 REGION_ALIAS ("REGION_WORK", LOCAL_MEM);
 REGION_ALIAS ("REGION_STACK", LOCAL_MEM);
+REGION_ALIAS ("SHARED_RAM", RAM);
 
 /* The following address is used for text output */
 bsp_section_outbut_buffer = 0x8F800000;
 bsp_section_vector_begin = 0x00000000;
-//bsp_section_stack_begin = 0x8EFFFF00;
+//bsp_stack_main_begin = 0x8EFFFF00;
 bsp_stack_main_begin = 0x00007FF0;
 /*
  * Global symbols that may be defined externally
@@ -65,39 +67,11 @@ SECTIONS {
     KEEP (*(.bsp_start_text))
     KEEP (*(.bsp_start_data))
     bsp_section_start_end = .;
+    . = ALIGN(8);
   } > REGION_START AT > REGION_START
   bsp_section_start_size = bsp_section_start_end - bsp_section_start_begin;
 
-.xbarrier :   {
-    . = ALIGN (bsp_section_xbarrier_align);
-  } > REGION_VECTOR AT > REGION_VECTOR
-
-.text :   {
-    . = ALIGN(8);
-    bsp_section_text_begin = .;
-    *(.text.unlikely .text.*_unlikely)
-    *(.text .stub .text.* .gnu.linkonce.t.*)
-    /* .gnu.warning sections are handled specially by elf32.em.  */
-    *(.gnu.warning)
-    *(.glue_7t) *(.glue_7) *(.vfp11_veneer) *(.v4_bx)
-  } > REGION_TEXT AT > REGION_TEXT_LOAD
-  .init :   {
-    KEEP (*(.init))
-  } > REGION_TEXT AT > REGION_TEXT_LOAD
-  .fini :   {
-    KEEP (*(.fini))
-    . = ALIGN(8);
-    bsp_section_text_end = .;
-  } > REGION_TEXT AT > REGION_TEXT_LOAD
-  bsp_section_text_size = bsp_section_text_end - bsp_section_text_begin;
-  bsp_section_text_load_begin = LOADADDR (.text);
-  bsp_section_text_load_end = bsp_section_text_load_begin + bsp_section_text_size;
-
-.robarrier :   {
-    . = ALIGN (bsp_section_robarrier_align);
-  } > REGION_RODATA AT > REGION_RODATA
-
-.rodata :   {
+  .rodata :   {
     . = ALIGN(8);
     bsp_section_rodata_begin = .;
     *(.rodata .rodata.* .gnu.linkonce.r.*)
@@ -272,6 +246,36 @@ SECTIONS {
   bsp_section_rodata_size = bsp_section_rodata_end - bsp_section_rodata_begin;
   bsp_section_rodata_load_begin = LOADADDR (.rodata);
   bsp_section_rodata_load_end = bsp_section_rodata_load_begin + bsp_section_rodata_size;
+    
+.xbarrier :   {
+    . = ALIGN (bsp_section_xbarrier_align);
+  } > REGION_VECTOR AT > REGION_VECTOR
+  
+.text :   {
+    . = ALIGN(8);
+    bsp_section_text_begin = .;
+    *(.text.unlikely .text.*_unlikely)
+    *(.text .stub .text.* .gnu.linkonce.t.*)
+    /* .gnu.warning sections are handled specially by elf32.em.  */
+    *(.gnu.warning)
+    *(.glue_7t) *(.glue_7) *(.vfp11_veneer) *(.v4_bx)
+  } > REGION_TEXT AT > REGION_TEXT_LOAD
+  .init :   {
+    KEEP (*(.init))
+  } > REGION_TEXT AT > REGION_TEXT_LOAD
+  .fini :   {
+    KEEP (*(.fini))
+    . = ALIGN(8);
+    bsp_section_text_end = .;
+  } > REGION_TEXT AT > REGION_TEXT_LOAD
+  bsp_section_text_size = bsp_section_text_end - bsp_section_text_begin;
+  bsp_section_text_load_begin = LOADADDR (.text);
+  bsp_section_text_load_end = bsp_section_text_load_begin + bsp_section_text_size;
+
+.robarrier :   {
+    . = ALIGN (bsp_section_robarrier_align);
+  } > REGION_RODATA AT > REGION_RODATA
+
 
 .rwbarrier :   {
     . = ALIGN(8);
@@ -296,6 +300,8 @@ SECTIONS {
   bsp_section_data_load_begin = LOADADDR (.data);
   bsp_section_data_load_end = bsp_section_data_load_begin + bsp_section_data_size;
 
+  
+  
   .bss :   {
     . = ALIGN(8);
     bsp_section_bss_begin = .;
@@ -309,7 +315,32 @@ SECTIONS {
 
   bsp_stack_main_end = .;
   . = ABSOLUTE (bsp_stack_main_begin);
+
   
+  /* The following address marks the starting free space for secondary 
+     processor to copy new data/code to their local memories
+   */
+
+  .shared_ram :   {
+   
+    //_smp_ram_console_driver_shared_begin = ABSOLUTE (.);
+    //console_local_begin = ABSOLUTE (.);
+    //*(.console_drv)
+    //console_local_end = ABSOLUTE (.);
+    //. = ALIGN(8);
+    //_smp_ram_console_driver_shared_end = ABSOLUTE (.);
+    
+    _smp_ram_clock_driver_shared_begin = ABSOLUTE (.);
+    *(.clk_drv)
+    _smp_ram_clock_driver_shared_end = ABSOLUTE (.);
+
+  } > CORE1_LOCAL_MEM3 AT > SHARED_RAM
+  
+  _smp_ram_clock_driver_shared_size = _smp_ram_clock_driver_shared_end -
+  _smp_ram_clock_driver_shared_begin; 
+  
+  /*_smp_ram_console_driver_shared_size = console_local_end -
+  console_local_begin;*/
 .work :   {
     /*
      * The work section will occupy the remaining REGION_WORK region and
@@ -331,7 +362,7 @@ SECTIONS {
     bsp_section_stack_end = .;
   } > REGION_STACK AT > REGION_STACK
   bsp_section_stack_size = bsp_section_stack_end - bsp_section_stack_begin;
-
+     
   _RamBase = ORIGIN (REGION_WORK);
   _RamSize = LENGTH (REGION_WORK);
   _WorkAreaBase = _bsp_section_work_begin;

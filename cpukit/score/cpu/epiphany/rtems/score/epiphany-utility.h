@@ -24,6 +24,7 @@ typedef enum
   SMP_MESSAGE,
   DMA0,
   DMA1,
+  WAND,
   SW_INT,
 } IRQ_PER_CORE_T;
 

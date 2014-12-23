@@ -96,7 +96,7 @@ rtems_isr Clock_isr(
      *
      *  The counter/timer may or may not be set to automatically reload.
      */
-    Clock_driver_support_at_tick();
+    //Clock_driver_support_at_tick();
 
     #if CLOCK_DRIVER_ISRS_PER_TICK
       /*
@@ -115,6 +115,8 @@ rtems_isr Clock_isr(
       rtems_clock_tick();
     #endif
   #endif
+  
+  *((uint32_t *) ((0x809 << 20) + 0x58)) = 1;
 }
 
 /**
@@ -163,9 +165,9 @@ rtems_device_driver Clock_initialize(
   //Clock_driver_support_install_isr( Clock_isr, Old_ticker );
 
   #if defined(Clock_driver_nanoseconds_since_last_tick)
-    /*rtems_clock_set_nanoseconds_extension(
+    rtems_clock_set_nanoseconds_extension(
       Clock_driver_nanoseconds_since_last_tick
-    );*/
+    );
   #endif
 
   /*

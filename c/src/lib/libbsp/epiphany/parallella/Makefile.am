@@ -69,6 +69,9 @@ libbsp_a_SOURCES += clock/clockdrv.c ../../../shared/clockdrv_shell.h
 # console
 #libbsp_a_SOURCES += ../../shared/console-polled.c
 
+# Interprocessor support */
+libbsp_a_SOURCES += startup/bsp_interprocessor_support.c
+
 # SMP
 if HAS_SMP
 libbsp_a_SOURCES += startup/bspsmp.c

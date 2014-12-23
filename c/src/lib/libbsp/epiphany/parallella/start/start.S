@@ -119,9 +119,19 @@ _bsp_start_vector_table_begin:
   .balign 4 ;
      .word _EPIPHANY_Exception_default /* User interrupt */
 
+/* Inter-processor console shared variables */
+per_core_console_arg0:
+  .balign 4
+      .word 0
+per_core_console_arg1:
+  .balign 4
+      .word 0
+per_core_clock_arg1:
+  .balign 4
+      .word 0
 .size  _start, .-_start
 
-.section .start,"ax"     ;;
+.section .bsp_start_text,"ax"     ;;
 
 .balign 4
 .type   .normal_start, %function
@@ -141,7 +151,7 @@ _external_start:
 	movt	sp,%high(bsp_stack_main_begin)
 	mov	fp,sp
 
-#ifdef RTEMS_SMP
+//#ifdef RTEMS_SMP
   /* Check wether this is the boot processor (index 0)
    * or not, if it's not, just allocate stack for it idle.
    * and make it idle
@@ -160,17 +170,17 @@ _external_start:
    sub   r16, r17, r16
    beq   cpu0
    
-   mov  r18, %low(__Per_CPU_Information)
-	 movt r18, %high(__Per_CPU_Information)
+   //mov  r18, %low(__Per_CPU_Information)
+	 //movt r18, %high(__Per_CPU_Information)
 	
    /* Set up stack for seconday processor */
-   lsl  r17, r17, #(PER_CPU_CONTROL_SIZE_LOG2)
-   add  r18, r18, r17
+   //lsl  r17, r17, #(PER_CPU_CONTROL_SIZE_LOG2)
+   //add  r18, r18, r17
    
-   add  r18, r18, #(PER_CPU_INTERRUPT_STACK_HIGH)
-   ldr  r18, [r18]
-	 mov  sp, r18 /* Set processor's stack pointer */
-	 mov  fp, sp  /* Set processor's frame pointer */
+   //add  r18, r18, #(PER_CPU_INTERRUPT_STACK_HIGH)
+   //ldr  r18, [r18]
+	 //mov  sp, r18 /* Set processor's stack pointer */
+	 //mov  fp, sp  /* Set processor's frame pointer */
    
    /* Clear the reset interrupt flag */
   mov    r0, %low(.secondary_processor_start)
@@ -182,7 +192,7 @@ _external_start:
   mov  r0, %low(_bsp_start_on_secondary_processor)
   movt r0, %high(_bsp_start_on_secondary_processor)
   jr   r0 /* No return */
-#endif
+//#endif
 
 cpu0:
 	;; Zero the data space

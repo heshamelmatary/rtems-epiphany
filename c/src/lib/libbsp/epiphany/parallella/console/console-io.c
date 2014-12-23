@@ -62,9 +62,9 @@
 
 #define PARALLELLA_REG(reg) (int *) (reg)
 
-static void outbyte_console( char );
+static void outbyte_console( char ) __attribute__ ((section(".console_drv")));
 static char inbyte_console( void );
-
+static void Parallella_output_char(char c) __attribute__ ((section(".console_drv")));
 /*void console_initialize_hardware(void)
 {
   *(PARALLELLA_REG(PARALLELLA_CONSOLE_REG_CTRL)) = 0;

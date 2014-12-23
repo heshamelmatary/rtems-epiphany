@@ -27,7 +27,7 @@
 .extern __Thread_Dispatch
 
 .align 4
-.section .text
+.section .bsp_start_text
 .global _ISR_Handler;
 PUBLIC(_ISR_Handler)
 .type    _ISR_Handler,%function
