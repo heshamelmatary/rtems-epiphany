@@ -110,7 +110,8 @@ CPU_Counter_ticks _CPU_Counter_read(void)
   //ticks_since_last_timer_interrupt = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - 
   //timer_val;
 
-  return cpu_counter_ticks * TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT + timer_val;
+  return cpu_counter_ticks * TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT + 
+  (TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - timer_val);
 
 }
 
