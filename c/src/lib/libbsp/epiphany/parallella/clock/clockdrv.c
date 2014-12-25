@@ -97,10 +97,10 @@ void epiphany_clock_initialize(void)
  */
 static uint32_t epiphany_clock_nanoseconds_since_last_tick(void)
 {
-  uint32_t timer_val
+  uint32_t timer_val;
   asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (timer_val):);
   
-  return timer_val;
+  return TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - timer_val;
 }
 
 CPU_Counter_ticks _CPU_Counter_read(void)
