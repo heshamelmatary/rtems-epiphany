@@ -17,9 +17,9 @@ static benchmark_timer1_interrupt_handler(void)
   
   /* Embed assembly code for setting timer1 qouted from e-lib */
   asm volatile ("movfs r16, config; \t \n"
-                "mov   r17, %%low(0xffffff0f);\t \n"
-                "movt   r17, %%high(0xffffff0f);\t \n"
-                "lsl   r18, %[event_type], 0x4; \t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt  r17, %%high(0xffff0ff);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
                 "and   r16, r16, r17; \t \n"
                 "movts config, r16; \t \n"
                 "orr   r16, r16, r18; \t \n"
@@ -47,9 +47,9 @@ void benchmark_timer_initialize( void )
 
   /* Embed assembly code for setting timer1 qouted from e-lib */
   asm volatile ("movfs r16, config; \t \n"
-                "mov   r17, %%low(0xffffff0f);\t \n"
-                "movt  r17, %%high(0xffffff0f);\t \n"
-                "lsl   r18, %[event_type], 0x4; \t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt  r17, %%high(0xffff0ff);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
                 "and   r16, r16, r17; \t \n"
                 "movts config, r16; \t \n"
                 "orr   r16, r16, r18; \t \n"

@@ -79,7 +79,7 @@ _start:
          b .clock_isr
 
 		.balign 4 ; 0x10
-         b .normal_start
+         b .timer1_isr
 
 		.balign 4 ; 0x14 
 		    b .msg_int
@@ -237,6 +237,18 @@ _jump_to_c:
   movt r63, %high(_ISR_Handler);     
   jr  r63
 
+.balign 4
+.type   .timer1_isr, %function
+.timer1_isr:
+  gid;                               
+  add sp, sp, #-8;                   
+  str r62, [sp, #4];                 
+  str r63, [sp, #8];                 
+  mov r62, 4;               
+  mov r63, %low(_ISR_Handler);       
+  movt r63, %high(_ISR_Handler);     
+  jr  r63
+  
 .balign 4
 .type   .msg_int, %function
 .msg_int:

@@ -72,6 +72,9 @@ libbsp_a_SOURCES += clock/clockdrv.c ../../../shared/clockdrv_shell.h
 # Benchmark timer
 libbsp_a_SOURCES += timer/timer.c
 
+# Exit system call
+libbsp_a_SOURCES += misc/exit.c
+
 # console
 libbsp_a_SOURCES += ../../shared/console-polled.c
 
