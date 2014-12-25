@@ -51,6 +51,8 @@ static void epiphany_clock_at_tick(void)
                 "orr   r16, r16, r18; \t \n"
                 "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
+                
+   cpu_counter_ticks++;
 }
 
 /* Use timer0 on each eCPU for scheduling purposes */
@@ -66,7 +68,7 @@ static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 
 void epiphany_clock_initialize(void)
 { 
-  unsigned int val = 0xFFFFFFFF; /* 10 milliseconds */ 
+  unsigned int val = 0xFFFFFFFF;
   unsigned int event_type = 0x1;
   
   /* Embed assembly code for setting timer0 */
@@ -95,19 +97,21 @@ void epiphany_clock_initialize(void)
  */
 static uint32_t epiphany_clock_nanoseconds_since_last_tick(void)
 {
-  return
-  TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT * EPIPHANY_CLOCK_CYCLE_TIME_NANOSECONDS;
+  uint32_t timer_val
+  asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (timer_val):);
+  
+  return timer_val;
 }
 
 CPU_Counter_ticks _CPU_Counter_read(void)
 {
-/*  uint32_t ticks_since_last_timer_interrupt, timer_val;
+  uint32_t ticks_since_last_timer_interrupt, timer_val;
   asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (timer_val):);
-  ticks_since_last_timer_interrupt = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - 
-  timer_val;
+  //ticks_since_last_timer_interrupt = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - 
+  //timer_val;
 
-  return cpu_counter_ticks + ticks_since_last_timer_interrupt;
-*/
+  return cpu_counter_ticks * TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT + timer_val;
+
 }
 
 CPU_Counter_ticks _CPU_Counter_difference(
