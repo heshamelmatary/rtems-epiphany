@@ -726,8 +726,15 @@ void _CPU_Context_Initialize(
  */
 
 #define _CPU_Fatal_halt(_source, _error ) \
-        printk("Fatal Error %d.%d Halted\n",_source, _error); \
-        for(;;)
+        if(_error == RTEMS_FATAL_SOURCE_EXIT) { \
+          printk("\nApplication exits normally.!\n"); \
+          asm volatile("": : :"memory"); \
+          asm volatile("gid; idle"); \
+         } \
+        else {\
+          printk("Fatal Error %d.%d Halted\n",_source, _error); \
+          asm volatile("gid; idle"); \
+        }
 
 /* end of Fatal Error manager macros */
 

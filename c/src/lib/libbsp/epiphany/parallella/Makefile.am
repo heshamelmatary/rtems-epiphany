@@ -18,6 +18,7 @@ dist_project_lib_DATA = bsp_specs
 
 include_HEADERS = include/bsp.h
 include_HEADERS += include/tm27.h
+include_HEADERS += ../../shared/include/coverhd.h
 
 nodist_include_bsp_HEADERS = ../../shared/include/bootcard.h
 include_bsp_HEADERS = ../shared/include/linker-symbols.h
@@ -28,6 +29,7 @@ include_bsp_HEADERS += ../../shared/include/irq-generic.h
 include_bsp_HEADERS += ../../shared/include/irq-info.h
 include_bsp_HEADERS += ../../shared/include/stackalloc.h
 include_bsp_HEADERS += ../../shared/include/console-polled.h
+
 
 nodist_include_HEADERS = include/bspopts.h
 
@@ -67,6 +69,12 @@ libbsp_a_SOURCES += ../../shared/src/stackalloc.c
 # clock
 libbsp_a_SOURCES += clock/clockdrv.c ../../../shared/clockdrv_shell.h
 
+# Benchmark timer
+libbsp_a_SOURCES += timer/timer.c
+
+# Exit system call
+libbsp_a_SOURCES += misc/exit.c
+
 # console
 libbsp_a_SOURCES += ../../shared/console-polled.c
 
@@ -77,6 +85,7 @@ endif
 
 # debugio
 libbsp_a_SOURCES += console/console-io.c
+
 # ###############################################################################
 # #                  Special Rules
 # #
