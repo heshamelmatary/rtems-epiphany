@@ -21,4 +21,9 @@ e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smp03.exe e
 e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smp05.exe exe/smp05.srec
 e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smp07.exe exe/smp07.srec
 e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smp08.exe exe/smp08.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/spcpucounter01.exe exe/spcpucounter01.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/tm06.exe exe/tm06.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/tmoverhd.exe exe/tmoverhd.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smpload01.exe exe/smpload01.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smpscheduler01.exe exe/smpscheduler01.srec
 
