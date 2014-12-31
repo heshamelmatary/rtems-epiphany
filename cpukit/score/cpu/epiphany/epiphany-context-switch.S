@@ -46,16 +46,16 @@ PUBLIC(_CPU_Context_save_fp)
 SYM(_CPU_Context_switch):
   gid
   str r0,[r0]
-  
-  /* Save timer values */
-  movfs r0, ctimer0
-  str r0, [r0,67]
-  
-  movfs r20, ctimer1
-  str r0, [r0,68]
-  
   str r1,[r0,1]
   str r2,[r0,2]
+  
+  /* Save timer values */
+  movfs r2, ctimer0
+  str r2, [r0,67]
+  
+  movfs r2, ctimer1
+  str r2, [r0,68]
+  
   str r3,[r0,3]
   str r4,[r0,4]
   str r5,[r0,5]
@@ -272,7 +272,7 @@ SYM(restore):
   movts status, r0
   
   ldr r0,[r1,65]
-  movts config, r0
+  //movts config, r0
   
   ldr r0,[r1,66]
   movts iret, r0
@@ -283,6 +283,9 @@ SYM(restore):
   
   ldr r0,[r1, 68]
   movts ctimer1, r0
+  
+  mov r0, 0
+  movts imask, r0
   
   ldr r0,[r1]
   ldr r1,[r1,1]

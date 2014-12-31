@@ -90,17 +90,6 @@ _ISR_Handler:
   movfs r1,config
   str r1, [sp,65]
   
-  /* Stop timer0 */
-  mov   r2, #0
-  movts config, r2
-  
-  /* Save timers values */
-  movfs r1, ctimer0
-  str r1, [sp,67]
-  
-  movfs r1, ctimer1
-  str r1, [sp,68]
-  
   str r3,[sp,3]
   str r4,[sp,4]
   str r5,[sp,5]
@@ -355,13 +344,6 @@ exception_frame_restore:
   
   ldr   r0, [sp,66]
   movts iret, r0
-  
-  /* Load timer values */
-  ldr   r0, [sp,67]
-  movts ctimer0, r0
-  
-  ldr   r0, [sp,68]
-  movts ctimer1, r0
   
   ldr r0,[sp]
   
