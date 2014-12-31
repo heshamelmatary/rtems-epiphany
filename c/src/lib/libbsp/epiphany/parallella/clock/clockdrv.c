@@ -68,7 +68,7 @@ static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 
 void epiphany_clock_initialize(void)
 { 
-  unsigned int val = 0xFFFFFFFF;
+  unsigned int val = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT;
   unsigned int event_type = 0x1;
   
   /* Embed assembly code for setting timer0 */
@@ -84,7 +84,8 @@ void epiphany_clock_initialize(void)
                 "orr   r16, r16, r18; \t \n"
                 "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
-  
+  asm volatile ("gid");
+    
   cpu_counter_ticks = 0;
 }
 

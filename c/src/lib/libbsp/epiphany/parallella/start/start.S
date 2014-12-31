@@ -207,6 +207,8 @@ cpu0:
   
 _jump_to_c:
   ;; jump to bootcard
+  mov r0, 0xFFFFFFFF
+  movts imask, r0
 	mov	r0,#0
 	mov	r1,#0
 	mov	r2,#0
