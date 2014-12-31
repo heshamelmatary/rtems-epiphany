@@ -66,9 +66,6 @@ void boot_card(
   const char *cmdline
 )
 {
-  volatile register int *i = (int *) 0x7FB8;
-  *i = 0xA0A0;
-
   rtems_interrupt_level  bsp_isr_level;
 
   /*
