@@ -46,6 +46,14 @@ PUBLIC(_CPU_Context_save_fp)
 SYM(_CPU_Context_switch):
   gid
   str r0,[r0]
+  
+  /* Save timer values */
+  movfs r0, ctimer0
+  str r0, [r0,67]
+  
+  movfs r20, ctimer1
+  str r0, [r0,68]
+  
   str r1,[r0,1]
   str r2,[r0,2]
   str r3,[r0,3]
@@ -127,10 +135,10 @@ SYM(_CPU_Context_switch):
    *   memory_barrier();
    */
   mov r27, #0
-  str r27, [r0,67]
+  str r27, [r0,69]
  
   /* Check if heir is executing */
-  ldr r27, [r1,67]
+  ldr r27, [r1,69]
   sub r27, r27, #0
   
   bne _check_dispatch_needed
@@ -264,10 +272,17 @@ SYM(restore):
   movts status, r0
   
   ldr r0,[r1,65]
-  //movts config, r0
+  movts config, r0
   
   ldr r0,[r1,66]
   movts iret, r0
+  
+  /* Load timer values */
+  ldr r0,[r1, 67]
+  movts ctimer0, r0
+  
+  ldr r0,[r1, 68]
+  movts ctimer1, r0
   
   ldr r0,[r1]
   ldr r1,[r1,1]

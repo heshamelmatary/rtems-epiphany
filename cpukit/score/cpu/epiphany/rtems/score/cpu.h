@@ -376,6 +376,10 @@ typedef struct {
   uint32_t config;
   uint32_t iret;
   
+  /* Timer values */
+  uint32_t ctimer0;
+  uint32_t ctimer1;
+  
 #ifdef RTEMS_SMP
     /**
      * @brief On SMP configurations the thread context must contain a boolean
@@ -860,6 +864,9 @@ typedef struct {
   uint32_t config;
   uint32_t iret;
   
+  /* Timer values */
+  uint32_t ctimer0;
+  uint32_t ctimer1;
 } CPU_Exception_frame;
 
 /**

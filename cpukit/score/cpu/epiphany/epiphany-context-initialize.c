@@ -42,7 +42,9 @@ void _CPU_Context_Initialize(
   context->r[13] = stack_high;
   context->r[11] = stack_high;
   context->r[14] = (uint32_t) entry_point;
+  context->ctimer0 = 0x004C4B40; /* 5 milliseconds */
+  context->ctimer1 = 0x004C4B40; /* 5 milliseconds */
   context->status = sr;
-  //context->config = config;
+  context->config = config;
   context->iret = iret;
 }
