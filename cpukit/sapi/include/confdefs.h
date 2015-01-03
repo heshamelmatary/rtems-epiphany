@@ -658,6 +658,7 @@ const rtems_libio_helper rtems_fs_init_helper =
  * The scheduler configuration allows an application to select the
  * scheduling policy to use.  The supported configurations are:
  *  CONFIGURE_SCHEDULER_USER       - user provided scheduler
+ *  CONFIGURE_SCHEDULER_PFAIR_SMP  - Pfair SMP Scheduler
  *  CONFIGURE_SCHEDULER_PRIORITY   - Deterministic Priority Scheduler
  *  CONFIGURE_SCHEDULER_PRIORITY_SMP - Deterministic Priority SMP Scheduler
  *  CONFIGURE_SCHEDULER_PRIORITY_AFFINITY_SMP - Deterministic Priority SMP Affinity Scheduler
@@ -678,6 +679,7 @@ const rtems_libio_helper rtems_fs_init_helper =
 
 /* If no scheduler is specified, the priority scheduler is default. */
 #if !defined(CONFIGURE_SCHEDULER_USER) && \
+    !defined(CONFIGURE_SCHEDULER_PFAIR_SMP) && \
     !defined(CONFIGURE_SCHEDULER_PRIORITY) && \
     !defined(CONFIGURE_SCHEDULER_PRIORITY_SMP) && \
     !defined(CONFIGURE_SCHEDULER_PRIORITY_AFFINITY_SMP) && \
@@ -693,6 +695,26 @@ const rtems_libio_helper rtems_fs_init_helper =
 #endif
 
 #include <rtems/scheduler.h>
+
+/*
+ * If the Pfair Scheduler is selected, then configure for it.
+ */
+#if defined(CONFIGURE_SCHEDULER_PFAIR_SMP)
+  #if !defined(CONFIGURE_SCHEDULER_NAME)
+    #define CONFIGURE_SCHEDULER_NAME rtems_build_name('M', 'P', 'F', ' ')
+  #endif
+
+  #if !defined(CONFIGURE_SCHEDULER_CONTROLS)
+    #define CONFIGURE_SCHEDULER_CONTEXT \
+      RTEMS_SCHEDULER_CONTEXT_PFAIR_SMP( \
+        dflt, \
+        CONFIGURE_MAXIMUM_PRIORITY + 1 \
+      )
+
+    #define CONFIGURE_SCHEDULER_CONTROLS \
+      RTEMS_SCHEDULER_CONTROL_PFAIR_SMP(dflt, CONFIGURE_SCHEDULER_NAME)
+  #endif
+#endif
 
 /*
  * If the Priority Scheduler is selected, then configure for it.
@@ -2531,6 +2553,9 @@ const rtems_libio_helper rtems_fs_init_helper =
       #endif
       #ifdef CONFIGURE_SCHEDULER_EDF
         Scheduler_EDF_Node EDF;
+      #endif
+      #ifdef CONFIGURE_SCHEDULER_PFAIR_SMP
+        Scheduler_pfair_SMP_Node Pfair_SMP;
       #endif
       #ifdef CONFIGURE_SCHEDULER_PRIORITY
         Scheduler_priority_Node Priority;
