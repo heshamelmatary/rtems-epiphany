@@ -22,6 +22,7 @@
 #include <rtems/score/scheduler.h>
 #include <rtems/score/schedulerpriority.h>
 #include <rtems/score/schedulersmp.h>
+#include <rtems/score/rbtree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,19 +57,26 @@ extern "C" {
     SCHEDULER_OPERATION_DEFAULT_GET_SET_AFFINITY \
   }
 
+/**
+ * This is just a most significant bit of Priority_Control type. It
+ * distinguishes threads which are deadline driven (priority
+ * represented by a lower number than @a SCHEDULER_EDF_PRIO_MSB) from those
+ * ones who do not have any deadlines and thus are considered background
+ * tasks.
+ */
+#define SCHEDULER_PFAIR_PRIO_MSB 0x80000000
+
 typedef struct {
   Scheduler_SMP_Context    Base;
-  Priority_bit_map_Control Bit_map;
-  Chain_Control            Ready[ RTEMS_ZERO_LENGTH_ARRAY ];
+  //Priority_bit_map_Control Bit_map;
+  RBTree_Control Ready;
 } Scheduler_pfair_SMP_Context;
 
 /**
  * @brief Data for ready queue operations.
  */
 typedef struct {
-  /** This field points to the Ready FIFO for this thread's priority. */
-  Chain_Control                        *ready_chain;
-
+  RBTree_Control ready_tree;
 } Scheduler_pfair_SMP_Ready_queue;
 
 /**
@@ -80,11 +88,34 @@ typedef struct {
    */
   Scheduler_SMP_Node Base;
 
+  RBTree_Node Node;
   /**
    * @brief The associated ready queue of this node.
    */
-  Scheduler_priority_Ready_queue Ready_queue;
+  RBTree_Control Ready_tree;
+  //Scheduler_priority_Ready_queue Ready_queue;
 } Scheduler_pfair_SMP_Node;
+
+typedef struct {
+  uint32_t subtask_num = 1;
+  uint32_t dealine_subtask;
+  uint32_t weight;
+  uint32_t successor_bit;
+  
+} Scheduler_pfair_Per_Task;
+
+/** Calculate sub-task deadline */
+void _Scheduler_pfair_SMP_SubTask_deadline(Scheduler_pfair_Per_Task *task)
+{
+  task->dealine_subtask = (task->subtask_num / task->weight) + 
+                          (task->subtask_num % task->weight)? 0 : 1;
+}
+
+/* Calculate successor bit */
+void _Scheduler_pfair_SMP_SubTask_successor_bit(Scheduler_pfair_Per_Task *task)
+{
+  task->successor_bit = task->dealine_subtask - (subtask_num - 1) / task->weight;
+}
 
 /**
  * @brief Initializes the pfair scheduler.

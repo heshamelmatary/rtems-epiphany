@@ -21,6 +21,7 @@
 #include <rtems/score/schedulerpriorityimpl.h>
 #include <rtems/score/schedulersimpleimpl.h>
 #include <rtems/score/schedulersmpimpl.h>
+#include <rtems/score/rbtree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +31,11 @@ extern "C" {
  * @ingroup ScoreSchedulerPfairSMP
  * @{
  */
+
+RBTree_Compare_result _Scheduler_pfair_SMP_Compare(
+  const RBTree_Node* n1,
+  const RBTree_Node* n2
+);
 
 static inline Scheduler_pfair_SMP_Context *_Scheduler_pfair_SMP_Get_self(
   Scheduler_Context *context

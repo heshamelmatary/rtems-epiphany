@@ -18,6 +18,48 @@
 #endif
 
 #include <rtems/score/schedulerpfairsmpimpl.h>
+#include <rtems/score/rbtree.h>
+
+int _Scheduler_pfair_SMP_Priority_compare (
+  Priority_Control p1,
+  Priority_Control p2
+)
+{
+  Watchdog_Interval time = _Watchdog_Ticks_since_boot;
+
+  /*
+   * Reorder priorities to separate deadline driven and background tasks.
+   *
+   * The background tasks have p1 or p2 > SCHEDULER_PFAIR_PRIO_MSB.
+   * The deadline driven tasks need to have subtracted current time in order
+   * to see which deadline is closer wrt. current time.
+   */
+  if (!(p1 & SCHEDULER_PFAIR_PRIO_MSB))
+    p1 = (p1 - time) & ~SCHEDULER_PFAIR_PRIO_MSB;
+  if (!(p2 & SCHEDULER_PFAIR_PRIO_MSB))
+    p2 = (p2 - time) & ~SCHEDULER_PFAIR_PRIO_MSB;
+
+  return ((p1<p2) - (p1>p2));
+}
+
+RBTree_Compare_result _Scheduler_pfair_SMP_Compare(
+  const RBTree_Node* n1,
+  const RBTree_Node* n2
+)
+{
+  Scheduler_pfair_SMP_Node *pfair1 =
+    RTEMS_CONTAINER_OF( n1, Scheduler_pfair_SMP_Node, Node );
+  Scheduler_pfair_SMP_Node *pfair2 =
+    RTEMS_CONTAINER_OF( n2, Scheduler_pfair_SMP_Node, Node );
+  Priority_Control value1 = pfair1->thread->current_priority;
+  Priority_Control value2 = pfair2->thread->current_priority;
+
+  /*
+   * This function compares only numbers for the red-black tree,
+   * but priorities have an opposite sense.
+   */
+  return (-1)*_Scheduler_pfair_SMP_Priority_compare(value1, value2);
+}
 
 static Scheduler_pfair_SMP_Context *
 _Scheduler_pfair_SMP_Get_context( const Scheduler_Control *scheduler )
@@ -31,8 +73,7 @@ void _Scheduler_pfair_SMP_Initialize( const Scheduler_Control *scheduler )
     _Scheduler_pfair_SMP_Get_context( scheduler );
 
   _Scheduler_SMP_Initialize( &self->Base );
-  _Priority_bit_map_Initialize( &self->Bit_map );
-  _Scheduler_priority_Ready_queue_initialize( &self->Ready[ 0 ] );
+  _RBTree_Initialize_empty( &context->Ready );
 }
 
 void _Scheduler_pfair_SMP_Node_initialize(
@@ -261,3 +302,26 @@ Thread_Control *_Scheduler_pfair_SMP_Yield(
     _Scheduler_pfair_SMP_Enqueue_scheduled_fifo
   );
 }
+
+Scheduler_Void_or_thread _Scheduler_pfair_SMP_Change_priority(
+  const Scheduler_Control *scheduler,
+  Thread_Control          *the_thread,
+  Priority_Control         new_priority,
+  bool                     prepend_it
+)
+{
+  Scheduler_EDF_Context *context =
+    _Scheduler_EDF_Get_context( scheduler );
+  Scheduler_EDF_Node *node = _Scheduler_EDF_Thread_get_node( the_thread );
+
+  _RBTree_Extract( &context->Ready, &node->Node );
+  _RBTree_Insert(
+    &context->Ready,
+    &node->Node,
+    _Scheduler_EDF_Compare,
+    false
+  );  
+
+  SCHEDULER_RETURN_VOID_OR_NULL;
+}
+
