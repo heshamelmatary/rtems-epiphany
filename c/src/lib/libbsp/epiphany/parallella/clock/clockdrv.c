@@ -68,7 +68,7 @@ static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 
 void epiphany_clock_initialize(void)
 { 
-  unsigned int val = 0x00989680; /* 10 milliseconds */
+  unsigned int val = 0xFFFFFFFF; /* 10 milliseconds */
   unsigned int event_type = 0x1;
   
   /* Embed assembly code for setting timer0 */
