@@ -22,6 +22,8 @@
 #include <rtems/score/schedulersimpleimpl.h>
 #include <rtems/score/schedulersmpimpl.h>
 #include <rtems/score/rbtree.h>
+#include <rtems/score/threadimpl.h>
+#include <rtems/score/watchdogimpl.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +59,7 @@ _Scheduler_pfair_SMP_Node_downcast( Scheduler_Node *node )
   return (Scheduler_pfair_SMP_Node *) node;
 }
 
-static inline void _Scheduler_pfair_SMP_Move_from_scheduled_to_ready(
+/*static inline void _Scheduler_pfair_SMP_Move_from_scheduled_to_ready(
   Scheduler_Context *context,
   Scheduler_Node    *scheduled_to_ready
 )
@@ -167,6 +169,7 @@ static inline void _Scheduler_pfair_SMP_Do_update(
     &self->Ready[ 0 ]
   );
 }
+*/
 
  /** @} */
 

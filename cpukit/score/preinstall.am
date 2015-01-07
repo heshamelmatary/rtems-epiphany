@@ -414,6 +414,10 @@ $(PROJECT_INCLUDE)/rtems/score/schedulerpfairsmpimpl.h: include/rtems/score/sche
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerpfairsmpimpl.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerpfairsmpimpl.h
 
+$(PROJECT_INCLUDE)/rtems/score/schedulerpfairtypes.h: include/rtems/score/schedulerpfairtypes.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerpfairtypes.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerpfairtypes.h
+
 $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h: include/rtems/score/schedulerprioritysmpimpl.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h

@@ -116,6 +116,7 @@ if HAS_SMP
 include_rtems_score_HEADERS += include/rtems/score/atomic.h
 include_rtems_score_HEADERS += include/rtems/score/cpustdatomic.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerpfairsmpimpl.h
+include_rtems_score_HEADERS += include/rtems/score/schedulerpfairtypes.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerprioritysmpimpl.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerpriorityaffinitysmp.h
 include_rtems_score_HEADERS += include/rtems/score/schedulersimplesmp.h

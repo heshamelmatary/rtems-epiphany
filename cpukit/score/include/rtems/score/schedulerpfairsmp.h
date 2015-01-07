@@ -20,7 +20,7 @@
 #define _RTEMS_SCORE_SCHEDULERPFAIR_H
 
 #include <rtems/score/scheduler.h>
-#include <rtems/score/schedulerpriority.h>
+//#include <rtems/score/schedulerpriority.h>
 #include <rtems/score/schedulersmp.h>
 #include <rtems/score/rbtree.h>
 
@@ -41,16 +41,16 @@ extern "C" {
 #define SCHEDULER_PFAIR_SMP_ENTRY_POINTS \
   { \
     _Scheduler_pfair_SMP_Initialize,       /* initialize entry point */ \
-    _Scheduler_default_Schedule,         /* schedule entry point */ \
+    _Scheduler_pfair_SMP_Schedule,         /* schedule entry point */ \
     _Scheduler_pfair_SMP_Yield,            /* yield entry point */ \
-    _Scheduler_pfair_SMP_Block,            /* block entry point */ \
+    _Scheduler_pfair_SMP_Extract,            /* block entry point */ \
     _Scheduler_pfair_SMP_Unblock,          /* unblock entry point */ \
     _Scheduler_pfair_SMP_Change_priority,  /* change priority entry point */ \
-    _Scheduler_pfair_SMP_Ask_for_help, \
+    SCHEDULER_OPERATION_DEFAULT_ASK_FOR_HELP, \
     _Scheduler_pfair_SMP_Node_initialize,  /* node initialize entry point */ \
     _Scheduler_default_Node_destroy,       /* node destroy entry point */ \
     _Scheduler_pfair_SMP_Update_priority,  /* update priority entry point */ \
-    _Scheduler_priority_Priority_compare,  /* compares two priorities */ \
+    _Scheduler_pfair_SMP_Priority_compare,  /* compares two priorities */ \
     _Scheduler_default_Release_job,        /* new period of task */ \
     _Scheduler_default_Tick,               /* tick entry point */ \
     _Scheduler_SMP_Start_idle              /* start idle entry point */ \
@@ -95,27 +95,6 @@ typedef struct {
   RBTree_Control Ready_tree;
   //Scheduler_priority_Ready_queue Ready_queue;
 } Scheduler_pfair_SMP_Node;
-
-typedef struct {
-  uint32_t subtask_num = 1;
-  uint32_t dealine_subtask;
-  uint32_t weight;
-  uint32_t successor_bit;
-  
-} Scheduler_pfair_Per_Task;
-
-/** Calculate sub-task deadline */
-void _Scheduler_pfair_SMP_SubTask_deadline(Scheduler_pfair_Per_Task *task)
-{
-  task->dealine_subtask = (task->subtask_num / task->weight) + 
-                          (task->subtask_num % task->weight)? 0 : 1;
-}
-
-/* Calculate successor bit */
-void _Scheduler_pfair_SMP_SubTask_successor_bit(Scheduler_pfair_Per_Task *task)
-{
-  task->successor_bit = task->dealine_subtask - (subtask_num - 1) / task->weight;
-}
 
 /**
  * @brief Initializes the pfair scheduler.
@@ -210,7 +189,7 @@ Thread_Control *_Scheduler_pfair_SMP_Ask_for_help(
  *
  *  @param[in,out] thread The yielding thread.
  */
-Scheduler_Void_or_thread _Scheduler_pfair_SMP_Yield(
+void _Scheduler_pfair_SMP_Yield(
   const Scheduler_Control *scheduler,
   Thread_Control          *the_thread
 );
@@ -224,6 +203,8 @@ int _Scheduler_pfair_SMP_Priority_compare(
   Priority_Control   p1,
   Priority_Control   p2
 );
+
+void _Scheduler_pfair_SMP_Extract(Scheduler_Control *scheduler, Thread_Control *thread );
 
 /**@}*/
 
