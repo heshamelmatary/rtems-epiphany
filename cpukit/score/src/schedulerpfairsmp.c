@@ -391,15 +391,20 @@ void _Scheduler_pfair_SMP_Update_priority(
 {
   Scheduler_pfair_SMP_Context *context =
     _Scheduler_pfair_SMP_Get_context( scheduler );
+    
+  //the_thread->Start.initial_priority |= (SCHEDULER_EDF_PRIO_MSB);
+  the_thread->real_priority    = the_thread->Start.initial_priority;
+  the_thread->current_priority = the_thread->Start.initial_priority;
+  
   //Scheduler_EDF_Node *node = _Scheduler_EDF_Thread_get_node( the_thread );
   
   //_RBTree_Extract( &context->Ready, &the_thread->RBNode );
-  _RBTree_Insert(
+  /*_RBTree_Insert(
     &context->Ready,
     &the_thread->RBNode,
     _Scheduler_pfair_SMP_Compare,
     false
-  );
+  );*/
 }
 
 Thread_Control *_Scheduler_pfair_SMP_Unblock(
