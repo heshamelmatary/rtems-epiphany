@@ -66,7 +66,7 @@ RBTree_Compare_result _Scheduler_pfair_SMP_Compare(
     RTEMS_CONTAINER_OF( n1, Thread_Control, RBNode );
     //RTEMS_CONTAINER_OF( n1, Scheduler_pfair_SMP_Node, Node );
   Thread_Control *thread2 =
-    RTEMS_CONTAINER_OF( n1, Thread_Control, RBNode );
+    RTEMS_CONTAINER_OF( n2, Thread_Control, RBNode );
     //RTEMS_CONTAINER_OF( n2, Scheduler_pfair_SMP_Node, Node );
   Priority_Control value1 = thread1->current_priority;
   Priority_Control value2 = thread2->current_priority;
