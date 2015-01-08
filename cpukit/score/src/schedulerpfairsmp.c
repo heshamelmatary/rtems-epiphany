@@ -437,13 +437,18 @@ void _Scheduler_pfair_SMP_Budget_Algorithm_callout(Thread_Control *thread)
   //_Scheduler_pfair_SMP_Schedule();
 }
 
-void _Scheduler_pfair_SMP_Thread_init(Thread_Control *thread, float weight, )
+void _Scheduler_pfair_SMP_Thread_init(Thread_Control *thread, uint32_t Tp, uint32_t Te)
 {
   thread->budget_callout   = _Scheduler_pfair_SMP_Budget_Algorithm_callout;
   thread->budget_algorithm = THREAD_CPU_BUDGET_ALGORITHM_CALLOUT;
   thread->is_preemptible   = true;
-  thread->pfair_per_thread_info.deadline_subtask = 1;
+  
   thread->pfair_per_thread_info.subtask_num      = 1;
+  thread->pfair_per_thread_info.Tp               = Tp;
+  thread->pfair_per_thread_info.Te               = Te;
+  
+  _Scheduler_pfair_SMP_SubTask_deadline(&thread->pfair_per_thread_info);
+  _Scheduler_pfair_SMP_SubTask_successor_bit(&thread->pfair_per_thread_info);
 }
 
 /*
