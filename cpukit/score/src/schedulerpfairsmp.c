@@ -393,7 +393,7 @@ void _Scheduler_pfair_SMP_Update_priority(
     _Scheduler_pfair_SMP_Get_context( scheduler );
   //Scheduler_EDF_Node *node = _Scheduler_EDF_Thread_get_node( the_thread );
   
-  _RBTree_Extract( &context->Ready, &the_thread->RBNode );
+  //_RBTree_Extract( &context->Ready, &the_thread->RBNode );
   _RBTree_Insert(
     &context->Ready,
     &the_thread->RBNode,
@@ -413,16 +413,20 @@ Thread_Control *_Scheduler_pfair_SMP_Unblock(
 }
 
 /** Calculate sub-task deadline */
-void _Scheduler_pfair_SMP_SubTask_deadline(Scheduler_pfair_SMP_Per_Thread *task)
+static inline uint32_t _Scheduler_pfair_SMP_SubTask_deadline(uint32_t subtask, uint32_t Te, uint32_t Tp)
 {
-  task->deadline_subtask = ((task->subtask_num * task->Tp) / task->Te) + 
-                          (task->Tp % task->Te)? 0 : 1;
+  uint32_t remainder = (Tp % Te)? 1 : 0; 
+  uint32_t new_deadline = ((subtask * Tp) / Te) + remainder;
+
+  return new_deadline;
 }
 
 /* Calculate successor bit */
-void _Scheduler_pfair_SMP_SubTask_successor_bit(Scheduler_pfair_SMP_Per_Thread *task)
+static inline uint32_t _Scheduler_pfair_SMP_SubTask_successor_bit
+(uint32_t deadline, uint32_t subtask, uint32_t Te, uint32_t Tp)
 {
-  task->successor_bit = task->deadline_subtask - (task->subtask_num - 1) * (task->Tp / task->Te);
+  uint32_t new_successor_bit = deadline - (subtask - 1) * (Tp / Te);
+  return new_successor_bit;
 }
 
 void _Scheduler_pfair_SMP_Budget_Algorithm_callout(Thread_Control *thread)
@@ -430,8 +434,18 @@ void _Scheduler_pfair_SMP_Budget_Algorithm_callout(Thread_Control *thread)
   Priority_Control new_priority;
   thread->pfair_per_thread_info.subtask_num++;
   
-  _Scheduler_pfair_SMP_SubTask_deadline(&thread->pfair_per_thread_info);
-  _Scheduler_pfair_SMP_SubTask_successor_bit(&thread->pfair_per_thread_info);
+  thread->pfair_per_thread_info.deadline_subtask = 
+  _Scheduler_pfair_SMP_SubTask_deadline(
+  thread->pfair_per_thread_info.subtask_num, thread->pfair_per_thread_info.Te,
+  thread->pfair_per_thread_info.Tp);
+  
+  thread->pfair_per_thread_info.successor_bit = 
+  _Scheduler_pfair_SMP_SubTask_successor_bit(
+  thread->pfair_per_thread_info.deadline_subtask,
+  thread->pfair_per_thread_info.subtask_num, 
+  thread->pfair_per_thread_info.Te,
+  thread->pfair_per_thread_info.Tp);
+  
   thread->cpu_time_budget = 1;
 
   /* Initializing or shifting deadline. */
@@ -458,8 +472,17 @@ void _Scheduler_pfair_SMP_Thread_init(Thread_Control *thread, uint32_t Tp, uint3
   thread->pfair_per_thread_info.Tp               = Tp;
   thread->pfair_per_thread_info.Te               = Te;
   
-  _Scheduler_pfair_SMP_SubTask_deadline(&thread->pfair_per_thread_info);
-  _Scheduler_pfair_SMP_SubTask_successor_bit(&thread->pfair_per_thread_info);
+  thread->pfair_per_thread_info.deadline_subtask = 
+  _Scheduler_pfair_SMP_SubTask_deadline(
+  thread->pfair_per_thread_info.subtask_num, thread->pfair_per_thread_info.Te,
+  thread->pfair_per_thread_info.Tp);
+  
+  thread->pfair_per_thread_info.successor_bit = 
+  _Scheduler_pfair_SMP_SubTask_successor_bit(
+  thread->pfair_per_thread_info.deadline_subtask,
+  thread->pfair_per_thread_info.subtask_num, 
+  thread->pfair_per_thread_info.Te,
+  thread->pfair_per_thread_info.Tp);
   
   initial_priority = (_Watchdog_Ticks_since_boot + thread->pfair_per_thread_info.deadline_subtask)
                    & ~SCHEDULER_PFAIR_PRIO_MSB;
@@ -557,8 +580,20 @@ rtems_status_code _Scheduler_pfair_SMP_Task_create(
   the_thread->pfair_per_thread_info.Tp               = Tp;
   the_thread->pfair_per_thread_info.Te               = Te;
   
-  _Scheduler_pfair_SMP_SubTask_deadline(&the_thread->pfair_per_thread_info);
-  _Scheduler_pfair_SMP_SubTask_successor_bit(&the_thread->pfair_per_thread_info);
+  the_thread->pfair_per_thread_info.deadline_subtask = 
+  _Scheduler_pfair_SMP_SubTask_deadline(
+  the_thread->pfair_per_thread_info.subtask_num, the_thread->pfair_per_thread_info.Te,
+  the_thread->pfair_per_thread_info.Tp);
+  
+  the_thread->pfair_per_thread_info.successor_bit = 
+  _Scheduler_pfair_SMP_SubTask_successor_bit(
+  the_thread->pfair_per_thread_info.deadline_subtask,
+  the_thread->pfair_per_thread_info.subtask_num, 
+  the_thread->pfair_per_thread_info.Te,
+  the_thread->pfair_per_thread_info.Tp);
+  
+  //_Scheduler_pfair_SMP_SubTask_deadline(&the_thread->pfair_per_thread_info);
+  //_Scheduler_pfair_SMP_SubTask_successor_bit(&the_thread->pfair_per_thread_info);
   
   initial_priority = (_Watchdog_Ticks_since_boot + the_thread->pfair_per_thread_info.deadline_subtask)
                    & ~SCHEDULER_PFAIR_PRIO_MSB;
