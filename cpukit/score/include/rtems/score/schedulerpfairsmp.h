@@ -24,6 +24,14 @@
 #include <rtems/score/schedulersmp.h>
 #include <rtems/score/rbtree.h>
 
+#include <rtems/score/object.h>
+#include <rtems/score/thread.h>
+#include <rtems/rtems/types.h>
+#include <rtems/rtems/event.h>
+#include <rtems/rtems/asr.h>
+#include <rtems/rtems/attr.h>
+#include <rtems/rtems/status.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -205,6 +213,19 @@ int _Scheduler_pfair_SMP_Priority_compare(
 );
 
 void _Scheduler_pfair_SMP_Extract(Scheduler_Control *scheduler, Thread_Control *thread );
+
+typedef Priority_Control rtems_task_priority;
+
+rtems_status_code _Scheduler_pfair_SMP_Task_create( 
+  rtems_name           name,
+  rtems_task_priority  initial_priority,
+  size_t               stack_size,
+  rtems_mode           initial_modes,
+  rtems_attribute      attribute_set,
+  rtems_id            *id,
+  uint32_t Tp,
+  uint32_t Te
+);
 
 /**@}*/
 

@@ -22,6 +22,16 @@
 #include <rtems/score/rbtree.h>
 #include <rtems/score/rbtreeimpl.h>
 #include <rtems/score/thread.h>
+#include <rtems/score/schedulerpfairtypes.h>
+
+#include <rtems/rtems/tasksimpl.h>
+#include <rtems/rtems/attrimpl.h>
+#include <rtems/rtems/modesimpl.h>
+#include <rtems/rtems/support.h>
+#include <rtems/score/apimutex.h>
+#include <rtems/score/schedulerimpl.h>
+#include <rtems/score/sysstate.h>
+#include <rtems/score/threadimpl.h>
 
 //#include <rtems/score/schedulerpfairtypes.h>
 
@@ -417,16 +427,15 @@ void _Scheduler_pfair_SMP_SubTask_successor_bit(Scheduler_pfair_SMP_Per_Thread *
 
 void _Scheduler_pfair_SMP_Budget_Algorithm_callout(Thread_Control *thread)
 {
+  Priority_Control new_priority;
   thread->pfair_per_thread_info.subtask_num++;
   
   _Scheduler_pfair_SMP_SubTask_deadline(&thread->pfair_per_thread_info);
   _Scheduler_pfair_SMP_SubTask_successor_bit(&thread->pfair_per_thread_info);
   thread->cpu_time_budget = 1;
-  
-   Priority_Control new_priority;
 
-    /* Initializing or shifting deadline. */
-    new_priority = (_Watchdog_Ticks_since_boot + thread->pfair_per_thread_info.deadline_subtask)
+  /* Initializing or shifting deadline. */
+  new_priority = (_Watchdog_Ticks_since_boot + thread->pfair_per_thread_info.deadline_subtask)
                    & ~SCHEDULER_PFAIR_PRIO_MSB;
   
   thread->real_priority = new_priority;
@@ -439,6 +448,8 @@ void _Scheduler_pfair_SMP_Budget_Algorithm_callout(Thread_Control *thread)
 
 void _Scheduler_pfair_SMP_Thread_init(Thread_Control *thread, uint32_t Tp, uint32_t Te)
 {
+  Priority_Control initial_priority;
+  
   thread->budget_callout   = _Scheduler_pfair_SMP_Budget_Algorithm_callout;
   thread->budget_algorithm = THREAD_CPU_BUDGET_ALGORITHM_CALLOUT;
   thread->is_preemptible   = true;
@@ -449,8 +460,128 @@ void _Scheduler_pfair_SMP_Thread_init(Thread_Control *thread, uint32_t Tp, uint3
   
   _Scheduler_pfair_SMP_SubTask_deadline(&thread->pfair_per_thread_info);
   _Scheduler_pfair_SMP_SubTask_successor_bit(&thread->pfair_per_thread_info);
+  
+  initial_priority = (_Watchdog_Ticks_since_boot + thread->pfair_per_thread_info.deadline_subtask)
+                   & ~SCHEDULER_PFAIR_PRIO_MSB;
+                   
+  thread->current_priority = initial_priority;
+  thread->real_priority = initial_priority;
 }
 
+rtems_status_code _Scheduler_pfair_SMP_Task_create( 
+  rtems_name           name,
+  rtems_task_priority  initial_priority,
+  size_t               stack_size,
+  rtems_mode           initial_modes,
+  rtems_attribute      attribute_set,
+  rtems_id            *id,
+  uint32_t Tp,
+  uint32_t Te
+)
+{
+  Thread_Control          *the_thread;
+  bool                     is_fp;
+
+  bool                     status;
+  rtems_attribute          the_attribute_set;
+  Priority_Control         core_priority;
+  RTEMS_API_Control       *api;
+  ASR_Information         *asr;
+  
+  initial_modes = RTEMS_DEFAULT_MODES | RTEMS_TIMESLICE; 
+   
+  if ( !id )
+   return RTEMS_INVALID_ADDRESS;
+
+  if ( !rtems_is_name_valid( name ) )
+    return RTEMS_INVALID_NAME;
+
+  /*
+   *  Core Thread Initialize insures we get the minimum amount of
+   *  stack space.
+   */
+
+  /*
+   *  Fix the attribute set to match the attributes which
+   *  this processor (1) requires and (2) is able to support.
+   *  First add in the required flags for attribute_set
+   *  Typically this might include FP if the platform
+   *  or application required all tasks to be fp aware.
+   *  Then turn off the requested bits which are not supported.
+   */
+   
+   the_attribute_set = _Attributes_Set( attribute_set, ATTRIBUTES_REQUIRED );
+  the_attribute_set =
+    _Attributes_Clear( the_attribute_set, ATTRIBUTES_NOT_SUPPORTED );
+
+  if ( _Attributes_Is_floating_point( the_attribute_set ) )
+    is_fp = true;
+  else
+    is_fp = false;
+
+  /*
+   *  Validate the RTEMS API priority and convert it to the core priority range.
+   */
+
+  if ( !_Attributes_Is_system_task( the_attribute_set ) ) {
+    if ( !_RTEMS_tasks_Priority_is_valid( initial_priority ) )
+      return RTEMS_INVALID_PRIORITY;
+  }
+
+  core_priority = _RTEMS_tasks_Priority_to_Core( initial_priority );
+  
+  the_thread = _RTEMS_tasks_Allocate();
+
+  if ( !the_thread ) {
+    _Objects_Allocator_unlock();
+    return RTEMS_TOO_MANY;
+  }
+  
+  status = _Thread_Initialize(
+    &_RTEMS_tasks_Information,
+    the_thread,
+    _Scheduler_Get_by_CPU_index( _SMP_Get_current_processor() ),
+    NULL,
+    stack_size,
+    is_fp,
+    core_priority,
+     true /*preepmetion enabled*/,
+     THREAD_CPU_BUDGET_ALGORITHM_CALLOUT,
+     _Scheduler_pfair_SMP_Budget_Algorithm_callout, /* budget algorithm callout */
+    _Modes_Get_interrupt_level(initial_modes),
+    (Objects_Name) name
+  );
+  
+  
+  the_thread->pfair_per_thread_info.subtask_num      = 1;
+  the_thread->pfair_per_thread_info.Tp               = Tp;
+  the_thread->pfair_per_thread_info.Te               = Te;
+  
+  _Scheduler_pfair_SMP_SubTask_deadline(&the_thread->pfair_per_thread_info);
+  _Scheduler_pfair_SMP_SubTask_successor_bit(&the_thread->pfair_per_thread_info);
+  
+  initial_priority = (_Watchdog_Ticks_since_boot + the_thread->pfair_per_thread_info.deadline_subtask)
+                   & ~SCHEDULER_PFAIR_PRIO_MSB;
+                   
+  the_thread->current_priority = initial_priority;
+  the_thread->real_priority = initial_priority;
+  
+  if ( !status ) {
+    _RTEMS_tasks_Free( the_thread );
+    _Objects_Allocator_unlock();
+    return RTEMS_UNSATISFIED;
+  }
+  
+  api = the_thread->API_Extensions[ THREAD_API_RTEMS ];
+  asr = &api->Signal;
+
+  asr->is_enabled = _Modes_Is_asr_disabled(initial_modes) ? false : true;
+
+  *id = the_thread->Object.id;
+  
+  _Objects_Allocator_unlock();
+  return RTEMS_SUCCESSFUL;
+}
 /*
 _______________________________________________________________
 void _Scheduler_pfair_SMP_Update_priority(

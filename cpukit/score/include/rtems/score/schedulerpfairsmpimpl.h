@@ -18,8 +18,8 @@
 #define _RTEMS_SCORE_SCHEDULERPFAIRSMPIMPL_H
 
 #include <rtems/score/schedulerpfairsmp.h>
-#include <rtems/score/schedulerpriorityimpl.h>
-#include <rtems/score/schedulersimpleimpl.h>
+//#include <rtems/score/schedulerpriorityimpl.h>
+//#include <rtems/score/schedulersimpleimpl.h>
 #include <rtems/score/schedulersmpimpl.h>
 #include <rtems/score/rbtree.h>
 #include <rtems/score/threadimpl.h>
