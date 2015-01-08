@@ -405,18 +405,20 @@ Thread_Control *_Scheduler_pfair_SMP_Unblock(
 /** Calculate sub-task deadline */
 void _Scheduler_pfair_SMP_SubTask_deadline(Scheduler_pfair_SMP_Per_Thread *task)
 {
-  task->deadline_subtask = (task->subtask_num / task->weight) + 
-                          (task->subtask_num % task->weight)? 0 : 1;
+  task->deadline_subtask = ((task->subtask_num * task->Tp) / task->Te) + 
+                          (task->Tp % task->Te)? 0 : 1;
 }
 
 /* Calculate successor bit */
 void _Scheduler_pfair_SMP_SubTask_successor_bit(Scheduler_pfair_SMP_Per_Thread *task)
 {
-  task->successor_bit = task->deadline_subtask - (task->subtask_num - 1) / task->weight;
+  task->successor_bit = task->deadline_subtask - (task->subtask_num - 1) * (task->Tp / task->Te);
 }
 
 void _Scheduler_pfair_SMP_Budget_Algorithm_callout(Thread_Control *thread)
 {
+  thread->pfair_per_thread_info.subtask_num++;
+  
   _Scheduler_pfair_SMP_SubTask_deadline(&thread->pfair_per_thread_info);
   _Scheduler_pfair_SMP_SubTask_successor_bit(&thread->pfair_per_thread_info);
   thread->cpu_time_budget = 1;
@@ -435,12 +437,13 @@ void _Scheduler_pfair_SMP_Budget_Algorithm_callout(Thread_Control *thread)
   //_Scheduler_pfair_SMP_Schedule();
 }
 
-void _Scheduler_pfair_SMP_Thread_init(Thread_Control *thread)
+void _Scheduler_pfair_SMP_Thread_init(Thread_Control *thread, float weight, )
 {
   thread->budget_callout   = _Scheduler_pfair_SMP_Budget_Algorithm_callout;
   thread->budget_algorithm = THREAD_CPU_BUDGET_ALGORITHM_CALLOUT;
   thread->is_preemptible   = true;
   thread->pfair_per_thread_info.deadline_subtask = 1;
+  thread->pfair_per_thread_info.subtask_num      = 1;
 }
 
 /*
