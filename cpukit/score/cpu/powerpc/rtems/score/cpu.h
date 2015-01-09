@@ -265,8 +265,6 @@ extern "C" {
   #define PPC_GPR_STORE evstdd
 #endif
 
-#define PPC_DEFAULT_CACHE_LINE_SIZE 32
-
 #ifndef ASM
 
 typedef struct {
@@ -360,13 +358,13 @@ static inline ppc_context *ppc_get_context( const Context_Control *context )
 #endif
 #endif /* ASM */
 
-#define PPC_CONTEXT_OFFSET_GPR1 32
-#define PPC_CONTEXT_OFFSET_MSR 36
-#define PPC_CONTEXT_OFFSET_LR 40
-#define PPC_CONTEXT_OFFSET_CR 44
+#define PPC_CONTEXT_OFFSET_GPR1 (PPC_DEFAULT_CACHE_LINE_SIZE + 0)
+#define PPC_CONTEXT_OFFSET_MSR (PPC_DEFAULT_CACHE_LINE_SIZE + 4)
+#define PPC_CONTEXT_OFFSET_LR (PPC_DEFAULT_CACHE_LINE_SIZE + 8)
+#define PPC_CONTEXT_OFFSET_CR (PPC_DEFAULT_CACHE_LINE_SIZE + 12)
 
 #define PPC_CONTEXT_GPR_OFFSET( gpr ) \
-  (((gpr) - 14) * PPC_GPR_SIZE + 48)
+  (((gpr) - 14) * PPC_GPR_SIZE + PPC_DEFAULT_CACHE_LINE_SIZE + 16)
 
 #define PPC_CONTEXT_OFFSET_GPR14 PPC_CONTEXT_GPR_OFFSET( 14 )
 #define PPC_CONTEXT_OFFSET_GPR15 PPC_CONTEXT_GPR_OFFSET( 15 )
@@ -394,6 +392,7 @@ static inline ppc_context *ppc_get_context( const Context_Control *context )
 
 #ifndef ASM
 typedef struct {
+#if (PPC_HAS_FPU == 1)
     /* The ABIs (PowerOpen/SVR4/EABI) only require saving f14-f31 over
      * procedure calls.  However, this would mean that the interrupt
      * frame had to hold f0-f13, and the fpscr.  And as the majority
@@ -407,6 +406,7 @@ typedef struct {
     float	f[32];
     uint32_t	fpscr;
 #endif
+#endif /* (PPC_HAS_FPU == 1) */
 } Context_Control_fp;
 
 typedef struct CPU_Interrupt_frame {
@@ -580,22 +580,6 @@ typedef struct CPU_Interrupt_frame {
 
 #define CPU_MODES_INTERRUPT_LEVEL  0x00000001 /* interrupt level in mode */
 #define CPU_MODES_INTERRUPT_MASK   0x00000001 /* interrupt level in mode */
-
-/*
- *  Nothing prevents the porter from declaring more CPU specific variables.
- */
-
-#ifndef ASM
-
-SCORE_EXTERN struct {
-  uint32_t      *Disable_level;
-  void          *Stack;
-  volatile bool *Switch_necessary;
-  bool          *Signal;
-
-} _CPU_IRQ_info CPU_STRUCTURE_ALIGNMENT;
-
-#endif /* ndef ASM */
 
 /*
  *  The size of the floating point context area.  On some CPUs this
@@ -782,9 +766,9 @@ static inline CPU_Counter_ticks _CPU_Counter_read( void )
 {
   CPU_Counter_ticks value;
 
-#ifdef ppc8540
-  /* Book E has no mftb */
-  __asm__ volatile( "mfspr %0, 268" : "=r" (value) );
+#if defined(ppc8540) || defined(__PPC_CPU_E6500__)
+  /* Use Alternate Time Base */
+  __asm__ volatile( "mfspr %0, 526" : "=r" (value) );
 #else
   __asm__ volatile( "mftb %0" : "=r" (value) );
 #endif

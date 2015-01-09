@@ -73,7 +73,16 @@ extern "C" {
 #endif
 
 #define PPC_ALIGNMENT			8
-#define PPC_STRUCTURE_ALIGNMENT	32
+
+#ifdef __PPC_CPU_E6500__
+#define PPC_DEFAULT_CACHE_LINE_POWER 6
+#else
+#define PPC_DEFAULT_CACHE_LINE_POWER 5
+#endif
+
+#define PPC_DEFAULT_CACHE_LINE_SIZE (1 << PPC_DEFAULT_CACHE_LINE_POWER)
+
+#define PPC_STRUCTURE_ALIGNMENT PPC_DEFAULT_CACHE_LINE_SIZE
 
 /*
  *  Application binary interfaces.
@@ -99,23 +108,13 @@ extern "C" {
 #define PPC_ABI PPC_ABI_EABI
 #endif
 
-#if (PPC_ABI == PPC_ABI_SVR4) || defined(__ALTIVEC__)
-#define PPC_STACK_ALIGNMENT	16
-#elif (PPC_ABI == PPC_ABI_EABI)
-#if 1
-/* Till.S: 2008/07/10; AFAIK, the CPU_STACK_ALIGNMENT is only
- * used to align the top of the stack. We don't lose much
- * if we always align TOS to 16-bytes but we then are always
- * OK, even if the user tells the compiler to generate 16-byte
- * alignment.
+/*
+ *  Use worst case stack alignment.  For the EABI an 8-byte alignment would be
+ *  sufficient.
  */
-#define PPC_STACK_ALIGNMENT	16
-#else
-#define PPC_STACK_ALIGNMENT	8
-#endif
-#else
-#error  "PPC_ABI is not properly defined"
-#endif
+
+#define PPC_STACK_ALIGN_POWER 4
+#define PPC_STACK_ALIGNMENT (1 << PPC_STACK_ALIGN_POWER)
 
 /*
  *  Assume PPC_HAS_FPU to be a synonym for _SOFT_FLOAT.
