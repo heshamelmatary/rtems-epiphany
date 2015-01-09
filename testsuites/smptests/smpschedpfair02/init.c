@@ -12,6 +12,7 @@
 #endif
 
 #define CONFIGURE_INIT
+#define CONFIGURE_IDLE_TASK_BODY Init
 #include "system.h"
 
 #include <rtems/score/schedulerpfairsmp.h>
@@ -30,6 +31,7 @@ rtems_task Init(
   rtems_task_argument argument
 )
 {
+ asm volatile ("gid");
  // char               ch;
   uint32_t           cpu_self;
   rtems_id           id;
@@ -62,13 +64,13 @@ rtems_task Init(
         RTEMS_DEFAULT_MODES | RTEMS_TIMESLICE,
         RTEMS_DEFAULT_ATTRIBUTES,
         &id,
-        Tp,
-				Te        
+        10,
+				5        
       );
 
       directive_failed( status, "task create" );
 
-      locked_printf(" CPU %" PRIu32 " start task TA%c\n", cpu_self, 'T');
+      printk(" CPU %" PRIu32 " start task TA%c\n", cpu_self, 'T');
       status = rtems_task_start( id, Test_task1, 1 );
       directive_failed( status, "task start" );
 
@@ -79,16 +81,18 @@ rtems_task Init(
         RTEMS_TIMESLICE,
         RTEMS_DEFAULT_ATTRIBUTES,
         &id,
-        Up,
-				Ue
+        10,
+				3
       );
 
       directive_failed( status, "task create" );
 
-      locked_printf(" CPU %" PRIu32 " start task TA%c\n", cpu_self, 'U');
+      printk(" CPU %" PRIu32 " start task TA%c\n", cpu_self, 'U');
       status = rtems_task_start( id, Test_task2, 2 );
       directive_failed( status, "task start" );
 
+      status = rtems_task_delete( RTEMS_SELF );
+  asm volatile ("gie");
       //rtems_test_exit( 0 );
 }
 
@@ -109,7 +113,7 @@ rtems_task Test_task1(
 
   /* Print that the task is up and running. */
   Loop();
-  locked_printf(" CPU %" PRIu32 " running Task %s\n", cpu_num, name);
+  printk(" CPU %" PRIu32 " running Task %s\n", cpu_num, name);
 
   /* Set the flag that the task is up and running */
   //TaskRan[cpu_num] = true;
@@ -139,7 +143,7 @@ rtems_task Test_task2(
 
   /* Print that the task is up and running. */
   Loop();
-  locked_printf(" CPU %" PRIu32 " running Task %s\n", cpu_num, name);
+  printk(" CPU %" PRIu32 " running Task %s\n", cpu_num, name);
 
   /* Set the flag that the task is up and running */
   //TaskRan[cpu_num] = true;
