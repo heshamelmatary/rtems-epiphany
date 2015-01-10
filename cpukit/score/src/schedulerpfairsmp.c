@@ -500,6 +500,7 @@ void _Scheduler_pfair_SMP_Thread_init(Thread_Control *thread, uint32_t Tp, uint3
   initial_priority = (_Watchdog_Ticks_since_boot + thread->pfair_per_thread_info.deadline_subtask)
                    & ~SCHEDULER_PFAIR_PRIO_MSB;
                    
+  thread->cpu_time_budget = 1;
   thread->current_priority = initial_priority;
   thread->real_priority = initial_priority;
 }
@@ -611,6 +612,7 @@ rtems_status_code _Scheduler_pfair_SMP_Task_create(
   initial_priority = (_Watchdog_Ticks_since_boot + the_thread->pfair_per_thread_info.deadline_subtask)
                    & ~SCHEDULER_PFAIR_PRIO_MSB;
                    
+  the_thread->cpu_time_budget = 1;
   the_thread->current_priority = initial_priority;
   the_thread->real_priority = initial_priority;
   
