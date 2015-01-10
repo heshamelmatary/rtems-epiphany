@@ -12,7 +12,7 @@
 #endif
 
 #define CONFIGURE_INIT
-#define CONFIGURE_IDLE_TASK_BODY Init
+//#define CONFIGURE_IDLE_TASK_BODY Init
 #include "system.h"
 
 #include <rtems/score/schedulerpfairsmp.h>
@@ -91,7 +91,8 @@ rtems_task Init(
       status = rtems_task_start( id, Test_task2, 2 );
       directive_failed( status, "task start" );
 
-      status = rtems_task_delete( RTEMS_SELF );
+      //status = rtems_task_delete( RTEMS_SELF );
+      rtems_task_wake_after(0);
   asm volatile ("gie");
       //rtems_test_exit( 0 );
 }
