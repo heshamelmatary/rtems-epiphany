@@ -22,7 +22,7 @@
 #//include <bsp/linker-symbols.h>
 
 /* The number of clock cycles before generating a tick timer interrupt. */
-#define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x00989680 /* 10 milliseconds */
+#define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x004C4B40 /* 5 milliseconds */
 #define EPIPHANY_CLOCK_CYCLE_TIME_NANOSECONDS 1
 
 extern char bsp_start_vector_table_begin[];
@@ -68,7 +68,7 @@ static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 
 void epiphany_clock_initialize(void)
 { 
-  unsigned int val = 0xFFFFFFFF; /* 10 milliseconds */
+  unsigned int val = 0x004C4B40; /* 5 milliseconds */
   unsigned int event_type = 0x1;
   
   /* Embed assembly code for setting timer0 */
