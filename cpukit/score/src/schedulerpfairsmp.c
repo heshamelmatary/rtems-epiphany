@@ -112,7 +112,7 @@ static void _Scheduler_pfair_SMP_Allocate_processor(
   Per_CPU_Control *cpu_of_victim = victim->Scheduler.cpu;
   Thread_Control *heir;
 
-   _Per_CPU_Acquire( cpu_of_scheduled );
+   //_Per_CPU_Acquire( cpu_of_scheduled );
 
   //if ( scheduled->is_executing ) {
    // heir = cpu_of_scheduled->heir;
@@ -121,7 +121,7 @@ static void _Scheduler_pfair_SMP_Allocate_processor(
     heir = scheduled;
   //}
 
-   _Per_CPU_Release( cpu_of_scheduled );
+   //_Per_CPU_Release( cpu_of_scheduled );
 
   if ( heir != victim ) {
       const Per_CPU_Control *cpu_of_executing = _Per_CPU_Get();
@@ -325,6 +325,8 @@ static void  _Scheduler_pfair_SMP_Schedule_highest_ready(
   context,
   &smp_self->Scheduled,
   highest_ready);
+  
+  _Thread_Dispatch_update_heir( _Per_CPU_Get(), _Per_CPU_Get(), highest_ready ); /* FIXME */
 }
 
 static void _Scheduler_pfair_SMP_helper_Schedule(
@@ -336,6 +338,8 @@ static void _Scheduler_pfair_SMP_helper_Schedule(
       context,
       thread
     );
+    
+ 
 }
 
 void _Scheduler_pfair_SMP_Schedule(const Scheduler_Control *scheduler, Thread_Control *thread )
@@ -393,8 +397,8 @@ void _Scheduler_pfair_SMP_Update_priority(
     _Scheduler_pfair_SMP_Get_context( scheduler );
     
   //the_thread->Start.initial_priority |= (SCHEDULER_EDF_PRIO_MSB);
-  the_thread->real_priority    = the_thread->Start.initial_priority;
-  the_thread->current_priority = the_thread->Start.initial_priority;
+  the_thread->real_priority    = new_priority;
+  the_thread->current_priority = new_priority;
   
   //Scheduler_EDF_Node *node = _Scheduler_EDF_Thread_get_node( the_thread );
   
@@ -415,6 +419,10 @@ Thread_Control *_Scheduler_pfair_SMP_Unblock(
   Scheduler_Context *context = _Scheduler_Get_context( scheduler );
 
   _Scheduler_pfair_SMP_Enqueue_priority_fifo(context, thread);
+  
+  Thread_Control *highest_ready = _Scheduler_pfair_SMP_Get_highest_ready(context);
+  
+  _Thread_Dispatch_update_heir( _Per_CPU_Get(), _Per_CPU_Get(), highest_ready );
 }
 
 /** Calculate sub-task deadline */
