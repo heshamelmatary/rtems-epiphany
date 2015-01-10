@@ -161,12 +161,12 @@ static Thread_Control *_Scheduler_pfair_SMP_Get_highest_ready(
   if ( !_RBTree_Is_empty(&self->Ready) ) {
 
     RBTree_Node *first = _RBTree_First( &self->Ready, RBT_LEFT );
-  Thread_Control *highest_ready =
+    highest_ready =
     RTEMS_CONTAINER_OF( first, Thread_Control, RBNode );
-
-    //highest_ready = sched_info->thread;
   }
   //_SMP_lock_Release(&self->smp_lock_ready_queue);
+  
+  return highest_ready;
 }
 
 static void _Scheduler_pfair_SMP_Move_from_scheduled_to_ready(
