@@ -158,16 +158,17 @@ static Thread_Control *_Scheduler_pfair_SMP_Get_highest_ready(
   Scheduler_Context *context
 )
 {
-  Thread_Control *highest_ready = NULL;
+
   Scheduler_pfair_SMP_Context *self =
     _Scheduler_pfair_SMP_Get_self( context );
     
+  Thread_Control *highest_ready = NULL;
+  
   //_SMP_lock_Acquire(&self->smp_lock_ready_queue);
   if ( !_RBTree_Is_empty(&self->Ready) ) {
 
     RBTree_Node *first = _RBTree_First( &self->Ready, RBT_LEFT );
-    highest_ready =
-    RTEMS_CONTAINER_OF( first, Thread_Control, RBNode );
+    highest_ready = RTEMS_CONTAINER_OF( first, Thread_Control, RBNode );
   }
   //_SMP_lock_Release(&self->smp_lock_ready_queue);
   
@@ -330,8 +331,7 @@ static void _Scheduler_pfair_SMP_helper_Schedule(
 
 void _Scheduler_pfair_SMP_Extract(Scheduler_Control *scheduler, Thread_Control *thread )
 {
-  Scheduler_pfair_SMP_Context *self =
-    _Scheduler_pfair_SMP_Get_self( scheduler );
+  Scheduler_pfair_SMP_Context *self = _Scheduler_pfair_SMP_Get_context( scheduler );
   
   Scheduler_SMP_Context *smp_self = _Scheduler_SMP_Get_self( self );
   
