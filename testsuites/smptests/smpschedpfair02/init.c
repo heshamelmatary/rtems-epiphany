@@ -31,10 +31,9 @@ rtems_task Init(
   rtems_task_argument argument
 )
 {
- asm volatile ("gid");
  // char               ch;
   uint32_t           cpu_self;
-  rtems_id           id;
+  rtems_id           id1, id2;
   rtems_status_code  status;
   //bool               allDone;
 
@@ -53,9 +52,9 @@ rtems_task Init(
    */ 
   Loop();
 
-  TEST_BEGIN();
+  //TEST_BEGIN();
 
-  locked_print_initialize();
+  //locked_print_initialize();
 
       status =  _Scheduler_pfair_SMP_Task_create(
         rtems_build_name( 'T', 'A', 'T', ' ' ),
@@ -63,37 +62,37 @@ rtems_task Init(
         RTEMS_MINIMUM_STACK_SIZE,
         RTEMS_DEFAULT_MODES | RTEMS_TIMESLICE,
         RTEMS_DEFAULT_ATTRIBUTES,
-        &id,
+        &id1,
         10,
 				5        
       );
 
       directive_failed( status, "task create" );
 
-      printk(" CPU %" PRIu32 " start task TA%c\n", cpu_self, 'T');
-      status = rtems_task_start( id, Test_task1, 1 );
-      directive_failed( status, "task start" );
-
       status = _Scheduler_pfair_SMP_Task_create(
         rtems_build_name( 'T', 'A', 'U', ' ' ),
         4,
         RTEMS_MINIMUM_STACK_SIZE,
-        RTEMS_TIMESLICE,
+        RTEMS_DEFAULT_MODES | RTEMS_TIMESLICE,
         RTEMS_DEFAULT_ATTRIBUTES,
-        &id,
+        &id2,
         10,
 				3
       );
 
       directive_failed( status, "task create" );
 
-      printk(" CPU %" PRIu32 " start task TA%c\n", cpu_self, 'U');
-      status = rtems_task_start( id, Test_task2, 2 );
+      //printk(" CPU %" PRIu32 " start task TA%c\n", cpu_self, 'T');
+      status = rtems_task_start( id1, Test_task1, 1 );
       directive_failed( status, "task start" );
 
-      //status = rtems_task_delete( RTEMS_SELF );
-      rtems_task_wake_after(0);
-  asm volatile ("gie");
+      //printk(" CPU %" PRIu32 " start task TA%c\n", cpu_self, 'U');
+      status = rtems_task_start( id2, Test_task2, 2 );
+      directive_failed( status, "task start" );
+
+      status = rtems_task_delete( RTEMS_SELF );
+      //rtems_task_wake_after(0);
+  //asm volatile ("gie");
       //rtems_test_exit( 0 );
 }
 
