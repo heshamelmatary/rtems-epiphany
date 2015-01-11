@@ -126,8 +126,13 @@ static void _Scheduler_pfair_SMP_Allocate_processor(
   if ( heir != victim ) {
       const Per_CPU_Control *cpu_of_executing = _Per_CPU_Get();
     heir->Scheduler.cpu = cpu_of_victim;
-    cpu_of_victim->heir = heir;
-    cpu_of_victim->dispatch_necessary = true;
+    
+    if (cpu_of_victim->executing->current_priority > heir->current_priority)
+    {
+      cpu_of_victim->heir = heir;
+      cpu_of_victim->dispatch_necessary = true;
+    }
+    
     if ( cpu_of_victim != cpu_of_executing ) {
       _Per_CPU_Send_interrupt( cpu_of_victim );
     }
@@ -253,7 +258,7 @@ static void _Scheduler_pfair_SMP_Enqueue_ordered(
           lowest_scheduled
         );
      } else {
-      _Scheduler_pfair_SMP_Insert( &self->Ready, thread, node);
+      _Scheduler_pfair_SMP_Insert( &self->Ready, thread, node_thread);
       }
 }
 
@@ -272,31 +277,6 @@ void _Scheduler_pfair_SMP_Enqueue_priority_fifo(Scheduler_Context *context, Thre
 void _Scheduler_pfair_SMP_Enqueue_priority_lifo(Scheduler_Context *context, Thread_Control *thread )
 {
   _Scheduler_pfair_SMP_Enqueue_priority_fifo(context, thread);
-}
-
-void _Scheduler_pfair_SMP_Extract(Scheduler_Control *scheduler, Thread_Control *thread )
-{
-  Scheduler_pfair_SMP_Context *self =
-    _Scheduler_pfair_SMP_Get_self( scheduler );
-  
-  Scheduler_SMP_Context *smp_self = _Scheduler_SMP_Get_self( self );
-  
-  _Chain_Extract_unprotected( &thread->Object.Node );
-  //_SMP_lock_Acquire(&self->smp_lock_ready_queue);
-  
-  //if ( thread->is_scheduled ) {
-    RBTree_Node *first = _RBTree_First(&self->Ready, RBT_LEFT);
-    Thread_Control *highest_ready = 
-       RTEMS_CONTAINER_OF( first, Thread_Control, RBNode );
-
-    _Scheduler_pfair_SMP_Allocate_processor( highest_ready, thread );
-
-    _Scheduler_pfair_SMP_Move_from_ready_to_scheduled(
-	      self,
-      	&smp_self->Scheduled,
-      	highest_ready
-    );
- // }
 }
 
 void _Scheduler_pfair_SMP_Yield(const Scheduler_Control *scheduler, Thread_Control *thread )
@@ -320,13 +300,19 @@ static void  _Scheduler_pfair_SMP_Schedule_highest_ready(
 {
   Thread_Control *highest_ready =  _Scheduler_pfair_SMP_Get_highest_ready(context);
   Scheduler_SMP_Context *smp_self = _Scheduler_SMP_Get_self( context );
- _Scheduler_pfair_SMP_Allocate_processor(highest_ready, victim);
- _Scheduler_pfair_SMP_Move_from_ready_to_scheduled(
-  context,
-  &smp_self->Scheduled,
-  highest_ready);
   
-  _Thread_Dispatch_update_heir( _Per_CPU_Get(), _Per_CPU_Get(), highest_ready ); /* FIXME */
+  if(_Per_CPU_Get()->executing->current_priority > highest_ready->current_priority)
+  {
+    _Scheduler_pfair_SMP_Allocate_processor(highest_ready, victim);
+    _Scheduler_pfair_SMP_Move_from_ready_to_scheduled(
+      context,
+      &smp_self->Scheduled,
+      highest_ready);
+  
+  }
+  /*TODO: Check for both cpu_scheduled and victim */
+  
+    //_Thread_Dispatch_update_heir( _Per_CPU_Get(), _Per_CPU_Get(), highest_ready ); /* FIXME */
 }
 
 static void _Scheduler_pfair_SMP_helper_Schedule(
@@ -340,6 +326,43 @@ static void _Scheduler_pfair_SMP_helper_Schedule(
     );
     
  
+}
+
+void _Scheduler_pfair_SMP_Extract(Scheduler_Control *scheduler, Thread_Control *thread )
+{
+  Scheduler_pfair_SMP_Context *self =
+    _Scheduler_pfair_SMP_Get_self( scheduler );
+  
+  Scheduler_SMP_Context *smp_self = _Scheduler_SMP_Get_self( self );
+  
+  Per_CPU_Control *cpu = thread->Scheduler.cpu;
+  
+  //_SMP_lock_Acquire(&self->smp_lock_ready_queue);
+  
+  //if ( thread->is_scheduled ) {
+    //RBTree_Node *first = _RBTree_First(&self->Ready, RBT_LEFT);
+    //Thread_Control *highest_ready = 
+       //RTEMS_CONTAINER_OF( first, Thread_Control, RBNode );
+    
+    //_Scheduler_pfair_SMP_Schedule_highest_ready(self, thread);
+    
+    if (cpu->executing == thread)
+    {
+      _Chain_Extract_unprotected( &thread->Object.Node );
+      cpu->heir = _Scheduler_pfair_SMP_Get_highest_ready(self);
+      cpu->dispatch_necessary = true;
+    }
+    
+    //_RBTree_Extract( &self->Ready, &thread->RBNode );
+    
+    /*_Scheduler_pfair_SMP_Allocate_processor( highest_ready, thread );
+
+    _Scheduler_pfair_SMP_Move_from_ready_to_scheduled(
+	      self,
+      	&smp_self->Scheduled,
+      	highest_ready
+    );*/
+ // }
 }
 
 void _Scheduler_pfair_SMP_Schedule(const Scheduler_Control *scheduler, Thread_Control *thread )
@@ -377,6 +400,8 @@ Scheduler_Void_or_thread _Scheduler_pfair_SMP_Change_priority(
   //Scheduler_EDF_Node *node = _Scheduler_EDF_Thread_get_node( the_thread );
   
   _RBTree_Extract( &context->Ready, &the_thread->RBNode );
+  
+  /* TODO: If it's running now, it should not be on the ready queue */
   _RBTree_Insert(
     &context->Ready,
     &the_thread->RBNode,
@@ -420,9 +445,12 @@ Thread_Control *_Scheduler_pfair_SMP_Unblock(
 
   _Scheduler_pfair_SMP_Enqueue_priority_fifo(context, thread);
   
-  Thread_Control *highest_ready = _Scheduler_pfair_SMP_Get_highest_ready(context);
+  //Thread_Control *highest_ready = _Scheduler_pfair_SMP_Get_highest_ready(context);
   
-  _Thread_Dispatch_update_heir( _Per_CPU_Get(), _Per_CPU_Get(), highest_ready );
+  _Scheduler_pfair_SMP_Schedule_highest_ready(
+    context,
+    _Per_CPU_Get()->executing /* FIXME: CPU of unblocked thread */
+  );
 }
 
 /** Calculate sub-task deadline */
