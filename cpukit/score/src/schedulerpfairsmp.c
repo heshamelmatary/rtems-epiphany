@@ -351,17 +351,20 @@ void _Scheduler_pfair_SMP_Extract(Scheduler_Control *scheduler, Thread_Control *
       _Chain_Extract_unprotected( &thread->Object.Node );
       cpu->heir = _Scheduler_pfair_SMP_Get_highest_ready(self);
       cpu->dispatch_necessary = true;
+      
+      _Scheduler_pfair_SMP_Move_from_ready_to_scheduled(
+	      self,
+      	&smp_self->Scheduled,
+      	cpu->heir
+    );
+    
     }
     
     //_RBTree_Extract( &self->Ready, &thread->RBNode );
     
     /*_Scheduler_pfair_SMP_Allocate_processor( highest_ready, thread );
-
-    _Scheduler_pfair_SMP_Move_from_ready_to_scheduled(
-	      self,
-      	&smp_self->Scheduled,
-      	highest_ready
-    );*/
+    */
+    
  // }
 }
 
@@ -397,17 +400,25 @@ Scheduler_Void_or_thread _Scheduler_pfair_SMP_Change_priority(
 {
   Scheduler_pfair_SMP_Context *context =
     _Scheduler_pfair_SMP_Get_context( scheduler );
+    
+  Per_CPU_Control *cpu = the_thread->Scheduler.cpu;
   //Scheduler_EDF_Node *node = _Scheduler_EDF_Thread_get_node( the_thread );
   
-  _RBTree_Extract( &context->Ready, &the_thread->RBNode );
+  if (cpu->executing != the_thread)
+  {
+    _RBTree_Extract( &context->Ready, &the_thread->RBNode );
   
-  /* TODO: If it's running now, it should not be on the ready queue */
-  _RBTree_Insert(
-    &context->Ready,
-    &the_thread->RBNode,
-    _Scheduler_pfair_SMP_Compare,
-    false
-  );
+    _RBTree_Insert(
+      &context->Ready,
+      &the_thread->RBNode,
+      _Scheduler_pfair_SMP_Compare,
+      false
+    );
+  } else {
+    /* It's executing now, remove it from scheduled chain and ready again */
+    _Scheduler_pfair_SMP_Move_from_scheduled_to_ready(context, &context->Ready, the_thread);
+  }
+  /* else, yield processor and schedule highest ready */
 
   SCHEDULER_RETURN_VOID_OR_NULL;
 }
