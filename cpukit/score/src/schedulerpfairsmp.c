@@ -333,6 +333,8 @@ void _Scheduler_pfair_SMP_Extract(Scheduler_Control *scheduler, Thread_Control *
 {
   Scheduler_pfair_SMP_Context *self = _Scheduler_pfair_SMP_Get_context( scheduler );
   
+  Scheduler_Context *context = _Scheduler_Get_context( scheduler );
+  
   Scheduler_SMP_Context *smp_self = _Scheduler_SMP_Get_self( self );
   
   Per_CPU_Control *cpu = thread->Scheduler.cpu;
@@ -353,12 +355,14 @@ void _Scheduler_pfair_SMP_Extract(Scheduler_Control *scheduler, Thread_Control *
       cpu->dispatch_necessary = true;
       
       _Scheduler_pfair_SMP_Move_from_ready_to_scheduled(
-	      self,
+	      context,
       	&smp_self->Scheduled,
       	cpu->heir
     );
     
     }
+    
+    //_Scheduler_pfair_SMP_Schedule_highest_ready(context, thread);
     
     //_RBTree_Extract( &self->Ready, &thread->RBNode );
     
@@ -563,6 +567,9 @@ rtems_status_code _Scheduler_pfair_SMP_Task_create(
   Priority_Control         core_priority;
   RTEMS_API_Control       *api;
   ASR_Information         *asr;
+  ISR_Level               level;
+  
+  _ISR_Disable( level );
   
   initial_modes = RTEMS_DEFAULT_MODES | RTEMS_TIMESLICE; 
    
@@ -669,6 +676,8 @@ rtems_status_code _Scheduler_pfair_SMP_Task_create(
   *id = the_thread->Object.id;
   
   _Objects_Allocator_unlock();
+  
+  _ISR_Enable( level );
   return RTEMS_SUCCESSFUL;
 }
 /*
