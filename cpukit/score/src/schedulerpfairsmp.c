@@ -167,7 +167,7 @@ static Thread_Control *_Scheduler_pfair_SMP_Get_highest_ready(
   //_SMP_lock_Acquire(&self->smp_lock_ready_queue);
   if ( !_RBTree_Is_empty(&self->Ready) ) {
 
-    RBTree_Node *first = _RBTree_First( &self->Ready, RBT_LEFT );
+    RBTree_Node *first = _RBTree_First( &self->Ready, RBT_RIGHT );
     highest_ready = RTEMS_CONTAINER_OF( first, Thread_Control, RBNode );
   }
   //_SMP_lock_Release(&self->smp_lock_ready_queue);
@@ -351,7 +351,7 @@ void _Scheduler_pfair_SMP_Extract(Scheduler_Control *scheduler, Thread_Control *
     if (cpu->executing == thread)
     {
       _Chain_Extract_unprotected( &thread->Object.Node );
-      cpu->heir = _Scheduler_pfair_SMP_Get_highest_ready(self);
+      cpu->heir = _Scheduler_pfair_SMP_Get_highest_ready(context);
       cpu->dispatch_necessary = true;
       
       _Scheduler_pfair_SMP_Move_from_ready_to_scheduled(
@@ -567,9 +567,6 @@ rtems_status_code _Scheduler_pfair_SMP_Task_create(
   Priority_Control         core_priority;
   RTEMS_API_Control       *api;
   ASR_Information         *asr;
-  ISR_Level               level;
-  
-  _ISR_Disable( level );
   
   initial_modes = RTEMS_DEFAULT_MODES | RTEMS_TIMESLICE; 
    
@@ -677,7 +674,6 @@ rtems_status_code _Scheduler_pfair_SMP_Task_create(
   
   _Objects_Allocator_unlock();
   
-  _ISR_Enable( level );
   return RTEMS_SUCCESSFUL;
 }
 /*
