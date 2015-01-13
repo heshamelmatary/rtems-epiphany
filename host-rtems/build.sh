@@ -26,4 +26,11 @@ e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/tm06.exe ex
 e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/tmoverhd.exe exe/tmoverhd.srec
 e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smpload01.exe exe/smpload01.srec
 e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smpscheduler01.exe exe/smpscheduler01.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/spedfsched01.exe exe/spedfsched01.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/spratemon_err01.exe exe/spratemon_err01.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/rtmonuse.exe exe/rtmonuse.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/sp46.exe exe/sp46.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/spedfsched02.exe exe/spedfsched02.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smpschedpfair01.exe exe/smpschedpfair01.srec
+e-objcopy --srec-forceS3 --output-target srec /home/linaro/Downloads/smpschedpfair02.exe exe/smpschedpfair02.srec
 
