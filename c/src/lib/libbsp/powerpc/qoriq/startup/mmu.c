@@ -7,10 +7,10 @@
  */
 
 /*
- * Copyright (c) 2011 embedded brains GmbH.  All rights reserved.
+ * Copyright (c) 2011-2015 embedded brains GmbH.  All rights reserved.
  *
  *  embedded brains GmbH
- *  Obere Lagerstr. 30
+ *  Dornierstr. 4
  *  82178 Puchheim
  *  Germany
  *  <rtems@embedded-brains.de>
@@ -36,6 +36,21 @@ static uint32_t TEXT power_of_two(uint32_t val)
 		alignment <<= QORIQ_MMU_POWER_STEP;
 		test_power += QORIQ_MMU_POWER_STEP;
 	}
+
+	return power;
+}
+
+static uint32_t TEXT max_power_of_two(uint32_t val)
+{
+	uint32_t test_power = QORIQ_MMU_MIN_POWER;
+	uint32_t power = test_power;
+	uint32_t max = 1U << test_power;
+
+	do {
+		power = test_power;
+		max <<= QORIQ_MMU_POWER_STEP;
+		test_power += QORIQ_MMU_POWER_STEP;
+	} while (test_power <= QORIQ_MMU_MAX_POWER && max <= val);
 
 	return power;
 }
@@ -150,7 +165,7 @@ static void TEXT align(qoriq_mmu_context *self, uint32_t alignment)
 
 static bool TEXT is_full(qoriq_mmu_context *self)
 {
-	return self->count >= QORIQ_MMU_ENTRY_COUNT;
+	return self->count >= QORIQ_TLB1_ENTRY_COUNT;
 }
 
 static void TEXT append(qoriq_mmu_context *self, const qoriq_mmu_entry *new_entry)
@@ -165,7 +180,8 @@ bool TEXT qoriq_mmu_add(
 	uint32_t last,
 	uint32_t mas1,
 	uint32_t mas2,
-	uint32_t mas3
+	uint32_t mas3,
+	uint32_t mas7
 )
 {
 	bool ok = true;
@@ -181,7 +197,8 @@ bool TEXT qoriq_mmu_add(
 				.last = last,
 				.mas1 = mas1,
 				.mas2 = mas2,
-				.mas3 = mas3
+				.mas3 = mas3,
+				.mas7 = mas7
 			};
 			append(self, &new_entry);
 		} else {
@@ -206,9 +223,8 @@ static bool TEXT split(qoriq_mmu_context *self, qoriq_mmu_entry *cur)
 	uint32_t end = cur->last + 1;
 	uint32_t size = end - begin;
 	uint32_t begin_power = power_of_two(begin);
-	uint32_t end_power = power_of_two(end);
-	uint32_t size_power = power_of_two(size);
-	uint32_t power = min(begin_power, min(end_power, size_power));
+	uint32_t size_power = max_power_of_two(size);
+	uint32_t power = min(begin_power, size_power);
 	uint32_t split_size = power < 32 ? (1U << power) : 0;
 	uint32_t split_pos = begin + split_size;
 
@@ -269,7 +285,15 @@ void TEXT qoriq_mmu_write_to_tlb1(qoriq_mmu_context *self, int first_tlb)
 		uint32_t tsize = (power_of_two(size) - 10) / 2;
 		int tlb = first_tlb + i;
 
-		qoriq_tlb1_write(tlb, cur->mas1, cur->mas2, cur->mas3, ea, tsize);
+		qoriq_tlb1_write(
+			tlb,
+			cur->mas1,
+			cur->mas2,
+			cur->mas3,
+			cur->mas7,
+			ea,
+			tsize
+		);
 	}
 }
 

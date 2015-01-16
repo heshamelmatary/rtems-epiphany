@@ -36,6 +36,7 @@
 
 #if defined(RTEMS_SMP)
   #include <rtems/score/cpuset.h>
+    #include <rtems/score/schedulerpfairtypes.h>
 #endif
 
 struct Scheduler_Control;
@@ -652,6 +653,9 @@ struct Thread_Control_struct {
 
   Thread_Capture_control                Capture;
 
+  //#if defined(CONFIGURE_SCHEDULER_PFAIR_SMP)
+    Scheduler_pfair_SMP_Per_Thread pfair_per_thread_info;
+  //#endif
   /**
    * @brief Variable length array of user extension pointers.
    *

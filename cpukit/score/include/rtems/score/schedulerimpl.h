@@ -236,7 +236,7 @@ RTEMS_INLINE_ROUTINE void _Scheduler_Ask_for_help_if_necessary(
       node->help_state != SCHEDULER_HELP_ACTIVE_RIVAL
         || _Scheduler_Node_get_user( node ) != needs_help
     ) {
-      _Scheduler_Ask_for_help( needs_help );
+      //_Scheduler_Ask_for_help( needs_help );
     }
   }
 }
@@ -261,7 +261,7 @@ RTEMS_INLINE_ROUTINE void _Scheduler_Yield( Thread_Control *the_thread )
   ( *scheduler->Operations.yield )( scheduler, the_thread );
 
 #if defined(RTEMS_SMP)
-  _Scheduler_Ask_for_help_if_necessary( needs_help );
+  //_Scheduler_Ask_for_help_if_necessary( needs_help );
 #endif
 }
 
@@ -303,7 +303,7 @@ RTEMS_INLINE_ROUTINE void _Scheduler_Unblock( Thread_Control *the_thread )
   ( *scheduler->Operations.unblock )( scheduler, the_thread );
 
 #if defined(RTEMS_SMP)
-  _Scheduler_Ask_for_help_if_necessary( needs_help );
+  //_Scheduler_Ask_for_help_if_necessary( needs_help );
 #endif
 }
 
@@ -340,7 +340,7 @@ RTEMS_INLINE_ROUTINE void _Scheduler_Change_priority(
   );
 
 #if defined(RTEMS_SMP)
-  _Scheduler_Ask_for_help_if_necessary( needs_help );
+  //_Scheduler_Ask_for_help_if_necessary( needs_help );
 #endif
 }
 

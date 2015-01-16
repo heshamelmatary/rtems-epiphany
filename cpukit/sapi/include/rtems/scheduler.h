@@ -91,6 +91,26 @@
     }
 #endif
 
+#ifdef CONFIGURE_SCHEDULER_PFAIR_SMP
+  #include <rtems/score/schedulerpfairsmp.h>
+
+  #define RTEMS_SCHEDULER_CONTEXT_PFAIR_SMP_NAME( name ) \
+    RTEMS_SCHEDULER_CONTEXT_NAME( pfair_SMP_ ## name )
+
+  #define RTEMS_SCHEDULER_CONTEXT_PFAIR_SMP( name, prio_count ) \
+    static struct { \
+      Scheduler_pfair_SMP_Context Base; \
+      Chain_Control                  Ready[ ( prio_count ) ]; \
+    } RTEMS_SCHEDULER_CONTEXT_PFAIR_SMP_NAME( name )
+
+  #define RTEMS_SCHEDULER_CONTROL_PFAIR_SMP( name, obj_name ) \
+    { \
+      &RTEMS_SCHEDULER_CONTEXT_PFAIR_SMP_NAME( name ).Base.Base.Base, \
+      SCHEDULER_PFAIR_SMP_ENTRY_POINTS, \
+      ( obj_name ) \
+    }
+#endif
+
 #ifdef CONFIGURE_SCHEDULER_PRIORITY
   #include <rtems/score/schedulerpriority.h>
 

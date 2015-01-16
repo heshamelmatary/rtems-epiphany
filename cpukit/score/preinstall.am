@@ -219,6 +219,10 @@ $(PROJECT_INCLUDE)/rtems/score/scheduleredfimpl.h: include/rtems/score/scheduler
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/scheduleredfimpl.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/scheduleredfimpl.h
 
+$(PROJECT_INCLUDE)/rtems/score/schedulerpfairsmp.h: include/rtems/score/schedulerpfairsmp.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerpfairsmp.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerpfairsmp.h
+
 $(PROJECT_INCLUDE)/rtems/score/schedulerpriority.h: include/rtems/score/schedulerpriority.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerpriority.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerpriority.h
@@ -405,6 +409,14 @@ PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/atomic.h
 $(PROJECT_INCLUDE)/rtems/score/cpustdatomic.h: include/rtems/score/cpustdatomic.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/cpustdatomic.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/cpustdatomic.h
+
+$(PROJECT_INCLUDE)/rtems/score/schedulerpfairsmpimpl.h: include/rtems/score/schedulerpfairsmpimpl.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerpfairsmpimpl.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerpfairsmpimpl.h
+
+$(PROJECT_INCLUDE)/rtems/score/schedulerpfairtypes.h: include/rtems/score/schedulerpfairtypes.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerpfairtypes.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerpfairtypes.h
 
 $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h: include/rtems/score/schedulerprioritysmpimpl.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h

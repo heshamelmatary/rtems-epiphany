@@ -19,7 +19,9 @@
 
 #include <rtems.h>
 #include <rtems/bspIo.h>
-#include <rtems/keyboard.h>
+#if BSP_ENABLE_VGA
+  #include <rtems/keyboard.h>
+#endif
 #include <bsp.h>
 #include <libchip/serial.h>
 #include <libchip/ns16550.h>
@@ -27,36 +29,53 @@
 
 rtems_device_minor_number         BSPPrintkPort = 0;
 
-int ns16550_inbyte_nonblocking_polled(
-  int minor
-);
+#if (BSP_IS_EDISON == 1)
+void edison_write_polled(int minor, char cChar); /* XXX */
+int edison_inbyte_nonblocking_polled(int minor);
+#endif
+
+#if BSP_ENABLE_COM1_COM4
+int ns16550_inbyte_nonblocking_polled( int minor );
+#endif
 
 void BSP_outch(char ch);
 int BSP_inch(void);
 
 void BSP_outch(char ch)
 {
-  if ( BSPPrintkPort == BSP_CONSOLE_VGA ) {
-    _IBMPC_outch( ch );
-  } else {
-    console_tbl *cptr;
+  #if BSP_ENABLE_VGA
+    if ( BSPPrintkPort == BSP_CONSOLE_VGA ) {
+      _IBMPC_outch( ch );
+      return;
+    }
+  #endif
+  console_tbl *cptr;
 
-    cptr = &Console_Configuration_Ports[BSPPrintkPort];
-    cptr->pDeviceFns->deviceWritePolled( BSPPrintkPort, ch );
-  }
+  cptr = &Console_Configuration_Ports[BSPPrintkPort];
+  cptr->pDeviceFns->deviceWritePolled( BSPPrintkPort, ch );
 }
 
 int BSP_inch(void) 
 {
-  int           result;
+  int           result = -1;
 
-  if ( BSPPrintkPort == BSP_CONSOLE_VGA ) {
-    result = BSP_wait_polled_input();
-  } else {
+  #if BSP_ENABLE_VGA
+    if ( BSPPrintkPort == BSP_CONSOLE_VGA ) {
+      result = BSP_wait_polled_input();
+    } else
+  #endif
+  #if BSP_ENABLE_COM1_COM4
+    {
+      do {
+        result = ns16550_inbyte_nonblocking_polled( BSPPrintkPort );
+      } while (result == -1);
+    }
+  #endif
+  #if (BSP_IS_EDISON == 1)
     do {
-      result = ns16550_inbyte_nonblocking_polled( BSPPrintkPort );
+      result = edison_inbyte_nonblocking_polled( BSPPrintkPort );
     } while (result == -1);
-  }
+  #endif
   return result;
 }
 

@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (c) 2011-2013 embedded brains GmbH.  All rights reserved.
+ * Copyright (c) 2011-2015 embedded brains GmbH.  All rights reserved.
  *
  *  embedded brains GmbH
  *  Dornierstr. 4
@@ -33,6 +33,7 @@ typedef struct {
 	uint32_t size;
 	uint32_t mas2;
 	uint32_t mas3;
+	uint32_t mas7;
 } entry;
 
 #define ENTRY_X(b, s) { \
@@ -66,7 +67,8 @@ typedef struct {
 	.begin = (uint32_t) b, \
 	.size = (uint32_t) s, \
 	.mas2 = FSL_EIS_MAS2_I | FSL_EIS_MAS2_G, \
-	.mas3 = FSL_EIS_MAS3_SR | FSL_EIS_MAS3_SW \
+	.mas3 = FSL_EIS_MAS3_SR | FSL_EIS_MAS3_SW, \
+	.mas7 = QORIQ_MMU_DEVICE_MAS7 \
 }
 
 static const entry DATA config [] = {
@@ -103,7 +105,7 @@ void TEXT qoriq_mmu_config(int first_tlb, int scratch_tlb)
 
 	qoriq_mmu_context_init(&context);
 
-	for (i = 0; i < 16; ++i) {
+	for (i = 0; i < QORIQ_TLB1_ENTRY_COUNT; ++i) {
 		if (i != scratch_tlb) {
 			qoriq_tlb1_invalidate(i);
 		}
@@ -118,11 +120,12 @@ void TEXT qoriq_mmu_config(int first_tlb, int scratch_tlb)
 				cur->begin + cur->size - 1,
 				0,
 				cur->mas2,
-				cur->mas3
+				cur->mas3,
+				cur->mas7
 			);
 		}
 	}
 
-	qoriq_mmu_partition(&context, 8);
+	qoriq_mmu_partition(&context, (3 * QORIQ_TLB1_ENTRY_COUNT) / 4);
 	qoriq_mmu_write_to_tlb1(&context, first_tlb);
 }
