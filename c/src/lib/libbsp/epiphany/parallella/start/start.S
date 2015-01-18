@@ -59,6 +59,7 @@
 	.global .clock_isr;
 	.global __init;
 	.global __fini;
+	.global _asm_timer1_get;
 	
 	.type   _external_start, %function
 	
@@ -230,7 +231,11 @@ _jump_to_c:
 .balign 4
 .type   .clock_isr, %function
 .clock_isr:
-  gid;                               
+  gid;
+  mov  r63, %low(0xFFFFFFFF)
+  movt r63, %high(0xFFFFFFFF)
+  
+  movts ctimer1, r63                      
   add sp, sp, #-8;                   
   str r62, [sp, #4];                 
   str r63, [sp, #8];                 
@@ -278,3 +283,10 @@ secondary_processor_wait:
   rti
  _wait:
   idle
+  
+ .balign 4;
+_asm_timer1_get:
+        mov   r0, 0x00000000
+        movts config, r0
+        movfs r0, ctimer1;
+        rts;

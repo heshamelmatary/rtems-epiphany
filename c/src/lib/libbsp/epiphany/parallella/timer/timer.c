@@ -42,6 +42,9 @@ void benchmark_timer_initialize( void )
      
   table[TIMER1] = benchmark_timer1_interrupt_handler;
    
+  asm volatile ("mov r0, 0x0; \n \t"
+                "movts config, r0; \t \n"::);
+                
   /* Embed assembly code for setting timer1 */
   asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
 
@@ -74,12 +77,11 @@ void benchmark_timer_initialize( void )
 
 benchmark_timer_t benchmark_timer_read( void )
 {
-  uint32_t timer_val;
+  uint32_t timer_val = 0;
   uint32_t total;
   
-  asm volatile ("movfs %0 ,ctimer1; \t \n" : "=r" (timer_val):);
-  
-  total = (0xFFFFFFFF - timer_val) / 1000; /* Convert to uS */
+  total = (0xFFFFFFFF - asm_timer1_get()); /* Convert to uS */
+  //total = total / 1000;
   
   if ( benchmark_timer_find_average_overhead == true )
     return total;          /* in XXX microsecond units */
