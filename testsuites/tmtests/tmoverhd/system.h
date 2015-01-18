@@ -50,6 +50,8 @@ extern rtems_status_code Empty_directive(void);
 
 #define CONFIGURE_RTEMS_INIT_TASKS_TABLE
 
+#define OPERATION_COUNT 0
+
 #include <rtems/confdefs.h>
 
 /* end of include file */
