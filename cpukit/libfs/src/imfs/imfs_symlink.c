@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+static const IMFS_node_control IMFS_node_control_sym_link;
+
 int IMFS_symlink(
   const rtems_filesystem_location_info_t *parentloc,
   const char *name,
@@ -30,14 +32,14 @@ int IMFS_symlink(
   const char *target
 )
 {
-  IMFS_types_union   info;
-  IMFS_jnode_t      *new_node;
+  char         *dup_target;
+  IMFS_jnode_t *new_node;
 
   /*
    * Duplicate link name
    */
-  info.sym_link.name = strdup(target);
-  if (info.sym_link.name == NULL) {
+  dup_target = strdup(target);
+  if (dup_target == NULL) {
     rtems_set_errno_and_return_minus_one(ENOMEM);
   }
 
@@ -46,17 +48,93 @@ int IMFS_symlink(
    */
   new_node = IMFS_create_node(
     parentloc,
-    IMFS_SYM_LINK,
+    &IMFS_node_control_sym_link,
     name,
     namelen,
     ( S_IFLNK | ( S_IRWXU | S_IRWXG | S_IRWXO )),
-    &info
+    dup_target
   );
 
   if (new_node == NULL) {
-    free(info.sym_link.name);
+    free(dup_target);
     rtems_set_errno_and_return_minus_one(ENOMEM);
   }
 
   return 0;
 }
+
+ssize_t IMFS_readlink(
+  const rtems_filesystem_location_info_t *loc,
+  char *buf,
+  size_t bufsize
+)
+{
+  IMFS_sym_link_t   *sym_link;
+  ssize_t            i;
+
+  sym_link = loc->node_access;
+
+  for( i=0; ((i<bufsize) && (sym_link->name[i] != '\0')); i++ )
+    buf[i] = sym_link->name[i];
+
+  return i;
+}
+
+static int IMFS_stat_sym_link(
+  const rtems_filesystem_location_info_t *loc,
+  struct stat *buf
+)
+{
+  const IMFS_sym_link_t *sym_link = loc->node_access;
+
+  buf->st_size = strlen( sym_link->name );
+
+  return IMFS_stat( loc, buf );
+}
+
+static const rtems_filesystem_file_handlers_r IMFS_link_handlers = {
+  .open_h = rtems_filesystem_default_open,
+  .close_h = rtems_filesystem_default_close,
+  .read_h = rtems_filesystem_default_read,
+  .write_h = rtems_filesystem_default_write,
+  .ioctl_h = rtems_filesystem_default_ioctl,
+  .lseek_h = rtems_filesystem_default_lseek,
+  .fstat_h = IMFS_stat_sym_link,
+  .ftruncate_h = rtems_filesystem_default_ftruncate,
+  .fsync_h = rtems_filesystem_default_fsync_or_fdatasync,
+  .fdatasync_h = rtems_filesystem_default_fsync_or_fdatasync,
+  .fcntl_h = rtems_filesystem_default_fcntl,
+  .kqfilter_h = rtems_filesystem_default_kqfilter,
+  .poll_h = rtems_filesystem_default_poll,
+  .readv_h = rtems_filesystem_default_readv,
+  .writev_h = rtems_filesystem_default_writev
+};
+
+static IMFS_jnode_t *IMFS_node_initialize_sym_link(
+  IMFS_jnode_t *node,
+  void *arg
+)
+{
+  IMFS_sym_link_t *sym_link = (IMFS_sym_link_t *) node;
+
+  sym_link->name = arg;
+
+  return node;
+}
+
+static void IMFS_node_destroy_sym_link( IMFS_jnode_t *node )
+{
+  IMFS_sym_link_t *sym_link = (IMFS_sym_link_t *) node;
+
+  free( sym_link->name );
+
+  IMFS_node_destroy_default( node );
+}
+
+static const IMFS_node_control IMFS_node_control_sym_link = {
+  .handlers = &IMFS_link_handlers,
+  .node_size = sizeof(IMFS_sym_link_t),
+  .node_initialize = IMFS_node_initialize_sym_link,
+  .node_remove = IMFS_node_remove_default,
+  .node_destroy = IMFS_node_destroy_sym_link
+};

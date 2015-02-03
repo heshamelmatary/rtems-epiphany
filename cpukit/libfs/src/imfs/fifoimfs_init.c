@@ -31,7 +31,6 @@ const rtems_filesystem_operations_table fifoIMFS_ops = {
   .eval_path_h = IMFS_eval_path,
   .link_h = IMFS_link,
   .are_nodes_equal_h = rtems_filesystem_default_are_nodes_equal,
-  .node_type_h = IMFS_node_type,
   .mknod_h = IMFS_mknod,
   .rmnod_h = IMFS_rmnod,
   .fchmod_h = IMFS_fchmod,
@@ -53,10 +52,7 @@ static const IMFS_node_control *const
   IMFS_fifo_node_controls [IMFS_TYPE_COUNT] = {
   [IMFS_DIRECTORY] = &IMFS_node_control_directory,
   [IMFS_DEVICE] = &IMFS_node_control_device,
-  [IMFS_HARD_LINK] = &IMFS_node_control_hard_link,
-  [IMFS_SYM_LINK] = &IMFS_node_control_sym_link,
   [IMFS_MEMORY_FILE] = &IMFS_node_control_memfile,
-  [IMFS_LINEAR_FILE] = &IMFS_node_control_linfile,
   [IMFS_FIFO] = &IMFS_node_control_fifo
 };
 

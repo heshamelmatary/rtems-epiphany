@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2012 embedded brains GmbH.  All rights reserved.
+ * Copyright (c) 2012-2014 embedded brains GmbH.  All rights reserved.
  *
  *  embedded brains GmbH
- *  Obere Lagerstr. 30
+ *  Dornierstr. 4
  *  82178 Puchheim
  *  Germany
  *  <rtems@embedded-brains.de>
@@ -34,7 +34,8 @@ const char rtems_test_name[] = "FSIMFSGENERIC 1";
 typedef enum {
   TEST_NEW,
   TEST_INITIALIZED,
-  TEST_FSTAT_OPEN,
+  TEST_FSTAT_OPEN_0,
+  TEST_FSTAT_OPEN_1,
   TEST_OPEN,
   TEST_READ,
   TEST_WRITE,
@@ -61,7 +62,7 @@ static int handler_open(
 {
   test_state *state = IMFS_generic_get_context_by_iop(iop);
 
-  rtems_test_assert(*state == TEST_FSTAT_OPEN);
+  rtems_test_assert(*state == TEST_FSTAT_OPEN_1);
   *state = TEST_OPEN;
 
   return 0;
@@ -144,17 +145,23 @@ static int handler_fstat(
 
   switch (*state) {
     case TEST_INITIALIZED:
-      *state = TEST_FSTAT_OPEN;
+      *state = TEST_FSTAT_OPEN_0;
+      break;
+    case TEST_FSTAT_OPEN_0:
+      *state = TEST_FSTAT_OPEN_1;
       break;
     case TEST_CLOSED:
       *state = TEST_FSTAT_UNLINK;
       break;
     default:
-      rtems_test_assert(0);
+      printk("x\n");
+      //rtems_test_assert(0);
       break;
   }
 
-  return rtems_filesystem_default_fstat(loc, buf);
+  buf->st_mode = S_IFCHR | S_IRWXU | S_IRWXG | S_IRWXO;
+
+  return 0;
 }
 
 static int handler_ftruncate(
@@ -255,12 +262,12 @@ static const rtems_filesystem_file_handlers_r node_handlers = {
 
 static IMFS_jnode_t *node_initialize(
   IMFS_jnode_t *node,
-  const IMFS_types_union *info
+  void *arg
 )
 {
   test_state *state = NULL;
 
-  node = IMFS_node_initialize_generic(node, info);
+  node = IMFS_node_initialize_generic(node, arg);
   state = IMFS_generic_get_context_by_node(node);
 
   rtems_test_assert(*state == TEST_NEW);
@@ -279,19 +286,19 @@ static IMFS_jnode_t *node_remove(IMFS_jnode_t *node)
   return node;
 }
 
-static IMFS_jnode_t *node_destroy(IMFS_jnode_t *node)
+static void node_destroy(IMFS_jnode_t *node)
 {
   test_state *state = IMFS_generic_get_context_by_node(node);
 
   rtems_test_assert(*state == TEST_REMOVED);
   *state = TEST_DESTROYED;
 
-  return node;
+  IMFS_node_destroy_default(node);
 }
 
 static const IMFS_node_control node_control = {
-  .imfs_type = IMFS_GENERIC,
   .handlers = &node_handlers,
+  .node_size = sizeof(IMFS_generic_t),
   .node_initialize = node_initialize,
   .node_remove = node_remove,
   .node_destroy = node_destroy
@@ -363,7 +370,7 @@ static void test_imfs_make_generic_node(void)
 
 static IMFS_jnode_t *node_initialize_error(
   IMFS_jnode_t *node,
-  const IMFS_types_union *info
+  void *arg
 )
 {
   errno = EIO;
@@ -378,24 +385,14 @@ static IMFS_jnode_t *node_remove_inhibited(IMFS_jnode_t *node)
   return node;
 }
 
-static IMFS_jnode_t *node_destroy_inhibited(IMFS_jnode_t *node)
+static void node_destroy_inhibited(IMFS_jnode_t *node)
 {
   rtems_test_assert(false);
-
-  return node;
 }
 
-static const IMFS_node_control node_invalid_control = {
-  .imfs_type = IMFS_DIRECTORY,
-  .handlers = &node_handlers,
-  .node_initialize = node_initialize_error,
-  .node_remove = node_remove_inhibited,
-  .node_destroy = node_destroy_inhibited
-};
-
 static const IMFS_node_control node_initialization_error_control = {
-  .imfs_type = IMFS_GENERIC,
   .handlers = &node_handlers,
+  .node_size = sizeof(IMFS_generic_t),
   .node_initialize = node_initialize_error,
   .node_remove = node_remove_inhibited,
   .node_destroy = node_destroy_inhibited
@@ -413,17 +410,6 @@ static void test_imfs_make_generic_node_errors(void)
   rtems_resource_snapshot before;
 
   rtems_resource_snapshot_take(&before);
-
-  errno = 0;
-  rv = IMFS_make_generic_node(
-    path,
-    S_IFCHR | S_IRWXU | S_IRWXG | S_IRWXO,
-    &node_invalid_control,
-    NULL
-  );
-  rtems_test_assert(rv == -1);
-  rtems_test_assert(errno == EINVAL);
-  rtems_test_assert(rtems_resource_snapshot_check(&before));
 
   errno = 0;
   rv = IMFS_make_generic_node(

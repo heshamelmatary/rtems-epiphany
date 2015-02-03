@@ -27,7 +27,6 @@ const rtems_filesystem_operations_table miniIMFS_ops = {
   .eval_path_h = IMFS_eval_path,
   .link_h = rtems_filesystem_default_link,
   .are_nodes_equal_h = rtems_filesystem_default_are_nodes_equal,
-  .node_type_h = IMFS_node_type,
   .mknod_h = IMFS_mknod,
   .rmnod_h = IMFS_rmnod,
   .fchmod_h = rtems_filesystem_default_fchmod,
@@ -49,10 +48,7 @@ static const IMFS_node_control *const
   IMFS_mini_node_controls [IMFS_TYPE_COUNT] = {
   [IMFS_DIRECTORY] = &IMFS_node_control_directory,
   [IMFS_DEVICE] = &IMFS_node_control_device,
-  [IMFS_HARD_LINK] = &IMFS_node_control_enosys,
-  [IMFS_SYM_LINK] = &IMFS_node_control_enosys,
   [IMFS_MEMORY_FILE] = &IMFS_node_control_memfile,
-  [IMFS_LINEAR_FILE] = &IMFS_node_control_linfile,
   [IMFS_FIFO] = &IMFS_node_control_enosys
 };
 
