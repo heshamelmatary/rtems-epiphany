@@ -1,0 +1,25 @@
+diff -Naur -x '*git*' -x '*ldlex.c' epiphany-binutils/bfd/config.bfd hesham-epiphany-binutils/bfd/config.bfd
+--- epiphany-binutils/bfd/config.bfd	2015-02-24 13:35:53.897186969 +0000
++++ hesham-epiphany-binutils/bfd/config.bfd	2015-02-24 09:03:03.085069872 +0000
+@@ -395,7 +395,7 @@
+     targ_defvec=bfd_elf32_d30v_vec
+     ;;
+ 
+-  epiphany-*-elf)
++  epiphany-*-elf | epiphany-*-rtems*)
+     targ_defvec=bfd_elf32_epiphany_vec
+     ;;
+ 
+diff -Naur -x '*git*' -x '*ldlex.c' epiphany-binutils/ld/configure.tgt hesham-epiphany-binutils/ld/configure.tgt
+--- epiphany-binutils/ld/configure.tgt	2015-02-24 13:35:55.267214363 +0000
++++ hesham-epiphany-binutils/ld/configure.tgt	2015-02-24 09:03:54.350094499 +0000
+@@ -157,7 +157,8 @@
+ 			;;
+ dlx-*-elf*)		targ_emul=elf32_dlx
+ 			;;
+-epiphany-*-elf)		targ_emul=elf32epiphany
++epiphany-*-elf | epiphany-*-rtems*)	
++    	targ_emul=elf32epiphany
+ 			targ_extra_emuls="elf32epiphany_4x4"
+ 			;;
+ fido*-*-elf*)		targ_emul=m68kelf ;;
