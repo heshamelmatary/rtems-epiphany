@@ -2577,40 +2577,6 @@ None.
 @c XXX - Please provide an example
 
 @c
-@c === CONFIGURE_USE_MINIIMFS_AS_BASE_SYSTEM ===
-@c
-@subsection Configure miniIMFS as Root File System
-
-@findex CONFIGURE_USE_MINIIMFS_AS_BASE_FILESYSTEM
-
-@table @b
-@item CONSTANT:
-@code{CONFIGURE_USE_MINIIMFS_AS_BASE_FILESYSTEM}
-
-@item DATA TYPE:
-Boolean feature macro.
-
-@item RANGE:
-Defined or undefined.
-
-@item DEFAULT VALUE:
-This is not defined by default. If no other root file system
-configuration parameters are specified, the IMFS will be used as the
-root file system.
-
-@end table
-
-@subheading DESCRIPTION:
-This configuration parameter is defined if the application wishes to use
-the reduced functionality miniIMFS as the root filesystem. This reduced
-version of the full IMFS does not include the capability to mount other
-file system types, but it does support directories, device nodes, and
-symbolic links.
-
-@subheading NOTES:
-The miniIMFS nodes and is smaller in executable code size than the full IMFS.
-
-@c
 @c === CONFIGURE_USE_DEVFS_AS_BASE_FILESYSTEM ===
 @c
 @subsection Configure devFS as Root File System
@@ -2709,6 +2675,381 @@ infrastructure necessary to support @code{printf()}.
 
 @subheading NOTES:
 None.
+
+@c
+@c === CONFIGURE_USE_MINIIMFS_AS_BASE_FILESYSTEM ===
+@c
+@subsection Use a Root IMFS with a Minimalistic Feature Set
+
+@findex CONFIGURE_USE_MINIIMFS_AS_BASE_FILESYSTEM
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_USE_MINIIMFS_AS_BASE_FILESYSTEM}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the following configuration
+options will be defined as well
+@itemize @bullet
+@item @code{CONFIGURE_IMFS_DISABLE_CHMOD},
+@item @code{CONFIGURE_IMFS_DISABLE_CHOWN},
+@item @code{CONFIGURE_IMFS_DISABLE_UTIME},
+@item @code{CONFIGURE_IMFS_DISABLE_LINK},
+@item @code{CONFIGURE_IMFS_DISABLE_SYMLINK},
+@item @code{CONFIGURE_IMFS_DISABLE_READLINK},
+@item @code{CONFIGURE_IMFS_DISABLE_RENAME}, and
+@item @code{CONFIGURE_IMFS_DISABLE_UNMOUNT}.
+@end itemize
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_CHOWN ===
+@c
+@subsection Disable Change Owner Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_CHOWN
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_CHOWN}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to change the
+owner is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_CHMOD ===
+@c
+@subsection Disable Change Mode Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_CHMOD
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_CHMOD}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to change the
+mode is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_UTIME ===
+@c
+@subsection Disable Change Times Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_UTIME
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_UTIME}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to change times
+is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_LINK ===
+@c
+@subsection Disable Create Hard Link Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_LINK
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_LINK}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to create hard
+links is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_SYMLINK ===
+@c
+@subsection Disable Create Symbolic Link Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_SYMLINK
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_SYMLINK}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to create
+symbolic links is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_READLINK ===
+@c
+@subsection Disable Read Symbolic Link Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_READLINK
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_READLINK}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to read symbolic
+links is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_RENAME ===
+@c
+@subsection Disable Rename Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_RENAME
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_RENAME}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to rename nodes
+is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_READDIR ===
+@c
+@subsection Disable Directory Read Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_READDIR
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_READDIR}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to read a
+directory is disabled in the root IMFS.  It is still possible to open nodes in
+a directory.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_MOUNT ===
+@c
+@subsection Disable Mount Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_MOUNT
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_MOUNT}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to mount other
+file systems is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_UNMOUNT ===
+@c
+@subsection Disable Unmount Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_UNMOUNT
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_UNMOUNT}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to unmount file
+systems is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_MKNOD ===
+@c
+@subsection Disable Make Nodes Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_MKNOD
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_MKNOD}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to make
+directories, devices, regular files and FIFOs is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_MKNOD_FILE ===
+@c
+@subsection Disable Make Files Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_MKNOD_FILE
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_MKNOD_FILE}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to make regular
+files is disabled in the root IMFS.
+
+@c
+@c === CONFIGURE_IMFS_DISABLE_RMNOD ===
+@c
+@subsection Disable Remove Nodes Support of Root IMFS
+
+@findex CONFIGURE_IMFS_DISABLE_RMNOD
+
+@table @b
+@item CONSTANT:
+@code{CONFIGURE_IMFS_DISABLE_RMNOD}
+
+@item DATA TYPE:
+Boolean feature macro.
+
+@item RANGE:
+Defined or undefined.
+
+@item DEFAULT VALUE:
+This is not defined by default.
+
+@end table
+
+@subheading DESCRIPTION:
+In case this configuration option is defined, then the support to remove nodes
+is disabled in the root IMFS.
 
 @c
 @c === Block Device Cache Configuration ===

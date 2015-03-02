@@ -298,7 +298,6 @@ static void node_destroy(IMFS_jnode_t *node)
 
 static const IMFS_node_control node_control = {
   .handlers = &node_handlers,
-  .node_size = sizeof(IMFS_generic_t),
   .node_initialize = node_initialize,
   .node_remove = node_remove,
   .node_destroy = node_destroy
@@ -392,11 +391,17 @@ static void node_destroy_inhibited(IMFS_jnode_t *node)
 
 static const IMFS_node_control node_initialization_error_control = {
   .handlers = &node_handlers,
-  .node_size = sizeof(IMFS_generic_t),
   .node_initialize = node_initialize_error,
   .node_remove = node_remove_inhibited,
   .node_destroy = node_destroy_inhibited
 };
+
+static const rtems_filesystem_operations_table *imfs_ops;
+
+static int other_clone(rtems_filesystem_location_info_t *loc)
+{
+  return (*imfs_ops->clonenod_h)(loc);
+}
 
 static void test_imfs_make_generic_node_errors(void)
 {
@@ -405,7 +410,7 @@ static void test_imfs_make_generic_node_errors(void)
   rtems_chain_control *chain = &rtems_filesystem_mount_table;
   rtems_filesystem_mount_table_entry_t *mt_entry =
     (rtems_filesystem_mount_table_entry_t *) rtems_chain_first(chain);
-  const char *type = mt_entry->type;
+  rtems_filesystem_operations_table other_ops;
   void *opaque = NULL;
   rtems_resource_snapshot before;
 
@@ -423,14 +428,17 @@ static void test_imfs_make_generic_node_errors(void)
   rtems_test_assert(rtems_resource_snapshot_check(&before));
 
   errno = 0;
-  mt_entry->type = "XXX";
+  imfs_ops = mt_entry->ops;
+  other_ops = *imfs_ops;
+  other_ops.clonenod_h = other_clone;
+  mt_entry->ops = &other_ops;
   rv = IMFS_make_generic_node(
     path,
     S_IFCHR | S_IRWXU | S_IRWXG | S_IRWXO,
     &node_control,
     NULL
   );
-  mt_entry->type = type;
+  mt_entry->ops = imfs_ops;
   rtems_test_assert(rv == -1);
   rtems_test_assert(errno == ENOTSUP);
   rtems_test_assert(rtems_resource_snapshot_check(&before));

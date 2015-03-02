@@ -17,7 +17,7 @@ libdefaultfs_a_SOURCES = \
     src/defaults/default_link.c \
     src/defaults/default_read.c src/defaults/default_rmnod.c \
     src/defaults/default_chown.c \
-    src/defaults/default_fcntl.c src/defaults/default_fsmount.c \
+    src/defaults/default_fcntl.c \
     src/defaults/default_ftruncate.c src/defaults/default_lseek.c \
     src/defaults/default_lseek_file.c \
     src/defaults/default_lseek_directory.c \
@@ -41,21 +41,24 @@ noinst_LIBRARIES += libimfs.a
 libimfs_a_SOURCES =
 
 libimfs_a_SOURCES += src/imfs/deviceio.c \
-    src/imfs/fifoimfs_init.c src/imfs/imfs_chown.c src/imfs/imfs_config.c \
-    src/imfs/imfs_creat.c src/imfs/imfs_directory.c \
+    src/imfs/imfs_chown.c src/imfs/imfs_config.c \
+    src/imfs/imfs_creat.c \
     src/imfs/imfs_eval.c src/imfs/imfs_fchmod.c \
+    src/imfs/imfs_dir.c \
+    src/imfs/imfs_dir_default.c \
+    src/imfs/imfs_dir_minimal.c \
     src/imfs/imfs_fifo.c \
     src/imfs/imfs_make_generic_node.c \
     src/imfs/imfs_fsunmount.c \
     src/imfs/imfs_handlers_device.c \
-    src/imfs/imfs_handlers_directory.c \
-    src/imfs/imfs_handlers_memfile.c src/imfs/imfs_init.c \
+    src/imfs/imfs_init.c \
     src/imfs/imfs_initsupp.c src/imfs/imfs_link.c src/imfs/imfs_load_tar.c \
+    src/imfs/imfs_linfile.c \
     src/imfs/imfs_mknod.c src/imfs/imfs_mount.c \
     src/imfs/imfs_rename.c src/imfs/imfs_rmnod.c \
-    src/imfs/imfs_stat.c src/imfs/imfs_symlink.c \
+    src/imfs/imfs_stat.c src/imfs/imfs_stat_file.c src/imfs/imfs_symlink.c \
     src/imfs/imfs_unmount.c src/imfs/imfs_utime.c src/imfs/ioman.c \
-    src/imfs/memfile.c src/imfs/miniimfs_init.c src/imfs/imfs.h
+    src/imfs/imfs_memfile.c src/imfs/imfs.h
 
 # POSIX FIFO/pipe
 libimfs_a_SOURCES += src/pipe/fifo.c src/pipe/pipe.c src/pipe/pipe.h

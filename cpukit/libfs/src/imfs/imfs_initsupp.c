@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 /*
  *  IMFS_determine_bytes_per_block
@@ -55,60 +56,86 @@ static int IMFS_determine_bytes_per_block(
   return 0;
 }
 
-int IMFS_initialize_support(
-  rtems_filesystem_mount_table_entry_t *mt_entry,
-  const rtems_filesystem_operations_table *op_table,
-  const IMFS_node_control *const node_controls [IMFS_TYPE_COUNT]
+IMFS_jnode_t *IMFS_initialize_node(
+  IMFS_jnode_t *node,
+  const IMFS_node_control *node_control,
+  const char *name,
+  size_t namelen,
+  mode_t mode,
+  void *arg
 )
 {
-  static int imfs_instance;
+  struct timeval tv;
 
-  int rv = 0;
-  IMFS_fs_info_t *fs_info = calloc( 1, sizeof( *fs_info ) );
+  if ( namelen > IMFS_NAME_MAX ) {
+    errno = ENAMETOOLONG;
 
-  if ( fs_info != NULL ) {
-    IMFS_jnode_t *root_node;
-
-    fs_info->instance = imfs_instance++;
-    memcpy(
-      fs_info->node_controls,
-      node_controls,
-      sizeof( fs_info->node_controls )
-    );
-
-    root_node = IMFS_allocate_node(
-      fs_info,
-      fs_info->node_controls [IMFS_DIRECTORY],
-      "",
-      0,
-      (S_IFDIR | 0755),
-      NULL
-    );
-    if ( root_node != NULL ) {
-      mt_entry->fs_info = fs_info;
-      mt_entry->ops = op_table;
-      mt_entry->pathconf_limits_and_options = &IMFS_LIMITS_AND_OPTIONS;
-      mt_entry->mt_fs_root->location.node_access = root_node;
-      IMFS_Set_handlers( &mt_entry->mt_fs_root->location );
-    } else {
-      free(fs_info);
-      errno = ENOMEM;
-      rv = -1;
-    }
-  } else {
-    errno = ENOMEM;
-    rv = -1;
+    return NULL;
   }
 
-  if ( rv == 0 ) {
-    IMFS_determine_bytes_per_block(
-      &imfs_memfile_bytes_per_block,
-      imfs_rq_memfile_bytes_per_block,
-      IMFS_MEMFILE_DEFAULT_BYTES_PER_BLOCK
-    );
-  }
+  gettimeofday( &tv, 0 );
 
-  return rv;
+  /*
+   *  Fill in the basic information
+   */
+  node->name = name;
+  node->namelen = namelen;
+  node->reference_count = 1;
+  node->st_nlink = 1;
+  node->control = node_control;
+
+  /*
+   *  Fill in the mode and permission information for the jnode structure.
+   */
+  node->st_mode = mode;
+  node->st_uid = geteuid();
+  node->st_gid = getegid();
+
+  /*
+   *  Now set all the times.
+   */
+
+  node->stat_atime  = (time_t) tv.tv_sec;
+  node->stat_mtime  = (time_t) tv.tv_sec;
+  node->stat_ctime  = (time_t) tv.tv_sec;
+
+  return (*node_control->node_initialize)( node, arg );
+}
+
+int IMFS_initialize_support(
+  rtems_filesystem_mount_table_entry_t *mt_entry,
+  const void                           *data
+)
+{
+  const IMFS_mount_data *mount_data = data;
+  IMFS_fs_info_t *fs_info = mount_data->fs_info;
+  IMFS_jnode_t *root_node;
+
+  fs_info->mknod_controls = mount_data->mknod_controls;
+
+  root_node = IMFS_initialize_node(
+    &fs_info->Root_directory.Node,
+    &fs_info->mknod_controls->directory->node_control,
+    "",
+    0,
+    (S_IFDIR | 0755),
+    NULL
+  );
+  IMFS_assert( root_node != NULL );
+
+  mt_entry->fs_info = fs_info;
+  mt_entry->ops = mount_data->ops;
+  mt_entry->pathconf_limits_and_options = &IMFS_LIMITS_AND_OPTIONS;
+  mt_entry->mt_fs_root->location.node_access = root_node;
+  IMFS_Set_handlers( &mt_entry->mt_fs_root->location );
+
+  IMFS_determine_bytes_per_block(
+    &imfs_memfile_bytes_per_block,
+    imfs_rq_memfile_bytes_per_block,
+    IMFS_MEMFILE_DEFAULT_BYTES_PER_BLOCK
+  );
+
+  return 0;
 }
 
 int IMFS_node_clone( rtems_filesystem_location_info_t *loc )
@@ -165,13 +192,19 @@ IMFS_jnode_t *IMFS_node_remove_default(
 
 void IMFS_node_destroy_default( IMFS_jnode_t *node )
 {
+  if ( ( node->flags & IMFS_NODE_FLAG_NAME_ALLOCATED ) != 0 ) {
+    free( RTEMS_DECONST( char *, node->name ) );
+  }
+
   free( node );
 }
 
-const IMFS_node_control IMFS_node_control_enosys = {
-  .handlers = &rtems_filesystem_handlers_default,
-  .node_size = sizeof(IMFS_jnode_t),
-  .node_initialize = IMFS_node_initialize_enosys,
-  .node_remove = IMFS_node_remove_default,
-  .node_destroy = IMFS_node_destroy_default
+const IMFS_mknod_control IMFS_mknod_control_enosys = {
+  {
+    .handlers = &rtems_filesystem_handlers_default,
+    .node_initialize = IMFS_node_initialize_enosys,
+    .node_remove = IMFS_node_remove_default,
+    .node_destroy = IMFS_node_destroy_default
+  },
+  .node_size = sizeof( IMFS_jnode_t )
 };

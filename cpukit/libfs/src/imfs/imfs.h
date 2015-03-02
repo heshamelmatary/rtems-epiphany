@@ -94,18 +94,6 @@ typedef block_p *block_ptr;
 #define IMFS_MEMFILE_MAXIMUM_SIZE \
   (LAST_TRIPLY_INDIRECT * IMFS_MEMFILE_BYTES_PER_BLOCK)
 
-/*
- *  What types of IMFS file systems entities there can be.
- */
-typedef enum {
-  IMFS_DIRECTORY,
-  IMFS_DEVICE,
-  IMFS_MEMORY_FILE,
-  IMFS_FIFO
-} IMFS_jnode_types_t;
-
-#define IMFS_TYPE_COUNT (IMFS_FIFO + 1)
-
 /** @} */
 
 /**
@@ -143,6 +131,11 @@ typedef IMFS_jnode_t *(*IMFS_node_control_initialize)(
  * @see IMFS_node_control.
  */
 IMFS_jnode_t *IMFS_node_initialize_default(
+  IMFS_jnode_t *node,
+  void *arg
+);
+
+IMFS_jnode_t *IMFS_node_initialize_directory(
   IMFS_jnode_t *node,
   void *arg
 );
@@ -191,6 +184,8 @@ IMFS_jnode_t *IMFS_node_remove_default(
   IMFS_jnode_t *node
 );
 
+IMFS_jnode_t *IMFS_node_remove_directory( IMFS_jnode_t *node );
+
 /**
  * @brief Destroys an IMFS node.
  *
@@ -214,11 +209,15 @@ void IMFS_node_destroy_default( IMFS_jnode_t *node );
  */
 typedef struct {
   const rtems_filesystem_file_handlers_r *handlers;
-  size_t node_size;
   IMFS_node_control_initialize node_initialize;
   IMFS_node_control_remove node_remove;
   IMFS_node_control_destroy node_destroy;
 } IMFS_node_control;
+
+typedef struct {
+  IMFS_node_control node_control;
+  size_t node_size;
+} IMFS_mknod_control;
 
 /** @} */
 
@@ -228,36 +227,25 @@ typedef struct {
 /**@{*/
 
 /*
- * Major device number for the IMFS. This is not a real device number because
- * the IMFS is just a file system and does not have a driver.
- */
-#define IMFS_DEVICE_MAJOR_NUMBER (0xfffe)
-
-/**
- * @ingroup IMFSGenericNodes
- *
- * @brief Generic IMFS device major number.
- */
-#define IMFS_GENERIC_DEVICE_MAJOR_NUMBER (0xfffd)
-
-/*
  *  Maximum length of a "basename" of an IMFS file/node.
  */
 
-#define IMFS_NAME_MAX  32
+#define IMFS_NAME_MAX _POSIX_NAME_MAX
 
 /*
+
  *  The control structure for an IMFS jnode.
  */
 
 struct IMFS_jnode_tt {
   rtems_chain_node    Node;                  /* for chaining them together */
   IMFS_jnode_t       *Parent;                /* Parent node */
-  char                name[IMFS_NAME_MAX+1]; /* "basename" */
+  const char         *name;                  /* "basename" (not \0 terminated) */
+  uint16_t            namelen;               /* Length of "basename" */
+  uint16_t            flags;                 /* Node flags */
   mode_t              st_mode;               /* File mode */
   unsigned short      reference_count;
   nlink_t             st_nlink;              /* Link count */
-  ino_t               st_ino;                /* inode */
 
   uid_t               st_uid;                /* User ID of owner */
   gid_t               st_gid;                /* Group ID of owner */
@@ -267,6 +255,8 @@ struct IMFS_jnode_tt {
   time_t              stat_ctime;            /* Time of last status change */
   const IMFS_node_control *control;
 };
+
+#define IMFS_NODE_FLAG_NAME_ALLOCATED 0x1
 
 typedef struct {
   IMFS_jnode_t                          Node;
@@ -385,25 +375,34 @@ static inline void IMFS_mtime_ctime_update( IMFS_jnode_t *jnode )
 }
 
 typedef struct {
-  int instance;
-  ino_t ino_count;
-  const IMFS_node_control *node_controls [IMFS_TYPE_COUNT];
+  const IMFS_mknod_control *directory;
+  const IMFS_mknod_control *device;
+  const IMFS_mknod_control *file;
+  const IMFS_mknod_control *fifo;
+} IMFS_mknod_controls;
+
+typedef struct {
+  IMFS_directory_t Root_directory;
+  const IMFS_mknod_controls *mknod_controls;
 } IMFS_fs_info_t;
+
+typedef struct {
+  IMFS_fs_info_t *fs_info;
+  const rtems_filesystem_operations_table *ops;
+  const IMFS_mknod_controls *mknod_controls;
+} IMFS_mount_data;
 
 /*
  *  Shared Data
  */
 
-extern const IMFS_node_control IMFS_node_control_directory;
-extern const IMFS_node_control IMFS_node_control_device;
-extern const IMFS_node_control IMFS_node_control_memfile;
+extern const IMFS_mknod_control IMFS_mknod_control_dir_default;
+extern const IMFS_mknod_control IMFS_mknod_control_dir_minimal;
+extern const IMFS_mknod_control IMFS_mknod_control_device;
+extern const IMFS_mknod_control IMFS_mknod_control_memfile;
 extern const IMFS_node_control IMFS_node_control_linfile;
-extern const IMFS_node_control IMFS_node_control_fifo;
-extern const IMFS_node_control IMFS_node_control_enosys;
-
-extern const rtems_filesystem_operations_table miniIMFS_ops;
-extern const rtems_filesystem_operations_table IMFS_ops;
-extern const rtems_filesystem_operations_table fifoIMFS_ops;
+extern const IMFS_mknod_control IMFS_mknod_control_fifo;
+extern const IMFS_mknod_control IMFS_mknod_control_enosys;
 
 extern const rtems_filesystem_limits_and_options_t  IMFS_LIMITS_AND_OPTIONS;
 
@@ -416,24 +415,11 @@ extern int IMFS_initialize(
    const void                           *data
 );
 
-extern int fifoIMFS_initialize(
-  rtems_filesystem_mount_table_entry_t  *mt_entry,
-  const void                            *data
-);
-
-extern int miniIMFS_initialize(
-   rtems_filesystem_mount_table_entry_t *mt_entry,
-   const void                           *data
-);
-
-/**
- * @brief IMFS initialization support.
- */
 extern int IMFS_initialize_support(
   rtems_filesystem_mount_table_entry_t *mt_entry,
-  const rtems_filesystem_operations_table *op_table,
-  const IMFS_node_control *const node_controls [IMFS_TYPE_COUNT]
+  const void                           *data
 );
+
 /**
  * @brief Unmount this instance of IMFS.
  */
@@ -523,6 +509,11 @@ extern int IMFS_stat(
   struct stat *buf
 );
 
+extern int IMFS_stat_file(
+  const rtems_filesystem_location_info_t *loc,
+  struct stat *buf
+);
+
 /**
  * @brief IMFS evaluation node support.
  */
@@ -569,13 +560,8 @@ extern int IMFS_mknod(
   dev_t dev
 );
 
-/**
- * @brief Create a new IMFS node.
- * 
- * Routine to create a new in memory file system node.
- */
-extern IMFS_jnode_t *IMFS_allocate_node(
-  IMFS_fs_info_t *fs_info,
+extern IMFS_jnode_t *IMFS_initialize_node(
+  IMFS_jnode_t *node,
   const IMFS_node_control *node_control,
   const char *name,
   size_t namelen,
@@ -592,15 +578,19 @@ extern IMFS_jnode_t *IMFS_allocate_node(
 extern IMFS_jnode_t *IMFS_create_node(
   const rtems_filesystem_location_info_t *parentloc,
   const IMFS_node_control *node_control,
+  size_t node_size,
   const char *name,
   size_t namelen,
   mode_t mode,
   void *arg
 );
 
-extern bool IMFS_is_imfs_instance(
+static inline bool IMFS_is_imfs_instance(
   const rtems_filesystem_location_info_t *loc
-);
+)
+{
+  return loc->mt_entry->ops->clonenod_h == IMFS_node_clone;
+}
 
 /** @} */
 
@@ -630,7 +620,6 @@ extern bool IMFS_is_imfs_instance(
 #define IMFS_GENERIC_INITIALIZER( handlers, init, destroy ) \
   { \
     ( handlers ), \
-    sizeof( IMFS_generic_t ), \
     ( init ), \
     IMFS_node_remove_default, \
     ( destroy ) \
@@ -723,40 +712,6 @@ extern int IMFS_unmount(
   rtems_filesystem_mount_table_entry_t *mt_entry  /* IN */
 );
 
-extern void IMFS_memfile_remove(
- IMFS_jnode_t  *the_jnode         /* IN/OUT */
-);
-
-/**
- * @brief Truncate a memory file.
- *
- * This routine processes the ftruncate() system call.
- */
-extern int memfile_ftruncate(
-  rtems_libio_t *iop,               /* IN  */
-  off_t          length             /* IN  */
-);
-
-/**
- * @brief Read the next directory of the IMFS.
- * 
- * This routine will read the next directory entry based on the directory
- * offset. The offset should be equal to -n- time the size of an individual
- * dirent structure. If n is not an integer multiple of the sizeof a
- * dirent structure, an integer division will be performed to determine
- * directory entry that will be returned in the buffer. Count should reflect
- * -m- times the sizeof dirent bytes to be placed in the buffer.
- * If there are not -m- dirent elements from the current directory position
- * to the end of the exisiting file, the remaining entries will be placed in
- * the buffer and the returned value will be equal to -m actual- times the
- * size of a directory entry.
- */
-extern ssize_t imfs_dir_read(
-  rtems_libio_t *iop,              /* IN  */
-  void          *buffer,           /* IN  */
-  size_t         count             /* IN  */
-);
-
 /**
  * @name IMFS Memory File Handlers
  *
@@ -768,44 +723,11 @@ extern ssize_t imfs_dir_read(
  */
 /**@{*/
 
-/**
- * @brief Open a linear file.
- *
- * Transforms the file into a memfile if opened for writing.
- */
-extern int IMFS_linfile_open(
-  rtems_libio_t *iop,             /* IN  */
-  const char    *pathname,        /* IN  */
-  int            oflag,           /* IN  */
-  mode_t         mode             /* IN  */
-);
-
-extern ssize_t IMFS_linfile_read(
-  rtems_libio_t *iop,
-  void          *buffer,
-  size_t         count
-);
-
-/**
- * @brief Read a memory file.
- *
- * This routine processes the read() system call.
- */
-extern ssize_t memfile_read(
-  rtems_libio_t *iop,             /* IN  */
-  void          *buffer,          /* IN  */
-  size_t         count            /* IN  */
-);
-
-/**
- * @brief Write a memory file.
- *
- * This routine processes the write() system call.
- */
-extern ssize_t memfile_write(
-  rtems_libio_t *iop,             /* IN  */
-  const void    *buffer,          /* IN  */
-  size_t         count            /* IN  */
+extern ssize_t IMFS_memfile_write(
+  IMFS_memfile_t      *memfile,
+  off_t                start,
+  const unsigned char *source,
+  unsigned int         length
 );
 
 /** @} */
@@ -974,6 +896,11 @@ static inline bool IMFS_is_hard_link( mode_t mode )
   return ( mode & S_IFMT ) == IMFS_STAT_FMT_HARD_LINK;
 }
 
+static inline ino_t IMFS_node_to_ino( const IMFS_jnode_t *node )
+{
+  return (ino_t) node;
+}
+
 /** @} */
 
 /**
@@ -1008,10 +935,7 @@ static inline dev_t IMFS_generic_get_device_identifier_by_node(
   const IMFS_jnode_t *node
 )
 {
-  return rtems_filesystem_make_dev_t(
-    IMFS_GENERIC_DEVICE_MAJOR_NUMBER,
-    node->st_ino
-  );
+  return rtems_filesystem_make_dev_t_from_pointer( node );
 }
 
 #ifdef __cplusplus

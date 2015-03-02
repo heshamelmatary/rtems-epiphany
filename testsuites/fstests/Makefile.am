@@ -1,6 +1,9 @@
 ACLOCAL_AMFLAGS = -I ../aclocal
 
 _SUBDIRS =
+_SUBDIRS += fsimfsconfig03
+_SUBDIRS += fsimfsconfig02
+_SUBDIRS += fsimfsconfig01
 _SUBDIRS += fsdosfsname01
 _SUBDIRS += fsdosfswrite01
 _SUBDIRS += fsdosfsformat01

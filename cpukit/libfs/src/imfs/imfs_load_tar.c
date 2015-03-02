@@ -58,10 +58,7 @@ int rtems_tarfs_load(
      RTEMS_FS_MAKE | RTEMS_FS_EXCLUSIVE
    );
 
-   if (
-     rootloc.mt_entry->ops != &IMFS_ops
-       && rootloc.mt_entry->ops != &fifoIMFS_ops
-   ) {
+   if ( !IMFS_is_imfs_instance( &rootloc ) ) {
      rv = -1;
    }
 
@@ -126,6 +123,7 @@ int rtems_tarfs_load(
           IMFS_create_node(
             currentloc,
             &IMFS_node_control_linfile,
+            sizeof( IMFS_file_t ),
             rtems_filesystem_eval_path_get_token( &ctx ),
             rtems_filesystem_eval_path_get_tokenlen( &ctx ),
             (file_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) | S_IFREG,

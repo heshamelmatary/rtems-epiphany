@@ -37,45 +37,27 @@ void _Thread_Start_multitasking( void )
 
   heir = _Thread_Get_heir_and_make_it_executing( cpu_self );
 
-   /*
-    * Get the init task(s) running.
-    *
-    * Note: Thread_Dispatch() is normally used to dispatch threads.  As
-    *       part of its work, Thread_Dispatch() restores floating point
-    *       state for the heir task.
-    *
-    *       This code avoids Thread_Dispatch(), and so we have to restore
-    *       (actually initialize) the floating point state "by hand".
-    *
-    *       Ignore the CPU_USE_DEFERRED_FP_SWITCH because we must always
-    *       switch in the first thread if it is FP.
-    */
-#if ( CPU_HARDWARE_FP == TRUE ) || ( CPU_SOFTWARE_FP == TRUE )
-   /*
-    *  don't need to worry about saving BSP's floating point state
-    */
-
-   if ( heir->fp_context != NULL )
-     _Context_Restore_fp( &heir->fp_context );
-#endif
-
   _Profiling_Thread_dispatch_disable( cpu_self, 0 );
 
 #if defined(RTEMS_SMP)
-  /*
-   * The _CPU_Context_Restart_self() implementations usually assume that self
-   * context is executing.
-   *
-   * FIXME: We have a race condition here in case another thread already
-   * performed scheduler operations and moved our heir thread to another
-   * processor.  The time frame for this is likely too small to be practically
-   * relevant.
-   */
-  _CPU_Context_Set_is_executing( &heir->Registers, true );
+  _CPU_SMP_Prepare_start_multitasking();
 #endif
 
 #if defined(_CPU_Start_multitasking)
   _CPU_Start_multitasking( &heir->Registers );
+#elif defined(RTEMS_SMP)
+  {
+    Context_Control trash;
+
+    /*
+     * Mark the trash context as executing to not confuse the
+     * _CPU_Context_switch().  On SMP configurations the context switch
+     * contains a special hand over section to atomically switch from the
+     * executing to the currently selected heir thread.
+     */
+    _CPU_Context_Set_is_executing( &trash, true );
+    _CPU_Context_switch( &trash, &heir->Registers );
+  }
 #else
   _CPU_Context_Restart_self( &heir->Registers );
 #endif

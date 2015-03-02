@@ -48,6 +48,12 @@
 	.extern	_ARMV4_Exception_fiq_default
 	.extern	_ARMV7M_Exception_default
 
+#ifdef BSP_START_NEEDS_REGISTER_INITIALIZATION
+	.extern bsp_start_init_registers_core
+	.extern bsp_start_init_registers_banked_fiq
+	.extern bsp_start_init_registers_vfp
+#endif
+
 	/* Global symbols */
 	.globl	_start
 	.globl	bsp_start_vector_table_begin
@@ -127,6 +133,10 @@ _start:
 	 * loader.
 	 */
 
+#ifdef BSP_START_NEEDS_REGISTER_INITIALIZATION
+	bl bsp_start_init_registers_core
+#endif
+
 #ifdef RTEMS_SMP
 	/* Read MPIDR */
 	mrc	p15, 0, r0, c0, c0, 5
@@ -161,6 +171,10 @@ _start:
 	add	sp, r1
 #endif
 
+#ifdef BSP_START_NEEDS_REGISTER_INITIALIZATION
+	bl bsp_start_init_registers_banked_fiq
+#endif
+
 	/* Enter ABT mode and set up the ABT stack pointer */
 	mov	r0, #(ARM_PSR_M_ABT | ARM_PSR_I | ARM_PSR_F)
 	msr	cpsr, r0
@@ -187,7 +201,7 @@ _start:
 
 	/* Stay in SVC mode */
 
-#ifdef ARM_MULTILIB_VFP_D32
+#ifdef ARM_MULTILIB_VFP
 	/* Read CPACR */
 	mrc p15, 0, r0, c1, c0, 2
 
@@ -195,7 +209,9 @@ _start:
 	orr r0, r0, #(1 << 20)
 	orr r0, r0, #(1 << 22)
 
-	/* Clear ASEDIS and D32DIS */
+	/*
+	 * Clear ASEDIS and D32DIS.  Writes to D32DIS are ignored for VFP-D16.
+	 */
 	bic r0, r0, #(3 << 30)
 
 	/* Write CPACR */
@@ -205,7 +221,12 @@ _start:
 	/* Enable FPU */
 	mov r0, #(1 << 30)
 	vmsr FPEXC, r0
+
+#ifdef BSP_START_NEEDS_REGISTER_INITIALIZATION
+	bl bsp_start_init_registers_vfp
 #endif
+
+#endif /* ARM_MULTILIB_VFP */
 
 	/*
 	 * Branch to start hook 0.
@@ -302,6 +323,10 @@ bsp_start_vector_table_end:
 
 _start:
 
+#ifdef BSP_START_NEEDS_REGISTER_INITIALIZATION
+	bl bsp_start_init_registers_core
+#endif
+
 #ifdef ARM_MULTILIB_VFP
 	/*
 	 * Enable CP10 and CP11 coprocessors for privileged and user mode in
@@ -313,7 +338,12 @@ _start:
 	str	r1, [r0]
 	dsb
 	isb
+
+#ifdef BSP_START_NEEDS_REGISTER_INITIALIZATION
+	bl bsp_start_init_registers_vfp
 #endif
+
+#endif /* ARM_MULTILIB_VFP */
 
 	ldr	sp, =bsp_stack_main_end
 	ldr	lr, =bsp_start_hook_0_done + 1

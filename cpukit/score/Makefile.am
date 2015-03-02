@@ -17,6 +17,7 @@ include_rtems_score_HEADERS = include/rtems/score/address.h
 include_rtems_score_HEADERS += include/rtems/score/apiext.h
 include_rtems_score_HEADERS += include/rtems/score/apimutex.h
 include_rtems_score_HEADERS += include/rtems/score/assert.h
+include_rtems_score_HEADERS += include/rtems/score/atomic.h
 include_rtems_score_HEADERS += include/rtems/score/chain.h
 include_rtems_score_HEADERS += include/rtems/score/chainimpl.h
 include_rtems_score_HEADERS += include/rtems/score/context.h
@@ -31,6 +32,7 @@ include_rtems_score_HEADERS += include/rtems/score/coresem.h
 include_rtems_score_HEADERS += include/rtems/score/coresemimpl.h
 include_rtems_score_HEADERS += include/rtems/score/cpuset.h
 include_rtems_score_HEADERS += include/rtems/score/cpusetimpl.h
+include_rtems_score_HEADERS += include/rtems/score/cpustdatomic.h
 include_rtems_score_HEADERS += include/rtems/score/heap.h
 include_rtems_score_HEADERS += include/rtems/score/heapimpl.h
 include_rtems_score_HEADERS += include/rtems/score/protectedheap.h
@@ -117,9 +119,6 @@ include_rtems_score_HEADERS += include/rtems/score/atomic.h
 include_rtems_score_HEADERS += include/rtems/score/cpustdatomic.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerpfairsmpimpl.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerpfairtypes.h
-include_rtems_score_HEADERS += include/rtems/score/schedulerprioritysmpimpl.h
-include_rtems_score_HEADERS += include/rtems/score/schedulerpriorityaffinitysmp.h
-include_rtems_score_HEADERS += include/rtems/score/schedulersimplesmp.h
 endif
 
 ## src
@@ -297,7 +296,6 @@ libscore_a_SOURCES += src/threadglobalconstruction.c
 libscore_a_SOURCES += src/threadyield.c
 
 if HAS_SMP
-libscore_a_SOURCES += src/smpbarrierwait.c
 libscore_a_SOURCES += src/threaddispatchdisablelevel.c
 endif
 
@@ -347,6 +345,7 @@ libscore_a_SOURCES += src/debugisownerofallocator.c
 libscore_a_SOURCES += src/profilingisrentryexit.c
 libscore_a_SOURCES += src/once.c
 libscore_a_SOURCES += src/resourceiterate.c
+libscore_a_SOURCES += src/smpbarrierwait.c
 
 EXTRA_DIST = src/Unlimited.txt
 
