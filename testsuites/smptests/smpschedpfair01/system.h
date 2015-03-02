@@ -38,6 +38,8 @@ rtems_task Test_task(
 
 #define CONFIGURE_RTEMS_INIT_TASKS_TABLE
 
+#define CONFIGURE_TICKS_PER_TIMESLICE 1 
+
 #include <rtems/confdefs.h>
 
 /* global variables */

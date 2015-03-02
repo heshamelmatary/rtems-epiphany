@@ -31,11 +31,17 @@ rtems_task Init(
   rtems_task_argument argument
 )
 {
+
+ asm volatile ("gid");
  // char               ch;
   uint32_t           cpu_self;
   rtems_id           id1, id2;
   rtems_status_code  status;
   //bool               allDone;
+
+  ISR_Level 				level;
+
+  _ISR_Disable(level);
 
   uint32_t Tp, Te, Up, Ue;
 
@@ -89,10 +95,10 @@ rtems_task Init(
       //printk(" CPU %" PRIu32 " start task TA%c\n", cpu_self, 'U');
       status = rtems_task_start( id2, Test_task2, 2 );
       directive_failed( status, "task start" );
-
       status = rtems_task_delete( RTEMS_SELF );
+      //asm volatile ("gie");
+      _ISR_Enable(level);
       //rtems_task_wake_after(0);
-  //asm volatile ("gie");
       //rtems_test_exit( 0 );
 }
 
