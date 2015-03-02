@@ -22,21 +22,13 @@ const char rtems_test_name[] = "CLOCK TICK";
 
 rtems_id   Task_id[ 4 ];         /* array of task ids */
 rtems_name Task_name[ 4 ];       /* array of task names */
-uint32_t    end_time;
 
 rtems_task Init(
   rtems_task_argument argument
 )
 {
-  benchmark_timer_disable_subtracting_average_overhead( TRUE );
-  benchmark_timer_initialize();
-
-  end_time = benchmark_timer_read();
-
-  printk(
-    "End time of ticker = %d \n",
-    end_time
-  );
+//  benchmark_timer_disable_subtracting_average_overhead( TRUE );
+//  benchmark_timer_initialize();
 
   rtems_status_code status;
   rtems_time_of_day time;

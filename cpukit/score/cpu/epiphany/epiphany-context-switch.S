@@ -53,8 +53,8 @@ SYM(_CPU_Context_switch):
   movfs r2, ctimer0
   str r2, [r0,67]
   
-  movfs r2, ctimer1
-  str r2, [r0,68]
+  //movfs r2, ctimer1
+  //str r2, [r0,68]
   
   str r3,[r0,3]
   str r4,[r0,4]
@@ -281,8 +281,8 @@ SYM(restore):
   ldr r0,[r1, 67]
   movts ctimer0, r0
   
-  ldr r0,[r1, 68]
-  movts ctimer1, r0
+  //ldr r0,[r1, 68]
+  //movts ctimer1, r0
   
   mov r0, 0
   movts imask, r0

@@ -564,7 +564,7 @@ static inline uint32_t epiphany_interrupt_disable( void )
 static inline void epiphany_interrupt_enable(uint32_t level)
 {
   
-  //if (! level & 0x2) /* previous interrupt level is enabled */
+  //=if (! level & 0x2) /* previous interrupt level is enabled */
     asm volatile("gie \n");
     
   asm volatile ("movts status, %[level] \n" :: [level] "r" (level):);
@@ -594,7 +594,8 @@ static inline void epiphany_interrupt_enable(uint32_t level)
 
 #define _CPU_ISR_Flash( _level ) \
   do{ \
-      _CPU_ISR_Enable( _level ); \
+      if (! _level & 0x2) \
+        _CPU_ISR_Enable( _level ); \
       asm volatile("gid \n"); \
     } while(0)
 

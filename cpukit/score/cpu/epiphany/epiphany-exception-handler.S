@@ -357,6 +357,4 @@ exception_frame_restore:
   
   add sp, sp, #8
   
-  /* Enable interrupts */
-  
   rti

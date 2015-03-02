@@ -232,10 +232,10 @@ _jump_to_c:
 .type   .clock_isr, %function
 .clock_isr:
   gid;
-  mov  r63, %low(0xFFFFFFFF)
+  /*mov  r63, %low(0xFFFFFFFF)
   movt r63, %high(0xFFFFFFFF)
   
-  movts ctimer1, r63                      
+  movts ctimer1, r63 */                     
   add sp, sp, #-8;                   
   str r62, [sp, #4];                 
   str r63, [sp, #8];                 
