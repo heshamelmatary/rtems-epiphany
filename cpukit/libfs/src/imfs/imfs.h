@@ -230,6 +230,7 @@ typedef struct {
  *  Maximum length of a "basename" of an IMFS file/node.
  */
 
+#define _POSIX_NAME_MAX 14
 #define IMFS_NAME_MAX _POSIX_NAME_MAX
 
 /*
