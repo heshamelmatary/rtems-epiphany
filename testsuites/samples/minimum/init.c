@@ -21,6 +21,34 @@
 #include <rtems/score/thread.h>
 #include <rtems/rtems/tasks.h>
 
+uint32_t end_time = 0;
+
+Context_Control ctx __attribute__ ((section (".start")));
+
+void benchmark_timer_initialize()
+{
+   uint32_t event_type = 0x1;
+   unsigned int val = 0xFFFFFFFF;
+
+   asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
+   asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xffffff0f);\t \n"
+                "movt   r17, %%high(0xffffff0f);\t \n"
+                "lsl   r18, %[event_type], 0x4; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
+                :: [event_type] "r" (event_type)); 
+}
+
+uint32_t benchmark_timer_read(void)
+{
+  int return_val = 0;
+  asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (return_val):);
+  return 0xFFFFFFFF - return_val;
+}
+
 /* forward declarations to avoid warnings */
 rtems_task Init(rtems_task_argument argument);
 
@@ -28,8 +56,14 @@ rtems_task Init(
   rtems_task_argument ignored
 )
 {
+  uint32_t index = 0;
   /* initialize application */
+  benchmark_timer_initialize();
+ // for ( index = 1 ; index <= 1 ; index = index + 1 )
+    _Context_Switch(&ctx, &ctx);
+  end_time = benchmark_timer_read();
 
+  exit (0);
   /* Real application would call idle loop functionality */
   /* but in this case, just return and fall into a fatal error */
 }
