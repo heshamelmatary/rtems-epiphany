@@ -125,11 +125,11 @@ LIBC_GLUE_C_FILES = src/newlibc_reent.c src/newlibc_init.c src/newlibc_exit.c \
 BSD_LIBC_C_FILES = src/strlcpy.c src/strlcat.c src/issetugid.c
 
 libcsupport_a_SOURCES = src/gxx_wrappers.c src/getchark.c \
-    src/printk_plugin.c src/putk.c \
+		src/printk_plugin.c src/putk.c src/vprintk.c src/printk.c \
     $(BSD_LIBC_C_FILES) $(BASE_FS_C_FILES) $(MALLOC_C_FILES) \
     $(ERROR_C_FILES) $(ASSOCIATION_C_FILES)
     #src/sup_fs_location.c src/vprintk.c \
-    #src/printk_plugin.c src/putk.c src/vprintk.c src/printk.c \
+    #src/printk_plugin.c src/putk.c 
     #src/rtems_putc.c \
     #src/printf_plugin.c \
     #src/sup_fs_eval_path.c \
