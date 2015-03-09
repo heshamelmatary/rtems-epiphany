@@ -31,7 +31,6 @@ rtems_task Init(
   /* initialize application */
 
   /* Real application would call idle loop functionality */
-  printk("Hello World! \n");
   /* but in this case, just return and fall into a fatal error */
 }
 
