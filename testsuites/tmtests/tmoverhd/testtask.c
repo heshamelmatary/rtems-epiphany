@@ -16,9 +16,44 @@
 
 const char rtems_test_name[] = "OVERHEAD";
 
+Context_Control ctx __attribute__ ((section (".start")));
+
 uint8_t   Memory_area[ 2048 ];
 uint8_t   Internal_port_area[ 256 ];
 uint8_t   External_port_area[ 256 ];
+
+void benchmark_timer_initialize();
+uint32_t benchmark_timer_read(void);
+
+void benchmark_timer_initialize()
+{
+   uint32_t event_type = 0x1;
+   unsigned int val = 0xFFFFFFFF;
+
+   asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
+   asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xffffff0f);\t \n"
+                "movt   r17, %%high(0xffffff0f);\t \n"
+                "lsl   r18, %[event_type], 0x4; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
+                :: [event_type] "r" (event_type)); 
+}
+
+uint32_t benchmark_timer_read(void)
+{
+  int return_val = 0;
+  asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (return_val):);
+  return 0xFFFFFFFF - return_val;
+}
+
+void benchmark_timer_disable_subtracting_average_overhead(
+  bool find_flag
+)
+{
+}
 
 rtems_task Task_1(
   rtems_task_argument argument
@@ -54,7 +89,13 @@ rtems_task Init(
 }
 
 /* comment out the following include to verify type are correct */
-#include "dumrtems.h"
+//#include "dumrtems.h"
+
+#if defined(__GNUC__)
+#define RTEMS_GCC_NOWARN_UNUSED	__attribute__((unused))
+#else
+#define RTEMS_GCC_NOWARN_UNUSED
+#endif
 
 rtems_task Task_1(
   rtems_task_argument argument
@@ -81,7 +122,7 @@ rtems_task Task_1(
   uint32_t                   io_result RTEMS_GCC_NOWARN_UNUSED;
   uint32_t                   error RTEMS_GCC_NOWARN_UNUSED;
   rtems_clock_get_options    options RTEMS_GCC_NOWARN_UNUSED;
-
+  
   name        = rtems_build_name( 'N', 'A', 'M', 'E' );
   in_priority = 250;
   in_mode     = RTEMS_NO_PREEMPT;
@@ -95,9 +136,9 @@ rtems_task Task_1(
   options     = 0;
 
 /* rtems_shutdown_executive */
-
+/*
   benchmark_timer_initialize();
-    for ( index=1 ; index <= OPERATION_COUNT ; index++ )
+    for ( index=1 ; index <= OPERATION_COUNT ; index = index + 1 )
       (void) rtems_shutdown_executive( error );
   end_time = benchmark_timer_read();
 
@@ -108,11 +149,26 @@ rtems_task Task_1(
     overhead,
     0
   );
+*/
+/* Context Switch */
 
+  benchmark_timer_initialize();
+  for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
+    _Context_Switch(&ctx, &ctx);
+  end_time = benchmark_timer_read();
+
+      put_time(
+         "overhead: _Context_Switch",
+         end_time,
+         OPERATION_COUNT,
+         overhead,
+         0
+      );
+      
 /* rtems_task_create */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_create(
                name,
                in_priority,
@@ -134,7 +190,7 @@ rtems_task Task_1(
 /* rtems_task_ident */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_ident( name, RTEMS_SEARCH_ALL_NODES, id );
       end_time = benchmark_timer_read();
 
@@ -149,7 +205,7 @@ rtems_task Task_1(
 /* rtems_task_start */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_start( id, Task_1, 0 );
       end_time = benchmark_timer_read();
 
@@ -164,7 +220,7 @@ rtems_task Task_1(
 /* rtems_task_restart */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_restart( id, 0 );
       end_time = benchmark_timer_read();
 
@@ -179,7 +235,7 @@ rtems_task Task_1(
 /* rtems_task_delete */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_delete( id );
       end_time = benchmark_timer_read();
 
@@ -194,7 +250,7 @@ rtems_task Task_1(
 /* rtems_task_suspend */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_suspend( id );
       end_time = benchmark_timer_read();
 
@@ -209,7 +265,7 @@ rtems_task Task_1(
 /* rtems_task_resume */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_resume( id );
       end_time = benchmark_timer_read();
 
@@ -224,7 +280,7 @@ rtems_task Task_1(
 /* rtems_task_set_priority */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_set_priority( id, in_priority, &out_priority );
       end_time = benchmark_timer_read();
 
@@ -239,7 +295,7 @@ rtems_task Task_1(
 /* rtems_task_mode */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_mode( in_mode, mask, &out_mode );
       end_time = benchmark_timer_read();
 
@@ -254,7 +310,7 @@ rtems_task Task_1(
 /* rtems_task_get_note */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_get_note( id, 1, note );
       end_time = benchmark_timer_read();
 
@@ -269,7 +325,7 @@ rtems_task Task_1(
 /* rtems_task_set_note */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_set_note( id, 1, note );
       end_time = benchmark_timer_read();
 
@@ -282,10 +338,10 @@ rtems_task Task_1(
       );
 
 /* rtems_task_wake_when */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
-            (void) rtems_task_wake_when( time );
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
+            (void) rtems_task_wake_when( &time );
       end_time = benchmark_timer_read();
 
       put_time(
@@ -295,11 +351,11 @@ rtems_task Task_1(
          overhead,
          0
       );
-
+*/
 /* rtems_task_wake_after */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_wake_after( timeout );
       end_time = benchmark_timer_read();
 
@@ -310,11 +366,11 @@ rtems_task Task_1(
          overhead,
          0
       );
-
+*/
 /* rtems_interrupt_catch */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_interrupt_catch( Isr_handler, 5, address_1 );
       end_time = benchmark_timer_read();
 
@@ -325,12 +381,12 @@ rtems_task Task_1(
          overhead,
          0
       );
-
+*/
 /* rtems_clock_get */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
-            (void) rtems_clock_get( options, time );
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
+            (void) rtems_clock_get( options, &time );
       end_time = benchmark_timer_read();
 
       put_time(
@@ -344,8 +400,8 @@ rtems_task Task_1(
 /* rtems_clock_set */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
-            (void) rtems_clock_set( time );
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
+            (void) rtems_clock_set( &time );
       end_time = benchmark_timer_read();
 
       put_time(
@@ -359,7 +415,7 @@ rtems_task Task_1(
 /* rtems_clock_tick */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
            (void) rtems_clock_tick();
       end_time = benchmark_timer_read();
 
@@ -374,9 +430,9 @@ rtems_task Task_1(
 rtems_test_pause();
 
 /* rtems_timer_create */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_timer_create( name, &id );
       end_time = benchmark_timer_read();
 
@@ -387,11 +443,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_timer_delete */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_timer_delete( id );
       end_time = benchmark_timer_read();
 
@@ -402,11 +458,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_timer_ident */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_timer_ident( name, id );
       end_time = benchmark_timer_read();
 
@@ -419,9 +475,9 @@ rtems_test_pause();
       );
 
 /* rtems_timer_fire_after */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_timer_fire_after(
                id,
                timeout,
@@ -437,14 +493,14 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_timer_fire_when */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_timer_fire_when(
                id,
-               time,
+               &time,
                Timer_handler,
                NULL
             );
@@ -457,11 +513,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_timer_reset */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_timer_reset( id );
       end_time = benchmark_timer_read();
 
@@ -472,11 +528,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_timer_cancel */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_timer_cancel( id );
       end_time = benchmark_timer_read();
 
@@ -487,11 +543,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_semaphore_create */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_semaphore_create(
                name,
                128,
@@ -512,7 +568,7 @@ rtems_test_pause();
 /* rtems_semaphore_delete */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_semaphore_delete( id );
       end_time = benchmark_timer_read();
 
@@ -527,7 +583,7 @@ rtems_test_pause();
 /* rtems_semaphore_ident */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_semaphore_ident( name, RTEMS_SEARCH_ALL_NODES, id );
       end_time = benchmark_timer_read();
 
@@ -542,7 +598,7 @@ rtems_test_pause();
 /* rtems_semaphore_obtain */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_semaphore_obtain( id, RTEMS_DEFAULT_OPTIONS, timeout );
       end_time = benchmark_timer_read();
 
@@ -557,7 +613,7 @@ rtems_test_pause();
 /* rtems_semaphore_release */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_semaphore_release( id );
       end_time = benchmark_timer_read();
 
@@ -571,8 +627,8 @@ rtems_test_pause();
 
 /* rtems_message_queue_create */
 
-      benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+/*      benchmark_timer_initialize();
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_message_queue_create(
                name,
                128,
@@ -588,11 +644,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_message_queue_ident */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_message_queue_ident(
               name,
               RTEMS_SEARCH_ALL_NODES,
@@ -607,11 +663,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_message_queue_delete */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_message_queue_delete( id );
       end_time = benchmark_timer_read();
 
@@ -624,9 +680,9 @@ rtems_test_pause();
       );
 
 /* rtems_message_queue_send */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_message_queue_send( id, (long (*)[4])buffer );
       end_time = benchmark_timer_read();
 
@@ -637,11 +693,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_message_queue_urgent */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_message_queue_urgent( id, (long (*)[4])buffer );
       end_time = benchmark_timer_read();
 
@@ -652,11 +708,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_message_queue_broadcast */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_message_queue_broadcast(
                id,
                (long (*)[4])buffer,
@@ -671,11 +727,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_message_queue_receive */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_message_queue_receive(
                id,
                (long (*)[4])buffer,
@@ -691,11 +747,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_message_queue_flush */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_message_queue_flush( id, &count );
       end_time = benchmark_timer_read();
 
@@ -706,13 +762,13 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 rtems_test_pause();
 
 /* rtems_event_send */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_event_send( id, events );
       end_time = benchmark_timer_read();
 
@@ -727,7 +783,7 @@ rtems_test_pause();
 /* rtems_event_receive */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_event_receive(
                RTEMS_EVENT_16,
                RTEMS_DEFAULT_OPTIONS,
@@ -747,7 +803,7 @@ rtems_test_pause();
 /* rtems_signal_catch */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_signal_catch( Asr_handler, RTEMS_DEFAULT_MODES );
       end_time = benchmark_timer_read();
 
@@ -762,7 +818,7 @@ rtems_test_pause();
 /* rtems_signal_send */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_signal_send( id, signals );
       end_time = benchmark_timer_read();
 
@@ -777,7 +833,7 @@ rtems_test_pause();
 /* rtems_partition_create */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_partition_create(
                name,
                Memory_area,
@@ -799,7 +855,7 @@ rtems_test_pause();
 /* rtems_partition_ident */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_partition_ident( name, RTEMS_SEARCH_ALL_NODES, id );
       end_time = benchmark_timer_read();
 
@@ -814,7 +870,7 @@ rtems_test_pause();
 /* rtems_partition_delete */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_partition_delete( id );
       end_time = benchmark_timer_read();
 
@@ -829,7 +885,7 @@ rtems_test_pause();
 /* rtems_partition_get_buffer */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_partition_get_buffer( id, address_1 );
       end_time = benchmark_timer_read();
 
@@ -844,7 +900,7 @@ rtems_test_pause();
 /* rtems_partition_return_buffer */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_partition_return_buffer( id, address_1 );
       end_time = benchmark_timer_read();
 
@@ -859,7 +915,7 @@ rtems_test_pause();
 /* rtems_region_create */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_region_create(
                name,
                Memory_area,
@@ -881,7 +937,7 @@ rtems_test_pause();
 /* rtems_region_ident */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_region_ident( name, id );
       end_time = benchmark_timer_read();
 
@@ -896,7 +952,7 @@ rtems_test_pause();
 /* rtems_region_delete */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_region_delete( id );
       end_time = benchmark_timer_read();
 
@@ -911,7 +967,7 @@ rtems_test_pause();
 /* rtems_region_get_segment */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_region_get_segment(
                id,
                243,
@@ -932,7 +988,7 @@ rtems_test_pause();
 /* rtems_region_return_segment */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_region_return_segment( id, address_1 );
       end_time = benchmark_timer_read();
 
@@ -947,7 +1003,7 @@ rtems_test_pause();
 /* rtems_port_create */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_port_create(
                name,
                Internal_port_area,
@@ -968,7 +1024,7 @@ rtems_test_pause();
 /* rtems_port_ident */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_port_ident( name, id );
       end_time = benchmark_timer_read();
 
@@ -983,7 +1039,7 @@ rtems_test_pause();
 /* rtems_port_delete */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_port_delete( id );
       end_time = benchmark_timer_read();
 
@@ -998,7 +1054,7 @@ rtems_test_pause();
 /* rtems_port_external_to_internal */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_port_external_to_internal(
                id,
                &External_port_area[ 7 ],
@@ -1017,7 +1073,7 @@ rtems_test_pause();
 /* rtems_port_internal_to_external */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_port_internal_to_external(
                id,
                &Internal_port_area[ 7 ],
@@ -1036,9 +1092,9 @@ rtems_test_pause();
 rtems_test_pause();
 
 /* rtems_io_initialize */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_io_initialize(
                major,
                minor,
@@ -1054,11 +1110,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_io_open */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_io_open(
                major,
                minor,
@@ -1074,11 +1130,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_io_close */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_io_close(
                major,
                minor,
@@ -1094,11 +1150,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_io_read */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_io_read(
                major,
                minor,
@@ -1114,11 +1170,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_io_write */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_io_write(
                major,
                minor,
@@ -1134,11 +1190,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_io_control */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_io_control(
                major,
                minor,
@@ -1154,11 +1210,11 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
 /* rtems_fatal_error_occurred */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_fatal_error_occurred( error );
       end_time = benchmark_timer_read();
 
@@ -1173,7 +1229,7 @@ rtems_test_pause();
 /* rtems_rate_monotonic_create */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_rate_monotonic_create( name, &id );
       end_time = benchmark_timer_read();
 
@@ -1188,7 +1244,7 @@ rtems_test_pause();
 /* rtems_rate_monotonic_ident */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_rate_monotonic_ident( name, id );
       end_time = benchmark_timer_read();
 
@@ -1203,7 +1259,7 @@ rtems_test_pause();
 /* rtems_rate_monotonic_delete */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_rate_monotonic_delete( id );
       end_time = benchmark_timer_read();
 
@@ -1218,7 +1274,7 @@ rtems_test_pause();
 /* rtems_rate_monotonic_cancel */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_rate_monotonic_cancel( id );
       end_time = benchmark_timer_read();
 
@@ -1233,7 +1289,7 @@ rtems_test_pause();
 /* rtems_rate_monotonic_period */
 
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_rate_monotonic_period( id, timeout );
       end_time = benchmark_timer_read();
 
@@ -1246,9 +1302,9 @@ rtems_test_pause();
       );
 
 /* rtems_multiprocessing_announce */
-
+/*
       benchmark_timer_initialize();
-         for ( index = 1 ; index <= OPERATION_COUNT ; index ++ )
+         for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_multiprocessing_announce();
       end_time = benchmark_timer_read();
 
@@ -1259,7 +1315,7 @@ rtems_test_pause();
          overhead,
          0
       );
-
+*/
   TEST_END();
 
   rtems_test_exit( 0 );

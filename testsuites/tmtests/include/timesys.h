@@ -31,7 +31,7 @@
  */
 
 #ifndef OPERATION_COUNT
-#define OPERATION_COUNT 100
+#define OPERATION_COUNT 1
 #endif
 
 /* functions */

@@ -28,6 +28,7 @@
 
 #include <bsp/linker-symbols.h>
 #include <rtems/score/percpu.h>
+#include <rtems/asm.h>
 
 #define CPU_SIZEOF_POINTER 4
 #define PRE_ISR_HANDLER(interrupt)  \
@@ -51,6 +52,7 @@
   .extern  bsp_section_stack_begin
   .extern _bsp_start_vector_table_begin;
   .extern _Clock_isr;
+  .extern timer0_get;
   .global _EPIPHANY_Exception_default;
   .global _bsp_start_vector_table_begin;
   .global .normal_start;
@@ -60,6 +62,8 @@
 	.global __init;
 	.global __fini;
 	.global _asm_timer1_get;
+	.global _timer0_get;
+	.global _nop10;
 	
 	.type   _external_start, %function
 	
@@ -290,3 +294,16 @@ _asm_timer1_get:
         movts config, r0
         movfs r0, ctimer1;
         rts;
+
+.type   timer0_get, %function     
+.balign 4;
+SYM(_timer0_get):
+_timer0_get:
+        mov   r0, 0x00000000
+        movfs r0, ctimer0;
+        rts;
+.type   timer0_get, %function     
+.balign 4;       
+SYM(_nop10):
+_nop10:
+       nop;
