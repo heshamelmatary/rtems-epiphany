@@ -84,7 +84,7 @@ void epiphany_clock_initialize(void)
                 "orr   r16, r16, r18; \t \n"
                 "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
-  //asm volatile ("gid");
+  asm volatile ("gid");
     
   cpu_counter_ticks = 0;
 }

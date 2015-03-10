@@ -20,6 +20,23 @@
 #include <bsp.h>
 #include <rtems/score/thread.h>
 
+void benchmark_timer_initialize()
+{
+   uint32_t event_type = 0x1;
+   unsigned int val = 0xFFFFFFFF;
+
+   asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
+   asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xffffff0f);\t \n"
+                "movt   r17, %%high(0xffffff0f);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
+                :: [event_type] "r" (event_type)); 
+}
+
 /* forward declarations to avoid warnings */
 rtems_task Init(rtems_task_argument argument);
 
@@ -27,6 +44,7 @@ rtems_task Init(
   rtems_task_argument ignored
 )
 {
+	benchmark_timer_initialize();
   /* initialize application */
 
   /* Real application would call idle loop functionality */
@@ -40,7 +58,7 @@ rtems_task Init(
  * This application has no device drivers.
  */
 /* NOTICE: the clock driver is explicitly disabled */
-#define CONFIGURE_APPLICATION_DOES_NOT_NEED_CLOCK_DRIVER
+#define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
 
 /*
  *  This application has no filesytem and libio support.

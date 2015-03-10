@@ -229,7 +229,7 @@ _ISR_Handler:
 jump_to_c_handler:
   /* Red zone ? */
   //add sp, sp, #-128
-  jalr r27
+  //jalr r27
 
 
   /* Switch back to the interrupted task stack */
@@ -357,4 +357,10 @@ exception_frame_restore:
   
   add sp, sp, #8
   
+  /*mov  r63, %low(0x8F801004)
+  movt r63, %high(0x8F801004)
+  
+  movfs r62, ctimer1
+  str   r62, [r63];
+  */
   rti

@@ -26,6 +26,39 @@
   #define PREVENT_SMP_ASSERT_FAILURES
 #endif
 
+void benchmark_timer_initialize();
+uint32_t benchmark_timer_read(void);
+
+void benchmark_timer_initialize()
+{
+   uint32_t event_type = 0x1;
+   unsigned int val = 0xFFFFFFFF;
+
+    asm volatile ("mov r0, 0x0; \n \t"
+                "movts config, r0; \t \n"::);
+                
+  /* Embed assembly code for setting timer1 */
+  asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
+
+  /* Embed assembly code for setting timer1 qouted from e-lib */
+  asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt  r17, %%high(0xffff0ff);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
+                :: [event_type] "r" (event_type));
+}
+
+uint32_t benchmark_timer_read(void)
+{
+  int return_val = 0;
+  asm volatile ("movfs %0 ,ctimer1; \t \n" : "=r" (return_val):);
+  return 0xFFFFFFFF - return_val;
+}
+
 const char rtems_test_name[] = "TIME TEST 26";
 
 /* TEST DATA */

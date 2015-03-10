@@ -22,19 +22,24 @@ uint8_t   Memory_area[ 2048 ];
 uint8_t   Internal_port_area[ 256 ];
 uint8_t   External_port_area[ 256 ];
 
-void benchmark_timer_initialize();
-uint32_t benchmark_timer_read(void);
+uint32_t  global_ctimer1  __attribute__((section (".start")));;
 
-void benchmark_timer_initialize()
+static inline void benchmark_timer_initialize();
+static inline uint32_t benchmark_timer_read(void);
+
+static inline void benchmark_timer_initialize()
 {
    uint32_t event_type = 0x1;
    unsigned int val = 0xFFFFFFFF;
 
-   asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
+   /* Embed assembly code for setting timer0 */
+  asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
+  
+   asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
    asm volatile ("movfs r16, config; \t \n"
-                "mov   r17, %%low(0xffffff0f);\t \n"
-                "movt   r17, %%high(0xffffff0f);\t \n"
-                "lsl   r18, %[event_type], 0x4; \t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt   r17, %%high(0xfffff0ff);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
                 "and   r16, r16, r17; \t \n"
                 "movts config, r16; \t \n"
                 "orr   r16, r16, r18; \t \n"
@@ -42,11 +47,10 @@ void benchmark_timer_initialize()
                 :: [event_type] "r" (event_type)); 
 }
 
-uint32_t benchmark_timer_read(void)
+static inline uint32_t benchmark_timer_read(void)
 {
-  int return_val = 0;
-  asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (return_val):);
-  return 0xFFFFFFFF - return_val;
+  asm volatile ("movfs %0 ,ctimer1; \t \n" : "=r" (global_ctimer1):);
+  return 0xFFFFFFFF - global_ctimer1;
 }
 
 void benchmark_timer_disable_subtracting_average_overhead(
@@ -150,13 +154,19 @@ rtems_task Task_1(
     0
   );
 */
+
+/* ISR Handler */
+//benchmark_timer_initialize();
+//while (1);
+
 /* Context Switch */
 
   benchmark_timer_initialize();
-  for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
+  for ( index = 1 ; index <= 1 ; index = index + 1 )
     _Context_Switch(&ctx, &ctx);
   end_time = benchmark_timer_read();
 
+  printk("end time = %d \n", end_time);
       put_time(
          "overhead: _Context_Switch",
          end_time,
@@ -164,10 +174,11 @@ rtems_task Task_1(
          overhead,
          0
       );
-      
+
+while (1);
 /* rtems_task_create */
 
-      benchmark_timer_initialize();
+/*      benchmark_timer_initialize();
          for ( index = 1 ; index <= OPERATION_COUNT ; index = index + 1 )
             (void) rtems_task_create(
                name,
@@ -186,7 +197,7 @@ rtems_task Task_1(
          overhead,
          0
       );
-
+*/
 /* rtems_task_ident */
 
       benchmark_timer_initialize();

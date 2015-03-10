@@ -212,6 +212,7 @@ cpu0:
   
 _jump_to_c:
   ;; jump to bootcard
+  gid
   mov r0, 0xFFFFFFFF
   movts imask, r0
 	mov	r0,#0
@@ -235,11 +236,15 @@ _jump_to_c:
 .balign 4
 .type   .clock_isr, %function
 .clock_isr:
-  gid;
-  /*mov  r63, %low(0xFFFFFFFF)
-  movt r63, %high(0xFFFFFFFF)
+  //gid;
+  //mov  r63, %low(0x8F801000)
+  //movt r63, %high(0x8F801000)
   
-  movts ctimer1, r63 */                     
+  //movfs r62, ctimer1
+  //str   r62, [r63];
+  
+  //movts ctimer1, r63 
+                      
   add sp, sp, #-8;                   
   str r62, [sp, #4];                 
   str r63, [sp, #8];                 
