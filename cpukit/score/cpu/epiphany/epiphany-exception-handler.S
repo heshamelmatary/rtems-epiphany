@@ -26,8 +26,9 @@
 .extern bsp_start_vector_table_begin
 .extern __Thread_Dispatch
 
+.section .text,"a";
 .align 4
-.section .text
+
 .global _ISR_Handler;
 PUBLIC(_ISR_Handler)
 .type    _ISR_Handler,%function
@@ -78,7 +79,7 @@ PUBLIC(_ISR_Handler)
 _ISR_Handler:
   /* Disable interrupts */
   gid
-  
+  movfs r63, ctimer1
   /* Reserve space for CPU_Exception_frame */ 
   add sp, sp, #-280
   
@@ -229,7 +230,7 @@ _ISR_Handler:
 jump_to_c_handler:
   /* Red zone ? */
   //add sp, sp, #-128
-  //jalr r27
+  jalr r27
 
 
   /* Switch back to the interrupted task stack */
@@ -353,14 +354,12 @@ exception_frame_restore:
   add sp, sp, #280
   
   ldr r62, [sp, #4]
-  ldr r63, [sp, #8]
+  ldr r62, [sp, #4]
+  //ldr r63, [sp, #8]
   
   add sp, sp, #8
   
-  /*mov  r63, %low(0x8F801004)
-  movt r63, %high(0x8F801004)
-  
   movfs r62, ctimer1
-  str   r62, [r63];
-  */
+  sub   r63, r63, r62
+
   rti

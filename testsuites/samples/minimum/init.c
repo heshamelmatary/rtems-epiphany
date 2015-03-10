@@ -19,22 +19,33 @@
 
 #include <bsp.h>
 #include <rtems/score/thread.h>
+#include <rtems/rtems/tasks.h>
 
-void benchmark_timer_initialize()
+uint32_t end_time = 0;
+
+Context_Control ctx __attribute__ ((section (".start")));
+
+static inline void benchmark_timer_initialize()
 {
    uint32_t event_type = 0x1;
    unsigned int val = 0xFFFFFFFF;
 
    asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
    asm volatile ("movfs r16, config; \t \n"
-                "mov   r17, %%low(0xffffff0f);\t \n"
-                "movt   r17, %%high(0xffffff0f);\t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt   r17, %%high(0xfffff0ff);\t \n"
                 "lsl   r18, %[event_type], 0x8; \t \n"
                 "and   r16, r16, r17; \t \n"
                 "movts config, r16; \t \n"
                 "orr   r16, r16, r18; \t \n"
                 "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type)); 
+}
+
+static inline uint32_t benchmark_timer_read(void)
+{
+  asm volatile ("movfs %0 ,ctimer1; \t \n" : "=r" (end_time):);
+  return 0xFFFFFFFF - end_time;
 }
 
 /* forward declarations to avoid warnings */
@@ -44,11 +55,15 @@ rtems_task Init(
   rtems_task_argument ignored
 )
 {
-	benchmark_timer_initialize();
+  uint32_t index = 0;
   /* initialize application */
+  benchmark_timer_initialize();
+ // for ( index = 1 ; index <= 1 ; index = index + 1 )
+    //_Context_Switch(&ctx, &ctx);
+  end_time = benchmark_timer_read();
 
+  exit (0);
   /* Real application would call idle loop functionality */
-
   /* but in this case, just return and fall into a fatal error */
 }
 
@@ -58,7 +73,7 @@ rtems_task Init(
  * This application has no device drivers.
  */
 /* NOTICE: the clock driver is explicitly disabled */
-#define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
+#define CONFIGURE_APPLICATION_DOES_NOT_NEED_CLOCK_DRIVER
 
 /*
  *  This application has no filesytem and libio support.

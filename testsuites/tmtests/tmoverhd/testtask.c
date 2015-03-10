@@ -27,11 +27,13 @@ uint32_t  global_ctimer1  __attribute__((section (".start")));;
 static inline void benchmark_timer_initialize();
 static inline uint32_t benchmark_timer_read(void);
 
+
+  
 static inline void benchmark_timer_initialize()
 {
    uint32_t event_type = 0x1;
    unsigned int val = 0xFFFFFFFF;
-
+  
    /* Embed assembly code for setting timer0 */
   asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
   
@@ -162,6 +164,9 @@ rtems_task Task_1(
 /* Context Switch */
 
   benchmark_timer_initialize();
+  
+  while (1);
+  
   for ( index = 1 ; index <= 1 ; index = index + 1 )
     _Context_Switch(&ctx, &ctx);
   end_time = benchmark_timer_read();
