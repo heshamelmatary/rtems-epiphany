@@ -19,19 +19,16 @@
 #include <rtems.h>
 #include <bsp.h>
 #include <rtems/score/epiphany-utility.h>
-//#include <bsp/linker-symbols.h>
+#//include <bsp/linker-symbols.h>
 
 /* The number of clock cycles before generating a tick timer interrupt. */
-#define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x0000FFFF
+#define TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT     0x989680 /* 5 milliseconds */
 #define EPIPHANY_CLOCK_CYCLE_TIME_NANOSECONDS 1
 
 extern char bsp_start_vector_table_begin[];
 
 /* CPU counter */
-static CPU_Counter_ticks cpu_counter_ticks /*__attribute__((section(".clk_drv")))*/;
-
-void epiphany_clock_at_tick(void) __attribute__((section(".clk_drv")));
-void epiphany_clock_initialize(void) __attribute__((section(".clk_drv")));
+static CPU_Counter_ticks cpu_counter_ticks;
 
 /* This prototype is added here to Avoid warnings */
 void Clock_isr(void *arg);
@@ -55,14 +52,11 @@ void epiphany_clock_at_tick(void)
                 "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
                 
-   _Epiphany_Send_interrupt(0x808, TIMER0);
-   //while(*((uint32_t *) 0x58) == 0);
-   
-   //*((uint32_t *) 0x58) = 0;
+   cpu_counter_ticks++;
 }
 
 /* Use timer0 on each eCPU for scheduling purposes */
-void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
+static void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 {
    old_isr = NULL;
    
@@ -73,16 +67,15 @@ void epiphany_clock_handler_install(proc_ptr new_isr, proc_ptr old_isr)
 }
 
 void epiphany_clock_initialize(void)
-{
-  
-  unsigned int val = 0xFFFFFFFF; 
+{ 
+  unsigned int val = 0xFFFFFFFF;//0x004C4B40; /* 5 milliseconds */
   unsigned int event_type = 0x1;
   
   /* Embed assembly code for setting timer0 */
-  asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
+  //asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
 
   /* Embed assembly code for setting timer0 qouted from e-lib */
-  asm volatile ("movfs r16, config; \t \n"
+  /*asm volatile ("movfs r16, config; \t \n"
                 "mov   r17, %%low(0xffffff0f);\t \n"
                 "movt   r17, %%high(0xffffff0f);\t \n"
                 "lsl   r18, %[event_type], 0x4; \t \n"
@@ -91,13 +84,13 @@ void epiphany_clock_initialize(void)
                 "orr   r16, r16, r18; \t \n"
                 "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
-  
+  asm volatile ("gid");*/
+    
   cpu_counter_ticks = 0;
 }
 
  static void epiphany_clock_cleanup(void)
 {
-
 }
 
 /*
@@ -105,19 +98,31 @@ void epiphany_clock_initialize(void)
  */
 static uint32_t epiphany_clock_nanoseconds_since_last_tick(void)
 {
-  return
-  TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT * EPIPHANY_CLOCK_CYCLE_TIME_NANOSECONDS;
+  uint32_t timer_val;
+  asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (timer_val):);
+  
+  return TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - timer_val;
 }
 
 CPU_Counter_ticks _CPU_Counter_read(void)
 {
-/*  uint32_t ticks_since_last_timer_interrupt, timer_val;
+  uint32_t ticks_since_last_timer_interrupt, timer_val;
   asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (timer_val):);
-  ticks_since_last_timer_interrupt = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - 
-  timer_val;
+  //ticks_since_last_timer_interrupt = TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - 
+  //timer_val;
 
-  return cpu_counter_ticks + ticks_since_last_timer_interrupt;
-*/
+  return cpu_counter_ticks * TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT + 
+  (TTMR_NUM_OF_CLOCK_TICKS_INTERRUPT - timer_val);
+
+}
+
+void bsp_start(void)
+{
+    epiphany_clock_handler_install(Clock_isr, (void *) 0);
+    //rtems_clock_set_nanoseconds_extension(
+     // epiphany_clock_nanoseconds_since_last_tick
+    //);
+    //epiphany_clock_initialize();
 }
 
 CPU_Counter_ticks _CPU_Counter_difference(
@@ -127,16 +132,6 @@ CPU_Counter_ticks _CPU_Counter_difference(
 {
   return second - first;
 }
-
-void bsp_start(void)
-{
-    epiphany_clock_handler_install(Clock_isr, (void *) 0);
-    rtems_clock_set_nanoseconds_extension(
-      epiphany_clock_nanoseconds_since_last_tick
-    );
-    //epiphany_clock_initialize();
-}
-
 #define Clock_driver_support_at_tick() epiphany_clock_at_tick()
 
 #define Clock_driver_support_initialize_hardware() epiphany_clock_initialize()

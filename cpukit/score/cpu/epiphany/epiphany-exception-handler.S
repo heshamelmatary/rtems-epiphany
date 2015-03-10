@@ -234,7 +234,7 @@ _ISR_Handler:
 jump_to_c_handler:
   /* Red zone ? */
   //add sp, sp, #-128
-  //jalr r27
+  jalr r27
 
 
   /* Switch back to the interrupted task stack */
