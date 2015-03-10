@@ -232,7 +232,8 @@ _jump_to_c:
 .balign 4
 .type   .clock_isr, %function
 .clock_isr:
-  gid;                               
+  gid;     
+                            
   add sp, sp, #-8;                   
   str r62, [sp, #4];                 
   str r63, [sp, #8];                 

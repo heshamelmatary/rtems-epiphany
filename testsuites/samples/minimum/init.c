@@ -25,16 +25,16 @@ uint32_t end_time = 0;
 
 Context_Control ctx __attribute__ ((section (".start")));
 
-void benchmark_timer_initialize()
+static inline void benchmark_timer_initialize()
 {
    uint32_t event_type = 0x1;
    unsigned int val = 0xFFFFFFFF;
 
-   asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
+   asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
    asm volatile ("movfs r16, config; \t \n"
-                "mov   r17, %%low(0xffffff0f);\t \n"
-                "movt   r17, %%high(0xffffff0f);\t \n"
-                "lsl   r18, %[event_type], 0x4; \t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt   r17, %%high(0xfffff0ff);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
                 "and   r16, r16, r17; \t \n"
                 "movts config, r16; \t \n"
                 "orr   r16, r16, r18; \t \n"
@@ -42,11 +42,10 @@ void benchmark_timer_initialize()
                 :: [event_type] "r" (event_type)); 
 }
 
-uint32_t benchmark_timer_read(void)
+static inline uint32_t benchmark_timer_read(void)
 {
-  int return_val = 0;
-  asm volatile ("movfs %0 ,ctimer0; \t \n" : "=r" (return_val):);
-  return 0xFFFFFFFF - return_val;
+  asm volatile ("movfs %0 ,ctimer1; \t \n" : "=r" (end_time):);
+  return 0xFFFFFFFF - end_time;
 }
 
 /* forward declarations to avoid warnings */
@@ -60,7 +59,7 @@ rtems_task Init(
   /* initialize application */
   benchmark_timer_initialize();
  // for ( index = 1 ; index <= 1 ; index = index + 1 )
-    _Context_Switch(&ctx, &ctx);
+    //_Context_Switch(&ctx, &ctx);
   end_time = benchmark_timer_read();
 
   exit (0);

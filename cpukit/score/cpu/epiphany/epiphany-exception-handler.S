@@ -78,6 +78,11 @@ PUBLIC(_ISR_Handler)
 _ISR_Handler:
   /* Disable interrupts */
   gid
+  //movhi r63, %high(0xffffffff)
+  //mov   r63, %low(0xffffffff)
+  
+  //movts ctimer1, r63
+  movfs r63, ctimer1
   
   /* Reserve space for CPU_Exception_frame */ 
   add sp, sp, #-280
@@ -87,12 +92,8 @@ _ISR_Handler:
   
   str r2,[sp,2]
   
-  movfs r1,config
-  str r1, [sp,65]
-  
-  /* Stop timer */
-  mov   r2, #0
-  movts config, r2
+  //movfs r1,config
+  //str r1, [sp,65]
   
   str r3,[sp,3]
   str r4,[sp,4]
@@ -233,7 +234,7 @@ _ISR_Handler:
 jump_to_c_handler:
   /* Red zone ? */
   //add sp, sp, #-128
-  jalr r27
+  //jalr r27
 
 
   /* Switch back to the interrupted task stack */
@@ -343,9 +344,6 @@ exception_frame_restore:
   ldr r0,[sp,64]
   movts status, r0
   
-  ldr r0, [sp,65]
-  movts config, r0
-  
   ldr   r0, [sp,66]
   movts iret, r0
   
@@ -357,10 +355,12 @@ exception_frame_restore:
   add sp, sp, #280
   
   ldr r62, [sp, #4]
-  ldr r63, [sp, #8]
-  
+  ldr r62, [sp, #4]
+  //ldr r63, [sp, #8]
   add sp, sp, #8
   
+  movfs r62, ctimer1
+  sub   r63, r63, r62
   /* Enable interrupts */
   gie
   
