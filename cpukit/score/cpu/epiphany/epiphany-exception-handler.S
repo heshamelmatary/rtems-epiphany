@@ -77,9 +77,8 @@ PUBLIC(_ISR_Handler)
   (SYM(_Per_CPU_Information) + PER_CPU_DISPATCH_NEEDED)
 
 _ISR_Handler:
-  /* Disable interrupts */
-  gid
-  movfs r63, ctimer1
+
+  //movfs r63, ctimer1
   /* Reserve space for CPU_Exception_frame */ 
   add sp, sp, #-280
   
@@ -359,7 +358,7 @@ exception_frame_restore:
   
   add sp, sp, #8
   
-  movfs r62, ctimer1
-  sub   r63, r63, r62
+  //movfs r62, ctimer1
+  //sub   r63, r63, r62
 
   rti

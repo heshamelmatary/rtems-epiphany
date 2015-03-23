@@ -847,8 +847,8 @@ void _CPU_Context_Initialize(
 #endif
 
 #define CPU_TIMESTAMP_USE_STRUCT_TIMESPEC FALSE
-#define CPU_TIMESTAMP_USE_INT64 TRUE
-#define CPU_TIMESTAMP_USE_INT64_INLINE FALSE
+#define CPU_TIMESTAMP_USE_INT64 FALSE
+#define CPU_TIMESTAMP_USE_INT64_INLINE TRUE
 
 typedef struct {
 /* There is no CPU specific per-CPU state */

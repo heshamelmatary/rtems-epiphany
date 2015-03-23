@@ -26,6 +26,36 @@
 #define _RTEMS_TMTEST27
 #include <tm27.h>
 
+uint32_t  global_ctimer1  __attribute__((section (".start")));;
+
+static inline void benchmark_timer_initialize();
+  
+static inline void benchmark_timer_initialize()
+{
+   uint32_t event_type = 0x1;
+   unsigned int val = 0xFFFFFFFF;
+  
+   /* Embed assembly code for setting timer0 */
+  asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
+  
+   asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
+   asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt   r17, %%high(0xfffff0ff);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
+                :: [event_type] "r" (event_type)); 
+}
+
+static inline uint32_t benchmark_timer_read(void)
+{
+  asm volatile ("movfs %0 ,ctimer1; \t \n" : "=r" (global_ctimer1):);
+  return 0xFFFFFFFF - global_ctimer1;
+}
+
 const char rtems_test_name[] = "TIME TEST 27";
 
 rtems_task Task_1(
@@ -151,23 +181,23 @@ rtems_task Task_1(
    *  No preempt .. nested
    */
 
-  _Thread_Disable_dispatch();
+  //_Thread_Disable_dispatch();
 
-  Interrupt_nest = 1;
+  //Interrupt_nest = 1;
 
   Interrupt_occurred = 0;
-  benchmark_timer_initialize();
-  Cause_tm27_intr();
+  //benchmark_timer_initialize();
+  //Cause_tm27_intr();
   /* goes to Isr_handler */
 
 #if (MUST_WAIT_FOR_INTERRUPT == 1)
-  while ( Interrupt_occurred == 0 );
+  //while ( Interrupt_occurred == 0 );
 #endif
-  Interrupt_return_time = benchmark_timer_read();
+  //Interrupt_return_time = benchmark_timer_read();
 
-  _Thread_Unnest_dispatch();
+  //_Thread_Unnest_dispatch();
 
-  put_time(
+  /*put_time(
     "rtems interrupt: entry overhead returns to nested interrupt",
     Interrupt_enter_nested_time,
     1,
@@ -181,7 +211,7 @@ rtems_task Task_1(
     1,
     0,
     0
-  );
+  );*/
 
   /*
    *  Does a preempt .. not nested

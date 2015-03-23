@@ -22,12 +22,13 @@ rtems_task Init(
 
 #include <timesys.h>
 
-rtems_id   Task_id[ OPERATION_COUNT+1 ];   /* array of task ids */
+rtems_id   Task_id[ 3 ];   /* array of task ids */
 
 /* configuration information */
 
 #define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
-#define CONFIGURE_APPLICATION_NEEDS_TIMER_DRIVER
+//#define CONFIGURE_APPLICATION_NEEDS_TIMER_DRIVER
+#define CONFIGURE_APPLICATION_DOES_NOT_NEED_CLOCK_DRIVER
 
 #define CONFIGURE_MAXIMUM_TASKS              3
 #define CONFIGURE_TICKS_PER_TIMESLICE        0

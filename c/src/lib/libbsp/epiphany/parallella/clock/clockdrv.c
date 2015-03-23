@@ -72,10 +72,10 @@ void epiphany_clock_initialize(void)
   unsigned int event_type = 0x1;
   
   /* Embed assembly code for setting timer0 */
-  //asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
+  asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
 
   /* Embed assembly code for setting timer0 qouted from e-lib */
-  /*asm volatile ("movfs r16, config; \t \n"
+  asm volatile ("movfs r16, config; \t \n"
                 "mov   r17, %%low(0xffffff0f);\t \n"
                 "movt   r17, %%high(0xffffff0f);\t \n"
                 "lsl   r18, %[event_type], 0x4; \t \n"
@@ -84,7 +84,7 @@ void epiphany_clock_initialize(void)
                 "orr   r16, r16, r18; \t \n"
                 "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
-  asm volatile ("gid");*/
+  asm volatile ("gid");
     
   cpu_counter_ticks = 0;
 }
