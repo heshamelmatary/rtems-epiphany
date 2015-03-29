@@ -34,7 +34,7 @@
 #define HEIR \
   (SYM_Per_CPU_Information() + PER_CPU_OFFSET_HEIR)
   
-.section .start,"a";
+.section .text,"a";
 .align 4
 
 PUBLIC(_CPU_Context_switch)

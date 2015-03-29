@@ -62,6 +62,7 @@ static void _Thread_Run_post_switch_actions( Thread_Control *executing )
 
 void _Thread_Dispatch( void )
 {
+	asm volatile ("movfs r62, ctimer1");
   Per_CPU_Control  *cpu_self;
   Thread_Control   *executing;
   ISR_Level         level;

@@ -39,10 +39,10 @@ static void epiphany_clock_at_tick(void)
   unsigned int event_type = 0x1; /* FIXME: Use macros or enum for event types */
 
   /* Embed assembly code for setting timer0 */
-  asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
+  //asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
   
   /* Embed assembly code for setting timer0 qouted from e-lib */
-  asm volatile ("movfs r16, config; \t \n"
+  /*asm volatile ("movfs r16, config; \t \n"
                 "mov   r17, %%low(0xffffff0f);\t \n"
                 "movt   r17, %%high(0xffffff0f);\t \n"
                 "lsl   r18, %[event_type], 0x4; \t \n"
@@ -53,6 +53,7 @@ static void epiphany_clock_at_tick(void)
                 :: [event_type] "r" (event_type));
                 
    cpu_counter_ticks++;
+   */
 }
 
 /* Use timer0 on each eCPU for scheduling purposes */
@@ -72,10 +73,10 @@ void epiphany_clock_initialize(void)
   unsigned int event_type = 0x1;
   
   /* Embed assembly code for setting timer0 */
-  asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
+  //asm volatile ("movts ctimer0, %[val] \t \n" :: [val] "r" (val));
 
   /* Embed assembly code for setting timer0 qouted from e-lib */
-  asm volatile ("movfs r16, config; \t \n"
+  /*asm volatile ("movfs r16, config; \t \n"
                 "mov   r17, %%low(0xffffff0f);\t \n"
                 "movt   r17, %%high(0xffffff0f);\t \n"
                 "lsl   r18, %[event_type], 0x4; \t \n"
@@ -85,7 +86,7 @@ void epiphany_clock_initialize(void)
                 "movts config, r16; \t \n"
                 :: [event_type] "r" (event_type));
   asm volatile ("gid");
-    
+  */
   cpu_counter_ticks = 0;
 }
 

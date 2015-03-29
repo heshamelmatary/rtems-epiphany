@@ -16,6 +16,29 @@
 
 const char rtems_test_name[] = "CLOCK TICK";
 
+uint32_t  global_ctimer1  __attribute__((section (".start")));;
+
+static inline void benchmark_timer_initialize();
+  
+static inline void benchmark_timer_initialize()
+{
+   uint32_t event_type = 0x1;
+   unsigned int val = 0xFFFFFFFF;
+  
+   /* Embed assembly code for setting timer0 */
+   asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
+   
+   asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt   r17, %%high(0xfffff0ff);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
+                :: [event_type] "r" (event_type)); 
+}
+
 /*
  *  Keep the names and IDs in global variables so another task can use them.
  */
@@ -76,7 +99,9 @@ rtems_task Init(
 
   status = rtems_task_start( Task_id[ 3 ], Test_task, 3 );
   directive_failed( status, "start 3" ); 
-
+  
+  benchmark_timer_initialize();
+  asm volatile ("movfs r62, ctimer1");
   status = rtems_task_delete( RTEMS_SELF );
   directive_failed( status, "delete" ); 
 }
