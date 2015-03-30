@@ -45,6 +45,7 @@ PUBLIC(_CPU_Context_save_fp)
 
 SYM(_CPU_Context_switch):
   gid
+  //movfs r63, ctimer1
   str r0,[r0]
   str r1,[r0,1]
   str r2,[r0,2]
@@ -273,7 +274,7 @@ SYM(restore):
   ldr r1,[r1,1]
   
   gie
-  
+  movfs r63, ctimer1
   jr lr
 
  SYM(_CPU_Context_restore):

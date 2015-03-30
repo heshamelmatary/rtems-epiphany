@@ -43,7 +43,7 @@ rtems_task Test_task(
   rtems_interval    ticks;
   struct timespec   uptime;
   
-  asm volatile ("movfs r63 ,ctimer1");
+  //asm volatile ("movfs r63 ,ctimer1");
   
   ticks = task_index * (5 * rtems_clock_get_ticks_per_second());
   for ( ; ; ) {
@@ -72,7 +72,7 @@ rtems_task Init(
   int               i;
 
   //printk( "\n\n*** LOW MEMORY CLOCK TICK TEST (delay) ***\n" );
-  benchmark_timer_initialize();
+  //benchmark_timer_initialize();
   for (i=1 ; i<=2 ; i++ ) {
     status = rtems_task_create(
       rtems_build_name( 'T', 'A', 0x30+1, ' ' ), 1, 0, RTEMS_DEFAULT_MODES,
@@ -80,8 +80,8 @@ rtems_task Init(
     );
     status = rtems_task_start( id, Test_task, i );
   }
-  
-  while( 1 )
+  rtems_task_delete( RTEMS_SELF);
+ // while( 1 )
     ;
 }
 
