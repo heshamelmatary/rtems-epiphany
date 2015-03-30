@@ -29,6 +29,21 @@ void _Thread_Enable_dispatch( void )
 {
   if ( _Thread_Dispatch_decrement_disable_level() )
     return;
+  {
+	 uint32_t event_type = 0x1;
+   unsigned int val = 0xFFFFFFFF;
+
+   asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
+   asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt   r17, %%high(0xfffff0ff);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
+                :: [event_type] "r" (event_type));
   _Thread_Dispatch();
+  }
 }
 #endif

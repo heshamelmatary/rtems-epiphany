@@ -34,7 +34,7 @@
 #define HEIR \
   (SYM_Per_CPU_Information() + PER_CPU_OFFSET_HEIR)
   
-.section .text,"a";
+.section .start,"a";
 .align 4
 
 PUBLIC(_CPU_Context_switch)
@@ -291,7 +291,7 @@ SYM(restore):
   ldr r1,[r1,1]
   
   gie
-  
+  //movfs r63, ctimer1
   jr lr
 
  SYM(_CPU_Context_restore):

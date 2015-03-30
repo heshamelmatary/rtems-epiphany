@@ -81,6 +81,8 @@ static inline void benchmark_timer_initialize()
                 :: [event_type] "r" (event_type)); 
 }
 
+Context_Control btx_heir, btx_exec __attribute__((section(".start")));
+
 void _Thread_Dispatch( void )
 {
   benchmark_timer_initialize();
@@ -163,10 +165,11 @@ void _Thread_Dispatch( void )
       *_Thread_libc_reent = heir->libc_reent;
     }
 #endif
-
+	
+ 
     _User_extensions_Thread_switch( executing, heir );
     _Thread_Save_fp( executing );
-    _Context_Switch( &executing->Registers, &heir->Registers );
+    _Context_Switch( &btx_exec, &executing->Registers );
     _Thread_Restore_fp( executing );
 
     /*
