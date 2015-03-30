@@ -25,6 +25,7 @@ rtems_task Test_task(
   rtems_task_argument unused
 )
 {
+  asm volatile ("movfs r63, ctimer1");
   rtems_id          tid;
   rtems_time_of_day time;
   uint32_t          task_index;

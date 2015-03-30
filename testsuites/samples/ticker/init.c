@@ -38,10 +38,13 @@ rtems_task Test_task(
   rtems_task_argument task_index
 )
 {
+  //asm volatile ("movfs r63 ,ctimer1");
   rtems_status_code status;
   rtems_interval    ticks;
   struct timespec   uptime;
-  asm volatile ("movfs r63 ,ctimer1; \t \n" ::);
+  
+  asm volatile ("movfs r63 ,ctimer1");
+  
   ticks = task_index * (5 * rtems_clock_get_ticks_per_second());
   for ( ; ; ) {
     status = rtems_task_wake_after( ticks );

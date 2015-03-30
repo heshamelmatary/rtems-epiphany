@@ -60,7 +60,7 @@ static void _Thread_Run_post_switch_actions( Thread_Control *executing )
   _Thread_Action_release_and_ISR_enable( cpu_self, level );
 }
 
-static inline void benchmark_timer_initialize()
+static volatile inline void benchmark_timer_initialize()
 {
    uint32_t event_type = 0x1;
    unsigned int val = 0xFFFFFFFF;
@@ -79,8 +79,6 @@ static inline void benchmark_timer_initialize()
 
 void _Thread_Dispatch( void )
 {
-	benchmark_timer_initialize();
-	asm volatile ("movfs r62 ,ctimer1; \t \n" ::);
   Per_CPU_Control  *cpu_self;
   Thread_Control   *executing;
   ISR_Level         level;
