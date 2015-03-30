@@ -100,8 +100,8 @@ rtems_task Init(
   status = rtems_task_start( Task_id[ 3 ], Test_task, 3 );
   directive_failed( status, "start 3" ); 
   
-  benchmark_timer_initialize();
-  asm volatile ("movfs r62, ctimer1");
+  //benchmark_timer_initialize();
+  //asm volatile ("movfs r63, ctimer1");
   status = rtems_task_delete( RTEMS_SELF );
   directive_failed( status, "delete" ); 
 }

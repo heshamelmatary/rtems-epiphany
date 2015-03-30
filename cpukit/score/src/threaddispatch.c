@@ -60,9 +60,31 @@ static void _Thread_Run_post_switch_actions( Thread_Control *executing )
   _Thread_Action_release_and_ISR_enable( cpu_self, level );
 }
 
+static inline void benchmark_timer_initialize();
+  
+static inline void benchmark_timer_initialize()
+{
+   uint32_t event_type = 0x1;
+   unsigned int val = 0xFFFFFFFF;
+  
+   /* Embed assembly code for setting timer0 */
+   asm volatile ("movts ctimer1, %[val] \t \n" :: [val] "r" (val));
+   
+   asm volatile ("movfs r16, config; \t \n"
+                "mov   r17, %%low(0xfffff0ff);\t \n"
+                "movt   r17, %%high(0xfffff0ff);\t \n"
+                "lsl   r18, %[event_type], 0x8; \t \n"
+                "and   r16, r16, r17; \t \n"
+                "movts config, r16; \t \n"
+                "orr   r16, r16, r18; \t \n"
+                "movts config, r16; \t \n"
+                :: [event_type] "r" (event_type)); 
+}
+
 void _Thread_Dispatch( void )
 {
-	asm volatile ("movfs r62, ctimer1");
+  benchmark_timer_initialize();
+	//asm volatile ("movfs r62, ctimer1");
   Per_CPU_Control  *cpu_self;
   Thread_Control   *executing;
   ISR_Level         level;
